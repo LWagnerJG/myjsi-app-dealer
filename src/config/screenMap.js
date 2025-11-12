@@ -1,5 +1,5 @@
 // Core screen component imports (eager)
-import { SalesScreen, CustomerRankingScreen, IncentiveRewardsScreen, CommissionsScreen } from '../screens/sales/index.js';
+import { SalesScreen, CustomerRankingScreen, IncentiveRewardsScreen } from '../screens/sales/index.js';
 import { OrdersScreen } from '../screens/orders/index.js';
 import { ProductsScreen, ProductComparisonScreen, CompetitiveAnalysisScreen } from '../screens/products/index.js';
 import { ResourcesScreen } from '../screens/resources/ResourcesScreen.jsx'; // ResourcesScreen expects homeApps prop (forwarded from App screenProps) to render Core Apps section.
@@ -32,7 +32,6 @@ export const SCREEN_MAP = {
   'replacements': ReplacementsScreen,
   'incentive-rewards': IncentiveRewardsScreen,
   'customer-rank': CustomerRankingScreen,
-  'commissions': CommissionsScreen,
   'settings': SettingsScreen,
   'members': MembersScreen,
   'help': HelpScreen,
@@ -56,7 +55,6 @@ export {
   SalesScreen,
   CustomerRankingScreen,
   IncentiveRewardsScreen,
-  CommissionsScreen,
   CommunityScreen,
   CreateContentModal,
   NewDealerSignUpScreen,
