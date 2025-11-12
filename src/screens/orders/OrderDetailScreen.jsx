@@ -106,7 +106,7 @@ export const OrderDetailScreen = ({ theme, onNavigate, currentScreen }) => {
                 <GlassCard theme={theme} className="p-5" style={{ backgroundColor: theme.colors.surface }}>
                     <div className="text-center mb-4">
                         <h1 className="text-2xl font-bold leading-tight" style={{ color: theme.colors.textPrimary }}>{formatTitleCase(order.details)}</h1>
-                        <p className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>for {formatTitleCase(order.company)}</p>
+                        {/* Removed dealer/company subtitle for dealer app context */}
                     </div>
                     <div className="flex items-center justify-center mb-6">
                         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: `${statusColor}1a`, color: statusColor, border: `1px solid ${statusColor}55` }}>
