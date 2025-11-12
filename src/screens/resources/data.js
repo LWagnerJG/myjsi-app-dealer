@@ -12,8 +12,7 @@ export const RESOURCES_DATA = [
     {
         category: "Sales & Rep Tools",
         items: [
-            { label: "Dealer Directory", nav: "resources/dealer-directory" },
-            { label: "Commission Rates", nav: "resources/commission-rates" },
+            { label: "Customer Directory", nav: "resources/dealer-directory" },
             { label: "Sample Discounts", nav: "resources/sample-discounts" },
             { label: "Contracts", nav: "resources/contracts" },
         ].sort((a, b) => a.label.localeCompare(b.label))
@@ -22,7 +21,6 @@ export const RESOURCES_DATA = [
         category: "Dealer & Field Support",
         items: [
             { label: "Loaner Pool", nav: "resources/loaner-pool" },
-            { label: "New Dealer Sign-Up", nav: "resources/new-dealer-signup" },
             { label: "Request Field Visit", nav: "resources/request-field-visit" },
             { label: "Install Instructions", nav: "resources/install-instructions" },
         ].sort((a, b) => a.label.localeCompare(b.label))
