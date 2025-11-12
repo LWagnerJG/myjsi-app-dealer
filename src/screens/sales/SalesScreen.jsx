@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Modal } from '../../components/common/Modal';
-import { ArrowUp, ArrowDown, TrendingUp, Award, DollarSign, BarChart, Table } from 'lucide-react';
+import { ArrowUp, ArrowDown, TrendingUp, Award, BarChart, Table } from 'lucide-react';
 import { MONTHLY_SALES_DATA, SALES_VERTICALS_DATA } from './data.js';
 import { ORDER_DATA, STATUS_COLORS } from '../orders/data.js';
 import { SalesByVerticalBreakdown } from './components/SalesByVerticalBreakdown.jsx';
@@ -16,7 +16,6 @@ const SegmentedTabs = ({ theme, active, onChange }) => {
   const tabs = useMemo(()=>[
     { key:'rewards', label:'Rewards', Icon:Award },
     { key:'ranking', label:'Ranking', Icon:TrendingUp },
-    { key:'comms', label:'Commissions', Icon:DollarSign },
   ],[]);
   const wrapRef = useRef(null);
   const btnRefs = useRef([]);
@@ -151,7 +150,7 @@ export const SalesScreen = ({ theme, onNavigate }) => {
   const displayedRecent = useMemo(()=> allRecentOrders.slice(0,numRecentOrders),[allRecentOrders,numRecentOrders]);
   const goal = 7000000;
 
-  const handleTabChange = useCallback(k=>{ setTopTab(k); if(k==='rewards') onNavigate('incentive-rewards'); if(k==='ranking') onNavigate('customer-rank'); if(k==='comms') onNavigate('commissions'); },[onNavigate]);
+  const handleTabChange = useCallback(k=>{ setTopTab(k); if(k==='rewards') onNavigate('incentive-rewards'); if(k==='ranking') onNavigate('customer-rank'); },[onNavigate]);
   const showMoreOrders = ()=> setNumRecentOrders(n=> Math.min(allRecentOrders.length, n===3?8:n+5));
 
   const openTrend = useCallback((e)=>{ const el=e?.currentTarget||trendButtonRef.current; if(!el) return; const r=el.getBoundingClientRect(); setTrendPos({ top:r.bottom+8, right:Math.max(8, window.innerWidth-r.right) }); setShowTrendInfo(true); },[]);
