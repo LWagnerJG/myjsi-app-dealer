@@ -1,10 +1,14 @@
-﻿// HomeScreen with dealer dashboard improvements
+﻿// HomeScreen with comprehensive dealer dashboard
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { MENU_ITEMS, allApps, DEFAULT_HOME_APPS } from '../../data.jsx';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 import { HomeSearchInput } from '../../components/common/SearchInput.jsx';
 import { DropdownPortal } from '../../DropdownPortal.jsx';
 import { Plus, Briefcase, Package, Users, TrendingUp, DollarSign, ArrowRight } from 'lucide-react';
+import { TaskListWidget } from '../../components/dashboard/TaskListWidget.jsx';
+import { NotificationsWidget } from '../../components/dashboard/NotificationsWidget.jsx';
+import { UpcomingEventsWidget } from '../../components/dashboard/UpcomingEventsWidget.jsx';
+import { KPIWidget } from '../../components/dashboard/KPIWidget.jsx';
 
 // Dashboard Stats Component
 const DashboardStats = ({ theme, opportunities = [], orders = [], customerDirectory = [] }) => {
@@ -409,8 +413,32 @@ export const HomeScreen = ({
                     customerDirectory={customerDirectory}
                 />
 
+                {/* NEW: Notifications Widget */}
+                <NotificationsWidget
+                    theme={theme}
+                    opportunities={opportunities}
+                    orders={orders}
+                    customerDirectory={customerDirectory}
+                />
+
+                {/* NEW: Action Items / Tasks */}
+                <TaskListWidget
+                    theme={theme}
+                    opportunities={opportunities}
+                    orders={orders}
+                    onNavigate={onNavigate}
+                />
+
                 {/* Quick Actions */}
                 <QuickActions theme={theme} onNavigate={onNavigate} />
+
+                {/* NEW: Upcoming Events */}
+                <UpcomingEventsWidget
+                    theme={theme}
+                    opportunities={opportunities}
+                    orders={orders}
+                    onNavigate={onNavigate}
+                />
 
                 {/* Recent Activity */}
                 <RecentActivityFeed 
@@ -418,6 +446,14 @@ export const HomeScreen = ({
                     opportunities={opportunities}
                     orders={orders}
                     onNavigate={onNavigate}
+                />
+
+                {/* NEW: KPI Metrics */}
+                <KPIWidget
+                    theme={theme}
+                    opportunities={opportunities}
+                    orders={orders}
+                    customerDirectory={customerDirectory}
                 />
 
                 {/* Top Customers */}
