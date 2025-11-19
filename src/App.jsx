@@ -5,6 +5,7 @@ import { INITIAL_OPPORTUNITIES, MY_PROJECTS_DATA, INITIAL_DESIGN_FIRMS, EMPTY_LE
 import { INITIAL_POSTS, INITIAL_POLLS } from './screens/community/data.js';
 import { INITIAL_MEMBERS } from './screens/members/data.js';
 import { CUSTOMER_DIRECTORY_DATA } from './screens/resources/customer-directory/data.js';
+import { ORDER_DATA } from './screens/orders/data.js';
 
 import { AppHeader, ProfileMenu, SCREEN_MAP, VoiceModal, SuccessToast } from './ui.jsx';
 import { OrderDetailScreen } from './screens/orders/index.js';
@@ -299,7 +300,8 @@ function App() {
         projectsInitialTab: projectsTabOverride,
         clearProjectsInitialTab: () => setProjectsTabOverride(null),
         homeApps,
-        onUpdateHomeApps: handleUpdateHomeApps
+        onUpdateHomeApps: handleUpdateHomeApps,
+        orders: ORDER_DATA
     };
 
     const suspenseFallback = (
