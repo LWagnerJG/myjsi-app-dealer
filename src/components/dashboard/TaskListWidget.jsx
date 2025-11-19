@@ -9,12 +9,12 @@ export const TaskListWidget = ({ theme, opportunities = [], orders = [], onNavig
     
     // Opportunities expiring soon (high priority)
     opportunities
-      .filter(o => o.poTimeframe && o.stage !== 'Won' && o.stage !== 'Lost')
-      .filter(o => ['Within 30 Days', '30-60 Days'].includes(o.poTimeframe))
+      .filter(opp => opp.poTimeframe && opp.stage !== 'Won' && opp.stage !== 'Lost')
+      .filter(opp => ['Within 30 Days', '30-60 Days'].includes(opp.poTimeframe))
       .forEach(opp => {
         items.push({
           type: 'deadline',
-          priority: o.poTimeframe === 'Within 30 Days' ? 'high' : 'medium',
+          priority: opp.poTimeframe === 'Within 30 Days' ? 'high' : 'medium',
           title: `Follow up: ${opp.name || opp.project || 'Untitled'}`,
           subtitle: `Expected PO: ${opp.poTimeframe}`,
           action: () => onNavigate('projects'),
@@ -24,7 +24,7 @@ export const TaskListWidget = ({ theme, opportunities = [], orders = [], onNavig
     
     // Orders needing attention (acknowledged but not in production)
     orders
-      .filter(o => o.status === 'Acknowledged' || o.status === 'Order Entry')
+      .filter(order => order.status === 'Acknowledged' || order.status === 'Order Entry')
       .slice(0, 3)
       .forEach(order => {
         items.push({
@@ -39,7 +39,7 @@ export const TaskListWidget = ({ theme, opportunities = [], orders = [], onNavig
     
     // Unspecified opportunities (need more info)
     opportunities
-      .filter(o => o.stage === 'Discovery' && (!o.discount || o.discount === 'Undecided'))
+      .filter(opp => opp.stage === 'Discovery' && (!opp.discount || opp.discount === 'Undecided'))
       .slice(0, 2)
       .forEach(opp => {
         items.push({
