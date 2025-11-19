@@ -1,6 +1,6 @@
 ﻿import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Search } from 'lucide-react';
+import { X, Search, Plus } from 'lucide-react';
 import { FormInput } from '../../components/forms/FormInput.jsx';
 import { PortalNativeSelect } from '../../components/forms/PortalNativeSelect.jsx';
 import { ToggleSwitch } from '../../components/forms/ToggleSwitch.jsx';
@@ -21,6 +21,7 @@ import { LEAD_TIMES_DATA } from '../resources/lead-times/data.js';
 import { JSI_LAMINATES, JSI_VENEERS, JSI_SERIES } from '../products/data.js';
 import { FINISH_SAMPLES } from '../samples'; // re-exported by screens/samples/index.js
 import { CONTRACTS_DATA } from '../resources/contracts/data.js';
+import { CUSTOMER_DIRECTORY_DATA } from '../resources/customer-directory/data.js';
 import { VisionOptions, KnoxOptions, WinkHoopzOptions } from './product-options.jsx';
 
 const ProductSpotlight = ({ selectedSeries, onAdd, available, theme }) => {
@@ -53,12 +54,31 @@ export const NewLeadScreen = ({
     onSuccess,
     designFirms,
     setDesignFirms,
-    dealers,
-    setDealers,
+    customerDirectory,
     newLeadData = {},
     onNewLeadChange,
+    onNavigate,
 }) => {
+    // Get customer options from directory
+    const customerOptions = useMemo(() => {
+        return (customerDirectory || CUSTOMER_DIRECTORY_DATA || []).map(c => c.name);
+    }, [customerDirectory]);
+
+    // Get selected customer data to auto-populate vertical
+    const selectedCustomerData = useMemo(() => {
+        if (!newLeadData.customer) return null;
+        return (customerDirectory || CUSTOMER_DIRECTORY_DATA || []).find(c => c.name === newLeadData.customer);
+    }, [newLeadData.customer, customerDirectory]);
+
     const updateField = (field, value) => {
+        // Auto-populate vertical from customer type when customer is selected
+        if (field === 'customer' && value) {
+            const customer = (customerDirectory || CUSTOMER_DIRECTORY_DATA || []).find(c => c.name === value);
+            if (customer?.type && !newLeadData.vertical) {
+                onNewLeadChange({ customer: value, vertical: customer.type });
+                return;
+            }
+        }
         // Clear otherVertical when vertical changes away from "Other"
         if (field === 'vertical' && value !== 'Other (Please specify)') {
             onNewLeadChange({ [field]: value, otherVertical: '' });
@@ -71,6 +91,10 @@ export const NewLeadScreen = ({
         e.preventDefault();
         if (!newLeadData.projectStatus) {
             alert('Please select a Project Stage before submitting.');
+            return;
+        }
+        if (!newLeadData.customer) {
+            alert('Please select a Customer before submitting.');
             return;
         }
         onSuccess(newLeadData);
@@ -99,7 +123,6 @@ export const NewLeadScreen = ({
         updateField('products', newProducts);
     };
     
-    // Stakeholder management functions
     const addDesignFirm = (firm) => {
         const currentFirms = newLeadData.designFirms || [];
         if (!currentFirms.includes(firm)) {
@@ -110,18 +133,6 @@ export const NewLeadScreen = ({
     const removeDesignFirm = (firm) => {
         const currentFirms = newLeadData.designFirms || [];
         updateField('designFirms', currentFirms.filter(f => f !== firm));
-    };
-    
-    const addDealer = (dealer) => {
-        const currentDealers = newLeadData.dealers || [];
-        if (!currentDealers.includes(dealer)) {
-            updateField('dealers', [...currentDealers, dealer]);
-        }
-    };
-    
-    const removeDealer = (dealer) => {
-        const currentDealers = newLeadData.dealers || [];
-        updateField('dealers', currentDealers.filter(d => d !== dealer));
     };
     
     return (
@@ -141,6 +152,40 @@ export const NewLeadScreen = ({
                                     size="sm"
                                     surfaceBg={true}
                                 />
+                            </div>
+                        </SettingsRow>
+                        <SettingsRow label="Customer" theme={theme}>
+                            <div className="w-7/12 flex flex-col gap-2">
+                                <PortalNativeSelect
+                                    label=""
+                                    required
+                                    value={newLeadData.customer || ''}
+                                    onChange={e => updateField('customer', e.target.value)}
+                                    options={customerOptions.map(c => ({ label: c, value: c }))}
+                                    placeholder="Select customer..."
+                                    theme={theme}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => onNavigate('resources/customer-directory')}
+                                    className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full self-start transition-colors hover:bg-black/5"
+                                    style={{ color: theme.colors.accent }}
+                                >
+                                    <Plus className="w-3 h-3" />
+                                    Add New Customer
+                                </button>
+                                {selectedCustomerData && (
+                                    <div className="p-2 rounded-lg text-xs animate-fade-in" style={{ backgroundColor: theme.colors.subtle }}>
+                                        <div className="flex items-center gap-2">
+                                            {selectedCustomerData.type && (
+                                                <span className="px-2 py-0.5 rounded-full font-semibold text-[10px]" style={{ backgroundColor: `${theme.colors.accent}20`, color: theme.colors.accent }}>
+                                                    {selectedCustomerData.type}
+                                                </span>
+                                            )}
+                                            <span style={{ color: theme.colors.textSecondary }}>{selectedCustomerData.address}</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </SettingsRow>
                         <SettingsRow label="Project Stage" theme={theme}>
@@ -216,19 +261,6 @@ export const NewLeadScreen = ({
                                 />
                             </div>
                         </SettingsRow>
-                        <SettingsRow label="Dealer" theme={theme}>
-                            <div className="w-7/12">
-                                <SpotlightMultiSelect
-                                    selectedItems={newLeadData.dealers || []}
-                                    onAddItem={addDealer}
-                                    onRemoveItem={removeDealer}
-                                    options={dealers || []}
-                                    onAddNew={(d) => setDealers((p) => [...new Set([d, ...p])])}
-                                    placeholder="Search..."
-                                    theme={theme}
-                                />
-                            </div>
-                        </SettingsRow>
                     </div>
                 </FormSection>
                 
@@ -241,7 +273,6 @@ export const NewLeadScreen = ({
                                 theme={theme}
                             />
                         </SettingsRow>
-                        {/* Row 1: label (left) + toggle (right) */}
                         <SettingsRow label="Competition?" theme={theme}>
                             <div className="w-full flex justify-end">
                                 <div className="w-7/12 h-10 flex items-center justify-end">

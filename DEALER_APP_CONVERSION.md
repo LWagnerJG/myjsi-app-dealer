@@ -25,19 +25,13 @@ This document outlines all changes made to convert the JSI MyJSI app from a **Sa
 
 #### Deleted Files & Folders
 - ? `src/screens/resources/commission-rates/` (entire folder)
-  - CommissionRatesScreen.jsx
-  - data.js
-  - index.js
 - ? `src/screens/resources/new-dealer-signup/` (entire folder)
-  - NewDealerSignUpScreen.jsx
-  - data.js
-  - index.js
 - ? `src/screens/sales/CommissionsScreen.jsx`
 - ? `src/screens/sales/commissions/CommissionsScreen.jsx`
 - ? `src/components/forms/TerritorySelect.jsx`
 
 #### Removed from Navigation
-- Commission Rates (already removed in previous session)
+- Commission Rates
 - Commissions tab
 - New Dealer Sign-Up
 
@@ -50,7 +44,8 @@ This document outlines all changes made to convert the JSI MyJSI app from a **Sa
 - Updated state: `dealerDirectory` ? `customerDirectory`
 - Updated alias mapping: `'dealer-directory': 'customer-directory'`
 - Removed from `RESOURCE_FEATURE_SCREENS`: `commission-rates`, `new-dealer-signup`
-- Removed `dealers` and `INITIAL_DEALERS` state/imports
+- Removed `dealers` and `INITIAL_DEALERS` state/imports ?
+- Passing `customerDirectory` to NewLeadScreen ?
 
 #### navigation.js
 - Updated route: `resources/dealer-directory` ? `resources/customer-directory`
@@ -129,8 +124,8 @@ export const EMPTY_LEAD = {
 ### 5. **UI Component Updates** ? ENHANCED
 
 #### CustomerDirectoryScreen Component
-- **Removed** "Add Dealer" button (dealers don't onboard other dealers)
-- **Updated** all variable names: `dealer` ? `customer`, `dealers` ? `customers`
+- **Removed** "Add Dealer" button
+- **Updated** all variable names: `dealer` ? `customer`
 - **Updated** confirmation modal: `dealerId` ? `customerId`
 - **Updated** empty state message
 - **Removed** navigation to `new-dealer-signup`
@@ -147,11 +142,24 @@ export const EMPTY_LEAD = {
 - **Replaced** with customer field for end-user context
 - **Simplified** project detail to show customer directly
 
+#### NewLeadScreen Component ? ENHANCED
+- **Removed** dealer selection dropdown completely
+- **Added** customer selector populated from Customer Directory
+- **Added** "+ Add New Customer" link that navigates to Customers screen
+- **Auto-populates** vertical from selected customer type
+- **Shows** customer context (type badge and address) when selected
+- **Improved** flow for creating opportunities with end-user customers
+
 ### 6. **Order Screen Context** (From Previous Session)
 - ? Removed company/dealer line under project names
 - ? Title-cased project names (not all caps)
 - ? Removed dealer filter UI
 - ? Context: Orders now show end-user customer projects only
+
+### 7. **Vercel Deployment Fix** ?
+- Fixed `vercel.json` to exclude `/assets/` from rewrites
+- Added proper cache headers for static assets
+- Resolved CORS/MIME type issues preventing module loading
 
 ## ?? Key Conceptual Changes
 
@@ -161,6 +169,7 @@ export const EMPTY_LEAD = {
 - **Focus**: Territory management, commission tracking, dealer performance
 - **Orders**: Showed which dealer placed the order
 - **Projects**: Tracked by dealer
+- **New Leads**: Selected from dealer dropdown
 
 ### After (Dealer App)
 - **Users**: Dealer staff (sales, designers, installers)
@@ -168,6 +177,7 @@ export const EMPTY_LEAD = {
 - **Focus**: Customer project management, pricing, installations
 - **Orders**: Shows end-user customer projects directly
 - **Projects**: Tracked by end-user customer
+- **New Leads**: Selected from customer directory with "+ Add New" option
 
 ## ?? File Structure Changes
 
@@ -184,6 +194,15 @@ src/screens/resources/new-dealer-signup/
 src/screens/sales/CommissionsScreen.jsx
 src/screens/sales/commissions/CommissionsScreen.jsx
 src/components/forms/TerritorySelect.jsx
+```
+
+### Modified
+```
+src/screens/projects/NewLeadScreen.jsx       ? Customer-linked
+src/screens/projects/ProjectsScreen.jsx      ? Customer field
+src/screens/projects/data.js                 ? Removed dealers
+src/App.jsx                                   ? CustomerDirectory props
+vercel.json                                   ? Fixed routing
 ```
 
 ## ?? Route Mapping
@@ -205,7 +224,8 @@ RESOURCE_SLUG_ALIASES = {
 - No compilation errors
 - All imports resolved
 - Lazy loading working correctly
-- Bundle size optimized (715.48 kB main chunk)
+- Bundle size optimized (716.48 kB main chunk)
+- Vercel deployment fixed ?
 
 ## ?? UX Improvements Implemented
 
@@ -232,6 +252,13 @@ RESOURCE_SLUG_ALIASES = {
 - Removed dealer-centric complexity
 - Focus on end-user relationships
 
+### 5. **New Lead Customer Selection** ? NEW
+- Dropdown populated from Customer Directory
+- Quick "+ Add New Customer" link to Customers screen
+- Auto-populates vertical from customer type
+- Shows customer context when selected
+- Seamless workflow for creating opportunities
+
 ## ?? Technical Improvements
 
 ### 1. **Removed Circular Dependencies**
@@ -249,6 +276,11 @@ RESOURCE_SLUG_ALIASES = {
 - Simplified component interfaces
 - Reduced state management complexity
 
+### 4. **New Lead Form Integration**
+- Integrated Customer Directory with New Lead workflow
+- Removed dealer dependency completely
+- Created seamless customer selection experience
+
 ## ?? Notes for Future Development
 
 1. **Customer Ranking Screen**: ? Verify it shows end-user customers, not dealers
@@ -257,7 +289,7 @@ RESOURCE_SLUG_ALIASES = {
 4. **Help Documentation**: Update any remaining references to rep workflows
 5. **Sample Data**: ? Updated mock data to reflect dealer-customer relationships
 
-## ?? Completed Quick Wins
+## ?? Completed Improvements
 
 - ? **Renamed "Customer Directory" ? "Customers"** in main nav and resources
 - ? **Added customer type badges** (Corporate, Education, Healthcare, etc.)
@@ -266,6 +298,9 @@ RESOURCE_SLUG_ALIASES = {
 - ? **Display project count** on customer cards
 - ? **Removed dealers field** from projects (replaced with customer)
 - ? **Color-coded customer types** for visual scanning
+- ? **New Lead form links to Customers** with seamless integration
+- ? **Auto-populate vertical** from customer type
+- ? **Fixed Vercel deployment** (CORS/MIME issues resolved)
 
 ## ?? Before & After Comparison
 
@@ -277,10 +312,27 @@ RESOURCE_SLUG_ALIASES = {
 | **Navigation** | Rep-centric terms | Dealer-centric terms |
 | **Data Model** | dealers[] array | customer string |
 | **UI Context** | Multiple dealers | Single dealer view |
+| **New Lead Form** | Dealer dropdown | Customer selector + Add New |
+| **Lead Workflow** | Select dealer first | Select customer with context |
+
+## ?? Workflow Improvements
+
+### New Lead Creation Flow
+**Before:** Projects ? New Lead ? Select Dealer (from limited list)
+
+**After:** Projects ? New Lead ? Select Customer (from directory) ? Or click "+ Add New Customer" ? Navigate to Customers ? Create ? Return to New Lead
+
+This creates a natural, integrated workflow where:
+1. Customer directory is the source of truth
+2. Easy to add customers on-the-fly
+3. Customer context (type, address) visible during lead creation
+4. Vertical auto-populated from customer type
+5. No confusing dealer/customer distinction
 
 ---
 
 **Conversion Date**: January 2025  
 **Status**: Complete ?  
 **Build**: Passing ?  
-**Enhancements**: Complete ?
+**Enhancements**: Complete ?  
+**Deployment**: Fixed ?
