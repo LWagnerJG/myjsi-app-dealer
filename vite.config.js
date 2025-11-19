@@ -20,8 +20,5 @@ export default defineConfig({
         },
         minify: 'esbuild',
         target: 'es2015'
-    },
-    esbuild: {
-        jsxInject: `import React from 'react'`
     }
 })
