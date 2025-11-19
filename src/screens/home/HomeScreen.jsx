@@ -383,8 +383,8 @@ export const HomeScreen = ({
     return (
         <div className="flex flex-col h-full overflow-y-auto scrollbar-hide" style={{ backgroundColor: theme.colors.background }}>
             <div className="px-4 pt-4 pb-8 space-y-4">
-                {/* Welcome Header */}
-                <div className="mb-2">
+                {/* Welcome Header - Hidden on mobile, visible on tablet+ */}
+                <div className="mb-2 hidden md:block">
                     <h1 className="text-3xl font-bold" style={{ color: theme.colors.textPrimary }}>
                         Dashboard
                     </h1>
