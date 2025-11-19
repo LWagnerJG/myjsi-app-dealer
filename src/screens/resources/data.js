@@ -12,7 +12,7 @@ export const RESOURCES_DATA = [
     {
         category: "Dealer Tools",
         items: [
-            { label: "Customer Directory", nav: "resources/customer-directory" },
+            { label: "Customers", nav: "resources/customer-directory" },
             { label: "Sample Discounts", nav: "resources/sample-discounts" },
             { label: "Contracts", nav: "resources/contracts" },
         ].sort((a, b) => a.label.localeCompare(b.label))

@@ -1,7 +1,7 @@
 ﻿import React, { useState, useMemo, useCallback, useEffect, useRef, Suspense } from 'react';
 import { lightTheme, darkTheme } from './data/index.js';
 import { DEFAULT_HOME_APPS, allApps } from './data.jsx';
-import { INITIAL_OPPORTUNITIES, MY_PROJECTS_DATA, INITIAL_DESIGN_FIRMS, INITIAL_DEALERS, EMPTY_LEAD, STAGES } from './screens/projects/data.js';
+import { INITIAL_OPPORTUNITIES, MY_PROJECTS_DATA, INITIAL_DESIGN_FIRMS, EMPTY_LEAD, STAGES } from './screens/projects/data.js';
 import { INITIAL_POSTS, INITIAL_POLLS } from './screens/community/data.js';
 import { INITIAL_MEMBERS } from './screens/members/data.js';
 import { CUSTOMER_DIRECTORY_DATA } from './screens/resources/customer-directory/data.js';
@@ -159,7 +159,6 @@ function App() {
     // Directories / leads
     const [customerDirectory] = useState(CUSTOMER_DIRECTORY_DATA);
     const [designFirms, setDesignFirms] = useState(INITIAL_DESIGN_FIRMS);
-    const [dealers, setDealers] = useState(INITIAL_DEALERS);
     const [newLeadData, setNewLeadData] = usePersistentState('draft.newLead', EMPTY_LEAD);
 
     const projectsScreenRef = useRef(null);
@@ -291,8 +290,6 @@ function App() {
         customerDirectory,
         designFirms,
         setDesignFirms,
-        dealers,
-        setDealers,
         newLeadData,
         onNewLeadChange: handleNewLeadChange,
         isDarkMode,

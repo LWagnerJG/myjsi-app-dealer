@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 import { Plus, Briefcase, DollarSign, LineChart, Percent, ArrowRight, X } from 'lucide-react';
-import { STAGES, VERTICALS, COMPETITORS, DISCOUNT_OPTIONS, PO_TIMEFRAMES, INITIAL_DESIGN_FIRMS, INITIAL_DEALERS } from './data.js';
+import { STAGES, VERTICALS, COMPETITORS, DISCOUNT_OPTIONS, PO_TIMEFRAMES, INITIAL_DESIGN_FIRMS } from './data.js';
 import { ProbabilitySlider } from '../../components/forms/ProbabilitySlider.jsx';
 import { ToggleSwitch } from '../../components/forms/ToggleSwitch.jsx';
 import { JSI_SERIES } from '../products/data.js';
@@ -143,10 +143,9 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
                   </div>
                 </div>
                 <div>
-                  <SoftLabel theme={theme}>Dealers</SoftLabel>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {(draft.dealers||[]).map(f=> <button key={f} onClick={()=>removeFrom('dealers',f)} className="px-3 h-8 rounded-full text-[11px] font-medium flex items-center gap-1 border" style={{ background: theme.colors.subtle, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{f}<span className="opacity-60">×</span></button>)}
-                    <SuggestInputPill placeholder="Add dealer" suggestions={INITIAL_DEALERS} onAdd={v=>addUnique('dealers',v)} theme={theme} />
+                  <SoftLabel theme={theme}>Customer</SoftLabel>
+                  <div className="flex flex-col gap-1">
+                    <InlineTextInput value={draft.customer||draft.company} onChange={v=>{ update('customer',v); update('company',v); }} theme={theme} placeholder="Customer name" className="text-sm font-medium" />
                   </div>
                 </div>
               </div>

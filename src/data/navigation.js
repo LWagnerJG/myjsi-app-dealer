@@ -26,7 +26,7 @@ export const allApps = [
     { name: 'Sales', route: 'sales', icon: PieChart },
     { name: 'Projects', route: 'projects', icon: Briefcase },
     { name: 'Resources', route: 'resources', icon: Database },
-    { name: 'Customer Directory', route: 'resources/customer-directory', icon: Users },
+    { name: 'Customers', route: 'resources/customer-directory', icon: Users },
     { name: 'Contracts', route: 'resources/contracts', icon: FileText },
     { name: 'Loaner Pool', route: 'resources/loaner_pool', icon: Package },
     { name: 'Discontinued Finishes', route: 'resources/discontinued_finishes', icon: Palette },

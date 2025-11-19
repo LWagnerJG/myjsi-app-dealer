@@ -4,8 +4,8 @@ import { GlassCard } from '../../../components/common/GlassCard.jsx';
 import { Modal } from '../../../components/common/Modal.jsx';
 import StandardSearchBar from '../../../components/common/StandardSearchBar.jsx';
 import { FormInput, PortalNativeSelect } from '../../../components/common/FormComponents.jsx';
-import { Filter, MoreVertical, UserPlus, CheckCircle, Trash2 } from 'lucide-react';
-import { CUSTOMER_DIRECTORY_DATA, ROLE_OPTIONS, DAILY_DISCOUNT_OPTIONS } from './data.js';
+import { Filter, MoreVertical, UserPlus, CheckCircle, Trash2, Briefcase, DollarSign } from 'lucide-react';
+import { CUSTOMER_DIRECTORY_DATA, CUSTOMER_TYPES, ROLE_OPTIONS, DAILY_DISCOUNT_OPTIONS } from './data.js';
 
 export const CustomerDirectoryScreen = ({ theme, showAlert, setSuccessMessage, customerDirectory, onNavigate }) => {
     const customers = customerDirectory || CUSTOMER_DIRECTORY_DATA || [];
@@ -44,6 +44,11 @@ export const CustomerDirectoryScreen = ({ theme, showAlert, setSuccessMessage, c
     const primarySoft = theme.colors.textPrimary || '#1F1F1F';
     const primaryDisplay = 'hsla(0,0%,12%,0.92)';
 
+    const getCustomerTypeColor = (type) => {
+        const typeObj = CUSTOMER_TYPES.find(t => t.value === type);
+        return typeObj ? typeObj.color : theme.colors.textSecondary;
+    };
+
     const StaffSection = ({ title, members }) => (
         <div>
             <p className="font-bold text-lg pt-4 pb-2" style={{ color: primarySoft }}>{title}</p>
@@ -70,7 +75,7 @@ export const CustomerDirectoryScreen = ({ theme, showAlert, setSuccessMessage, c
     return (
         <div className="flex flex-col h-full">
             <div className="sticky top-0 z-10" style={{ backgroundColor: `${theme.colors.background}e6`, backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
-                <PageTitle title="Customer Directory" theme={theme} />
+                <PageTitle title="Customers" theme={theme} />
                 <div className="px-4 pb-4 flex items-center space-x-2">
                     <StandardSearchBar className="flex-grow" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search by name or city..." theme={theme} />
                     <div className="relative">
@@ -92,9 +97,22 @@ export const CustomerDirectoryScreen = ({ theme, showAlert, setSuccessMessage, c
                 {sortedAndFilteredCustomers.map(customer => (
                     <GlassCard key={customer.id} theme={theme} className="p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setSelectedCustomer(customer); }}>
                         <div className="flex justify-between items-start">
-                            <div>
-                                <h3 className="font-semibold text-base mb-1 tracking-tight" style={{ color: primaryDisplay }}>{customer.name}</h3>
+                            <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="font-semibold text-base tracking-tight" style={{ color: primaryDisplay }}>{customer.name}</h3>
+                                    {customer.type && (
+                                        <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold" style={{ backgroundColor: `${getCustomerTypeColor(customer.type)}20`, color: getCustomerTypeColor(customer.type) }}>
+                                            {customer.type}
+                                        </span>
+                                    )}
+                                </div>
                                 <p className="text-xs leading-snug" style={{ color: theme.colors.textSecondary }}>{customer.address}</p>
+                                {customer.projects && customer.projects.length > 0 && (
+                                    <div className="flex items-center gap-1 mt-2 text-xs" style={{ color: theme.colors.textSecondary }}>
+                                        <Briefcase className="w-3 h-3" />
+                                        <span>{customer.projects.length} active project{customer.projects.length !== 1 ? 's' : ''}</span>
+                                    </div>
+                                )}
                             </div>
                             <div className="text-right flex-shrink-0 ml-2">
                                 <p className="text-[10px] font-semibold uppercase tracking-wide mb-0.5" style={{ color: theme.colors.textSecondary }}>{sortConfig.key}</p>
@@ -115,9 +133,49 @@ export const CustomerDirectoryScreen = ({ theme, showAlert, setSuccessMessage, c
                 {selectedCustomer && (
                     <div ref={modalContentRef} className="relative">
                         <div className="flex justify-between items-start mb-4">
-                            <p className="text-sm" style={{ color: theme.colors.textSecondary }}>{selectedCustomer.address}</p>
+                            <div className="flex-1">
+                                <p className="text-sm" style={{ color: theme.colors.textSecondary }}>{selectedCustomer.address}</p>
+                                {selectedCustomer.type && (
+                                    <span className="inline-block mt-2 text-xs px-2 py-1 rounded-full font-semibold" style={{ backgroundColor: `${getCustomerTypeColor(selectedCustomer.type)}20`, color: getCustomerTypeColor(selectedCustomer.type) }}>
+                                        {selectedCustomer.type}
+                                    </span>
+                                )}
+                            </div>
                             <button onClick={() => setShowAddPersonModal(true)} className="p-2 -mr-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10"><UserPlus className="w-5 h-5" style={{ color: theme.colors.accent }} /></button>
                         </div>
+                        
+                        {selectedCustomer.notes && (
+                            <div className="mb-4 p-3 rounded-lg" style={{ backgroundColor: theme.colors.subtle }}>
+                                <p className="text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>Notes</p>
+                                <p className="text-sm" style={{ color: primarySoft }}>{selectedCustomer.notes}</p>
+                            </div>
+                        )}
+
+                        {selectedCustomer.projects && selectedCustomer.projects.length > 0 && (
+                            <div className="mb-4">
+                                <p className="font-bold text-base mb-2 flex items-center gap-2" style={{ color: primarySoft }}>
+                                    <Briefcase className="w-4 h-4" />
+                                    Active Projects
+                                </p>
+                                <div className="space-y-2">
+                                    {selectedCustomer.projects.map((project, idx) => (
+                                        <div key={idx} className="p-3 rounded-lg border" style={{ borderColor: theme.colors.border, backgroundColor: theme.colors.surface }}>
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className="font-semibold text-sm" style={{ color: primarySoft }}>{project.name}</p>
+                                                    <p className="text-xs mt-1" style={{ color: theme.colors.textSecondary }}>{project.status}</p>
+                                                </div>
+                                                <p className="font-bold text-sm flex items-center gap-1" style={{ color: theme.colors.accent }}>
+                                                    <DollarSign className="w-3 h-3" />
+                                                    {project.value.toLocaleString()}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         <div className="space-y-2">
                             <p className="font-bold text-lg pt-4 pb-2" style={{ color: primarySoft }}>Daily Discount</p>
                             <PortalNativeSelect label="" theme={theme} value={selectedCustomer.dailyDiscount} onChange={e => setPendingDiscountChange({ customerId: selectedCustomer.id, newDiscount: e.target.value })} options={DAILY_DISCOUNT_OPTIONS.map(opt => ({ label: opt, value: opt }))} />
