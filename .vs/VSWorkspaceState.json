@@ -3,10 +3,10 @@
     "",
     "\\public",
     "\\src",
-    "\\src\\screens",
     "\\src\\screens\\resources",
     "\\src\\screens\\resources\\discontinued-finishes",
     "\\src\\screens\\resources\\lead-times"
   ],
+  "SelectedNode": "\\public\\myjsi-icon.png",
   "PreviewInSolutionExplorer": false
 }
