@@ -1,7 +1,7 @@
 // Navigation menu data
 import {
     MousePointer, PieChart, Armchair, Database, Briefcase, MessageSquare, 
-    Package, RotateCw, Users, DollarSign, FileText, Palette, Percent, 
+    Package, RotateCw, Users, FileText, Palette, Percent, 
     Share2, BarChart2, Settings, HelpCircle, Send, Calendar, Hourglass
 } from 'lucide-react';
 
@@ -26,7 +26,7 @@ export const allApps = [
     { name: 'Sales', route: 'sales', icon: PieChart },
     { name: 'Projects', route: 'projects', icon: Briefcase },
     { name: 'Resources', route: 'resources', icon: Database },
-    { name: 'Customer Directory', route: 'resources/dealer-directory', icon: Users },
+    { name: 'Customer Directory', route: 'resources/customer-directory', icon: Users },
     { name: 'Contracts', route: 'resources/contracts', icon: FileText },
     { name: 'Loaner Pool', route: 'resources/loaner_pool', icon: Package },
     { name: 'Discontinued Finishes', route: 'resources/discontinued_finishes', icon: Palette },

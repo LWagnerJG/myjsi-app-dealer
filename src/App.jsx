@@ -4,7 +4,7 @@ import { DEFAULT_HOME_APPS, allApps } from './data.jsx';
 import { INITIAL_OPPORTUNITIES, MY_PROJECTS_DATA, INITIAL_DESIGN_FIRMS, INITIAL_DEALERS, EMPTY_LEAD, STAGES } from './screens/projects/data.js';
 import { INITIAL_POSTS, INITIAL_POLLS } from './screens/community/data.js';
 import { INITIAL_MEMBERS } from './screens/members/data.js';
-import { DEALER_DIRECTORY_DATA } from './screens/resources/dealer-directory/data.js';
+import { CUSTOMER_DIRECTORY_DATA } from './screens/resources/customer-directory/data.js';
 
 import { AppHeader, ProfileMenu, SCREEN_MAP, VoiceModal, SuccessToast } from './ui.jsx';
 import { OrderDetailScreen } from './screens/orders/index.js';
@@ -20,16 +20,14 @@ import { usePersistentState } from './hooks/usePersistentState.js';
 import { ToastHost } from './components/common/ToastHost.jsx';
 
 // Lazy load less-frequently visited resource feature screens for bundle splitting
-const CommissionRatesScreen = React.lazy(() => import('./screens/resources/commission-rates/index.js'));
 const LeadTimesScreen = React.lazy(() => import('./screens/resources/lead-times/index.js'));
 const ContractsScreen = React.lazy(() => import('./screens/resources/contracts/index.js'));
-const DealerDirectoryScreen = React.lazy(() => import('./screens/resources/dealer-directory/index.js'));
+const CustomerDirectoryScreen = React.lazy(() => import('./screens/resources/customer-directory/index.js'));
 const DiscontinuedFinishesScreen = React.lazy(() => import('./screens/resources/discontinued-finishes/index.js'));
 const TradeshowsScreen = React.lazy(() => import('./screens/resources/tradeshows/index.js'));
 const SampleDiscountsScreen = React.lazy(() => import('./screens/resources/sample-discounts/index.js'));
 const LoanerPoolScreen = React.lazy(() => import('./screens/resources/loaner-pool/index.js'));
 const InstallInstructionsScreen = React.lazy(() => import('./screens/resources/install-instructions/index.js'));
-const NewDealerSignUpScreen = React.lazy(() => import('./screens/resources/new-dealer-signup/index.js'));
 const PresentationsScreen = React.lazy(() => import('./screens/resources/presentations/index.js'));
 const RequestFieldVisitScreen = React.lazy(() => import('./screens/resources/request-field-visit/index.js'));
 const SearchFabricsScreen = React.lazy(() => import('./screens/resources/search-fabrics/index.js'));
@@ -47,9 +45,9 @@ const RESOURCE_SLUG_ALIASES = {
     'install_instructions': 'install-instructions',
     'request_field_visit': 'request-field-visit',
     'social_media': 'social-media',
-    'dealer_directory': 'dealer-directory',
-    'commission_rates': 'commission-rates'
-    // 'new-dealer-signup' already canonical; no alias needed
+    'dealer_directory': 'customer-directory', // legacy support
+    'dealer-directory': 'customer-directory',
+    'customer_directory': 'customer-directory'
 };
 
 function normalizeResourceSlug(raw) {
@@ -60,10 +58,9 @@ function normalizeResourceSlug(raw) {
 
 // Map canonical resource feature slugs to their (lazy) components
 const RESOURCE_FEATURE_SCREENS = {
-    'commission-rates': CommissionRatesScreen,
     'lead-times': LeadTimesScreen,
     'contracts': ContractsScreen,
-    'dealer-directory': DealerDirectoryScreen,
+    'customer-directory': CustomerDirectoryScreen,
     'discontinued-finishes': DiscontinuedFinishesScreen,
     'tradeshows': TradeshowsScreen,
     'sample-discounts': SampleDiscountsScreen,
@@ -71,7 +68,6 @@ const RESOURCE_FEATURE_SCREENS = {
     'install-instructions': InstallInstructionsScreen,
     'presentations': PresentationsScreen,
     'request-field-visit': RequestFieldVisitScreen,
-    'new-dealer-signup': NewDealerSignUpScreen,
     'social-media': SocialMediaScreen,
     'search-fabrics': SearchFabricsScreen,
     'request-com-yardage': RequestComYardageScreen,
@@ -161,7 +157,7 @@ function App() {
     const [showCreateContentModal, setShowCreateContentModal] = useState(false);
 
     // Directories / leads
-    const [dealerDirectory] = useState(DEALER_DIRECTORY_DATA);
+    const [customerDirectory] = useState(CUSTOMER_DIRECTORY_DATA);
     const [designFirms, setDesignFirms] = useState(INITIAL_DESIGN_FIRMS);
     const [dealers, setDealers] = useState(INITIAL_DEALERS);
     const [newLeadData, setNewLeadData] = usePersistentState('draft.newLead', EMPTY_LEAD);
@@ -292,7 +288,7 @@ function App() {
         cart,
         setCart,
         onUpdateCart: handleUpdateCart,
-        dealerDirectory,
+        customerDirectory,
         designFirms,
         setDesignFirms,
         dealers,

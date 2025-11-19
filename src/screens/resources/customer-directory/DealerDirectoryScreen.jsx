@@ -4,14 +4,14 @@ import { GlassCard } from '../../../components/common/GlassCard.jsx';
 import { Modal } from '../../../components/common/Modal.jsx';
 import StandardSearchBar from '../../../components/common/StandardSearchBar.jsx';
 import { FormInput, PortalNativeSelect } from '../../../components/common/FormComponents.jsx';
-import { Filter, MoreVertical, UserPlus, CheckCircle, Trash2, Plus } from 'lucide-react';
-import { DEALER_DIRECTORY_DATA, ROLE_OPTIONS, DAILY_DISCOUNT_OPTIONS } from './data.js';
+import { Filter, MoreVertical, UserPlus, CheckCircle, Trash2 } from 'lucide-react';
+import { CUSTOMER_DIRECTORY_DATA, ROLE_OPTIONS, DAILY_DISCOUNT_OPTIONS } from './data.js';
 
-export const DealerDirectoryScreen = ({ theme, showAlert, setSuccessMessage, dealerDirectory, onNavigate }) => {
-    const dealers = dealerDirectory || DEALER_DIRECTORY_DATA || [];
-    const [localDealers, setLocalDealers] = useState(dealers);
+export const CustomerDirectoryScreen = ({ theme, showAlert, setSuccessMessage, customerDirectory, onNavigate }) => {
+    const customers = customerDirectory || CUSTOMER_DIRECTORY_DATA || [];
+    const [localCustomers, setLocalCustomers] = useState(customers);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedDealer, setSelectedDealer] = useState(null);
+    const [selectedCustomer, setSelectedCustomer] = useState(null);
     const [sortConfig, setSortConfig] = useState({ key: 'name' });
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const filterMenuRef = useRef(null);
@@ -21,28 +21,28 @@ export const DealerDirectoryScreen = ({ theme, showAlert, setSuccessMessage, dea
     const [menuState, setMenuState] = useState({ open: false, person: null, top: 0, left: 0 });
     const modalContentRef = useRef(null);
 
-    useEffect(() => { setLocalDealers(dealers); }, [dealers]);
+    useEffect(() => { setLocalCustomers(customers); }, [customers]);
     useEffect(() => { const handleClickOutside = (e) => { if (filterMenuRef.current && !filterMenuRef.current.contains(e.target)) setShowFilterMenu(false); }; document.addEventListener('mousedown', handleClickOutside); return () => document.removeEventListener('mousedown', handleClickOutside); }, []);
 
-    const sortedAndFilteredDealers = useMemo(() => localDealers
+    const sortedAndFilteredCustomers = useMemo(() => localCustomers
         .filter(d => d.name.toLowerCase().includes(searchTerm.toLowerCase()) || (d.address && d.address.toLowerCase().includes(searchTerm.toLowerCase())))
-        .sort((a, b) => sortConfig.key === 'name' ? a.name.localeCompare(b.name) : (b[sortConfig.key] || 0) - (a[sortConfig.key] || 0)), [localDealers, searchTerm, sortConfig]);
+        .sort((a, b) => sortConfig.key === 'name' ? a.name.localeCompare(b.name) : (b[sortConfig.key] || 0) - (a[sortConfig.key] || 0)), [localCustomers, searchTerm, sortConfig]);
 
-    const confirmDiscountChange = () => { if (!pendingDiscountChange) return; const { dealerId, newDiscount } = pendingDiscountChange; setLocalDealers(curr => curr.map(d => d.id === dealerId ? { ...d, dailyDiscount: newDiscount } : d)); setSelectedDealer(prev => prev && prev.id === dealerId ? { ...prev, dailyDiscount: newDiscount } : prev); setPendingDiscountChange(null); if (setSuccessMessage) { setSuccessMessage('Saved!'); setTimeout(() => setSuccessMessage(''), 1000); } };
+    const confirmDiscountChange = () => { if (!pendingDiscountChange) return; const { customerId, newDiscount } = pendingDiscountChange; setLocalCustomers(curr => curr.map(d => d.id === customerId ? { ...d, dailyDiscount: newDiscount } : d)); setSelectedCustomer(prev => prev && prev.id === customerId ? { ...prev, dailyDiscount: newDiscount } : prev); setPendingDiscountChange(null); if (setSuccessMessage) { setSuccessMessage('Saved!'); setTimeout(() => setSuccessMessage(''), 1000); } };
     const handleSort = (key) => { setSortConfig({ key }); setShowFilterMenu(false); };
 
-    const handleAddPerson = (e) => { e.preventDefault(); if (!selectedDealer) return; const { firstName, lastName, email, role } = newPerson; if (!firstName || !lastName || !email) return; const roleKeyMap = { 'Administrator': 'administration', 'Admin/Sales Support': 'administration', 'Sales': 'salespeople', 'Designer': 'designers', 'Sales/Designer': 'salespeople', 'Installer': 'installers' }; const targetRoleKey = roleKeyMap[role] || 'salespeople'; const person = { name: `${firstName} ${lastName}`, email: email, status: 'pending', roleLabel: role }; const updatedDealer = { ...selectedDealer, [targetRoleKey]: [...(selectedDealer[targetRoleKey] || []), person] }; setLocalDealers(curr => curr.map(d => d.id === selectedDealer.id ? updatedDealer : d)); setSelectedDealer(updatedDealer); setShowAddPersonModal(false); setNewPerson({ firstName: '', lastName: '', email: '', role: 'Sales' }); if (setSuccessMessage) { setSuccessMessage(`Invitation sent to ${email}`); setTimeout(() => setSuccessMessage(''), 2000); } };
+    const handleAddPerson = (e) => { e.preventDefault(); if (!selectedCustomer) return; const { firstName, lastName, email, role } = newPerson; if (!firstName || !lastName || !email) return; const roleKeyMap = { 'Administrator': 'administration', 'Admin/Sales Support': 'administration', 'Sales': 'salespeople', 'Designer': 'designers', 'Sales/Designer': 'salespeople', 'Installer': 'installers' }; const targetRoleKey = roleKeyMap[role] || 'salespeople'; const person = { name: `${firstName} ${lastName}`, email: email, status: 'pending', roleLabel: role }; const updatedCustomer = { ...selectedCustomer, [targetRoleKey]: [...(selectedCustomer[targetRoleKey] || []), person] }; setLocalCustomers(curr => curr.map(d => d.id === selectedCustomer.id ? updatedCustomer : d)); setSelectedCustomer(updatedCustomer); setShowAddPersonModal(false); setNewPerson({ firstName: '', lastName: '', email: '', role: 'Sales' }); if (setSuccessMessage) { setSuccessMessage(`Invitation sent to ${email}`); setTimeout(() => setSuccessMessage(''), 2000); } };
 
-    const handleUpdatePersonRole = useCallback((personToUpdate, newRoleLabel) => { if (!selectedDealer) return; const roleKeyMap = { 'Administrator': 'administration', 'Admin/Sales Support': 'administration', 'Sales': 'salespeople', 'Designer': 'designers', 'Sales/Designer': 'salespeople', 'Installer': 'installers' }; const newCategoryKey = roleKeyMap[newRoleLabel]; let personFound = false; const tempDealer = JSON.parse(JSON.stringify(selectedDealer)); for (const category of ['salespeople', 'designers', 'administration', 'installers']) { const personIndex = (tempDealer[category] || []).findIndex(p => p.name === personToUpdate.name); if (personIndex > -1) { const person = tempDealer[category][personIndex]; person.roleLabel = newRoleLabel; if (category !== newCategoryKey) { tempDealer[category].splice(personIndex, 1); if (!tempDealer[newCategoryKey]) tempDealer[newCategoryKey] = []; tempDealer[newCategoryKey].push(person); } personFound = true; break; } } if (personFound) { setLocalDealers(prev => prev.map(d => d.id === tempDealer.id ? tempDealer : d)); setSelectedDealer(tempDealer); if (setSuccessMessage) { setSuccessMessage('Role Updated!'); setTimeout(() => setSuccessMessage(''), 1000); } } setMenuState({ open: false, person: null, top: 0, left: 0 }); }, [selectedDealer, setLocalDealers, setSuccessMessage]);
+    const handleUpdatePersonRole = useCallback((personToUpdate, newRoleLabel) => { if (!selectedCustomer) return; const roleKeyMap = { 'Administrator': 'administration', 'Admin/Sales Support': 'administration', 'Sales': 'salespeople', 'Designer': 'designers', 'Sales/Designer': 'salespeople', 'Installer': 'installers' }; const newCategoryKey = roleKeyMap[newRoleLabel]; let personFound = false; const tempCustomer = JSON.parse(JSON.stringify(selectedCustomer)); for (const category of ['salespeople', 'designers', 'administration', 'installers']) { const personIndex = (tempCustomer[category] || []).findIndex(p => p.name === personToUpdate.name); if (personIndex > -1) { const person = tempCustomer[category][personIndex]; person.roleLabel = newRoleLabel; if (category !== newCategoryKey) { tempCustomer[category].splice(personIndex, 1); if (!tempCustomer[newCategoryKey]) tempCustomer[newCategoryKey] = []; tempCustomer[newCategoryKey].push(person); } personFound = true; break; } } if (personFound) { setLocalCustomers(prev => prev.map(d => d.id === tempCustomer.id ? tempCustomer : d)); setSelectedCustomer(tempCustomer); if (setSuccessMessage) { setSuccessMessage('Role Updated!'); setTimeout(() => setSuccessMessage(''), 1000); } } setMenuState({ open: false, person: null, top: 0, left: 0 }); }, [selectedCustomer, setLocalCustomers, setSuccessMessage]);
 
-    const handleRemovePerson = useCallback((personName) => { if (!selectedDealer) return; const updatedDealer = { ...selectedDealer }; ['salespeople', 'designers', 'administration', 'installers'].forEach(category => { if (updatedDealer[category]) { updatedDealer[category] = updatedDealer[category].filter(p => p.name !== personName); } }); setLocalDealers(prev => prev.map(d => d.id === updatedDealer.id ? updatedDealer : d)); setSelectedDealer(updatedDealer); setMenuState({ open: false, person: null, top: 0, left: 0 }); if (setSuccessMessage) { setSuccessMessage('Person Removed!'); setTimeout(() => setSuccessMessage(''), 1000); } }, [selectedDealer, setLocalDealers, setSuccessMessage]);
+    const handleRemovePerson = useCallback((personName) => { if (!selectedCustomer) return; const updatedCustomer = { ...selectedCustomer }; ['salespeople', 'designers', 'administration', 'installers'].forEach(category => { if (updatedCustomer[category]) { updatedCustomer[category] = updatedCustomer[category].filter(p => p.name !== personName); } }); setLocalCustomers(prev => prev.map(d => d.id === updatedCustomer.id ? updatedCustomer : d)); setSelectedCustomer(updatedCustomer); setMenuState({ open: false, person: null, top: 0, left: 0 }); if (setSuccessMessage) { setSuccessMessage('Person Removed!'); setTimeout(() => setSuccessMessage(''), 1000); } }, [selectedCustomer, setLocalCustomers, setSuccessMessage]);
 
     const handleMenuOpen = (event, person) => { event.stopPropagation(); const button = event.currentTarget; const container = modalContentRef.current; if (!container) return; const buttonRect = button.getBoundingClientRect(); const containerRect = container.getBoundingClientRect(); const top = buttonRect.top - containerRect.top + button.offsetHeight; const left = buttonRect.left - containerRect.left + button.offsetWidth - 224; setMenuState({ open: true, person: person, top, left }); };
     const handleMenuClose = () => setMenuState({ open: false, person: null, top: 0, left: 0 });
 
     const roleOptions = useMemo(() => ROLE_OPTIONS, []);
     const primarySoft = theme.colors.textPrimary || '#1F1F1F';
-    const primaryDisplay = 'hsla(0,0%,12%,0.92)'; // softer main text
+    const primaryDisplay = 'hsla(0,0%,12%,0.92)';
 
     const StaffSection = ({ title, members }) => (
         <div>
@@ -70,12 +70,7 @@ export const DealerDirectoryScreen = ({ theme, showAlert, setSuccessMessage, dea
     return (
         <div className="flex flex-col h-full">
             <div className="sticky top-0 z-10" style={{ backgroundColor: `${theme.colors.background}e6`, backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
-                <div className="flex items-center justify-between pr-4">
-                    <PageTitle title="Dealer Directory" theme={theme} />
-                    <button onClick={() => onNavigate && onNavigate('new-dealer-signup')} className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold shadow-sm" style={{ background:'#ffffff', border:'1px solid rgba(0,0,0,0.1)', color: primarySoft }}>
-                        <Plus className="w-4 h-4" /> Add Dealer
-                    </button>
-                </div>
+                <PageTitle title="Customer Directory" theme={theme} />
                 <div className="px-4 pb-4 flex items-center space-x-2">
                     <StandardSearchBar className="flex-grow" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search by name or city..." theme={theme} />
                     <div className="relative">
@@ -94,44 +89,44 @@ export const DealerDirectoryScreen = ({ theme, showAlert, setSuccessMessage, dea
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 pt-4 space-y-3 pb-4">
-                {sortedAndFilteredDealers.map(dealer => (
-                    <GlassCard key={dealer.id} theme={theme} className="p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setSelectedDealer(dealer); }}>
+                {sortedAndFilteredCustomers.map(customer => (
+                    <GlassCard key={customer.id} theme={theme} className="p-4 cursor-pointer hover:shadow-md transition-shadow" onClick={() => { setSelectedCustomer(customer); }}>
                         <div className="flex justify-between items-start">
                             <div>
-                                <h3 className="font-semibold text-base mb-1 tracking-tight" style={{ color: primaryDisplay }}>{dealer.name}</h3>
-                                <p className="text-xs leading-snug" style={{ color: theme.colors.textSecondary }}>{dealer.address}</p>
+                                <h3 className="font-semibold text-base mb-1 tracking-tight" style={{ color: primaryDisplay }}>{customer.name}</h3>
+                                <p className="text-xs leading-snug" style={{ color: theme.colors.textSecondary }}>{customer.address}</p>
                             </div>
                             <div className="text-right flex-shrink-0 ml-2">
                                 <p className="text-[10px] font-semibold uppercase tracking-wide mb-0.5" style={{ color: theme.colors.textSecondary }}>{sortConfig.key}</p>
-                                <p className="font-bold text-sm" style={{ color: primaryDisplay }}>${(dealer[sortConfig.key === 'name' ? 'bookings' : sortConfig.key] || 0).toLocaleString()}</p>
+                                <p className="font-bold text-sm" style={{ color: primaryDisplay }}>${(customer[sortConfig.key === 'name' ? 'bookings' : sortConfig.key] || 0).toLocaleString()}</p>
                             </div>
                         </div>
                     </GlassCard>
                 ))}
-                {sortedAndFilteredDealers.length === 0 && (
+                {sortedAndFilteredCustomers.length === 0 && (
                     <GlassCard theme={theme} className="p-8 flex flex-col items-center justify-center text-center gap-2">
-                        <p className="text-sm font-medium" style={{ color: primaryDisplay }}>No dealers found.</p>
-                        <p className="text-xs" style={{ color: theme.colors.textSecondary }}>Adjust search or add a new dealer.</p>
+                        <p className="text-sm font-medium" style={{ color: primaryDisplay }}>No customers found.</p>
+                        <p className="text-xs" style={{ color: theme.colors.textSecondary }}>Adjust search to find customers.</p>
                     </GlassCard>
                 )}
             </div>
 
-            <Modal show={!!selectedDealer} onClose={() => setSelectedDealer(null)} title={selectedDealer?.name || ''} theme={theme}>
-                {selectedDealer && (
+            <Modal show={!!selectedCustomer} onClose={() => setSelectedCustomer(null)} title={selectedCustomer?.name || ''} theme={theme}>
+                {selectedCustomer && (
                     <div ref={modalContentRef} className="relative">
                         <div className="flex justify-between items-start mb-4">
-                            <p className="text-sm" style={{ color: theme.colors.textSecondary }}>{selectedDealer.address}</p>
+                            <p className="text-sm" style={{ color: theme.colors.textSecondary }}>{selectedCustomer.address}</p>
                             <button onClick={() => setShowAddPersonModal(true)} className="p-2 -mr-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10"><UserPlus className="w-5 h-5" style={{ color: theme.colors.accent }} /></button>
                         </div>
                         <div className="space-y-2">
                             <p className="font-bold text-lg pt-4 pb-2" style={{ color: primarySoft }}>Daily Discount</p>
-                            <PortalNativeSelect label="" theme={theme} value={selectedDealer.dailyDiscount} onChange={e => setPendingDiscountChange({ dealerId: selectedDealer.id, newDiscount: e.target.value })} options={DAILY_DISCOUNT_OPTIONS.map(opt => ({ label: opt, value: opt }))} />
+                            <PortalNativeSelect label="" theme={theme} value={selectedCustomer.dailyDiscount} onChange={e => setPendingDiscountChange({ customerId: selectedCustomer.id, newDiscount: e.target.value })} options={DAILY_DISCOUNT_OPTIONS.map(opt => ({ label: opt, value: opt }))} />
                         </div>
                         <div className="space-y-4">
-                            <StaffSection title="Salespeople" members={selectedDealer.salespeople} />
-                            <StaffSection title="Designers" members={selectedDealer.designers} />
-                            <StaffSection title="Administration" members={selectedDealer.administration} />
-                            <StaffSection title="Installers" members={selectedDealer.installers} />
+                            <StaffSection title="Salespeople" members={selectedCustomer.salespeople} />
+                            <StaffSection title="Designers" members={selectedCustomer.designers} />
+                            <StaffSection title="Administration" members={selectedCustomer.administration} />
+                            <StaffSection title="Installers" members={selectedCustomer.installers} />
                         </div>
                         {menuState.open && (<><div className="absolute inset-0 z-10 -m-6" onClick={handleMenuClose} /><div className="absolute z-20 animate-fade-in" style={{ top: menuState.top, left: menuState.left }}><GlassCard theme={theme} className="p-1 w-56"><div className="px-2 py-1 text-xs font-bold uppercase" style={{ color: theme.colors.textSecondary }}>Change Role</div>{roleOptions.map(opt => (<button key={opt.value} onClick={() => handleUpdatePersonRole(menuState.person, opt.value)} className="w-full flex justify-between items-center text-left py-2 px-2 text-sm font-semibold rounded-lg hover:bg-black/5 dark:hover:bg-white/5"><span style={{ color: menuState.person.roleLabel === opt.value ? theme.colors.accent : primarySoft }}>{opt.label}</span>{menuState.person.roleLabel === opt.value && <CheckCircle className="w-4 h-4" style={{ color: theme.colors.accent }} />}</button>))}<div className="border-t my-1 mx-2" style={{ borderColor: theme.colors.subtle }} /><button onClick={() => handleRemovePerson(menuState.person.name)} className="w-full flex items-center text-left py-2 px-2 text-sm font-semibold rounded-lg text-red-600 hover:bg-red-500/10"><Trash2 className="w-4 h-4 mr-2" />Remove Person</button></GlassCard></div></>)}
                     </div>

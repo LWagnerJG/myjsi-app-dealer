@@ -1,5 +1,5 @@
-// Dealer Directory specific data
-export const DEALER_DIRECTORY_DATA = [
+// Customer Directory specific data (renamed from Dealer Directory for dealer app context)
+export const CUSTOMER_DIRECTORY_DATA = [
     {
         id: 1,
         name: "Business Furniture LLC",
@@ -38,14 +38,14 @@ export const DEALER_DIRECTORY_DATA = [
     }
 ];
 
-export const DEALER_ROLES = [
+export const CUSTOMER_ROLES = [
     { value: 'sales', label: 'Sales' },
     { value: 'designer', label: 'Designer' },
     { value: 'admin', label: 'Administration' },
     { value: 'installer', label: 'Installer' }
 ];
 
-export const DEALER_STATUS = {
+export const CUSTOMER_STATUS = {
     ACTIVE: 'active',
     INACTIVE: 'inactive',
     PENDING: 'pending'
@@ -60,7 +60,7 @@ export const ROLE_OPTIONS = [
     { label: 'Installer', value: 'Installer' }
 ];
 
-// Daily discount options for dealer directory
+// Daily discount options for customer directory
 export const DAILY_DISCOUNT_OPTIONS = [
     'Undecided', 
     '50/20 (60.00%)', 

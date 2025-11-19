@@ -10,15 +10,15 @@ export const RESOURCES_DATA = [
         ].sort((a, b) => a.label.localeCompare(b.label))
     },
     {
-        category: "Sales & Rep Tools",
+        category: "Dealer Tools",
         items: [
-            { label: "Customer Directory", nav: "resources/dealer-directory" },
+            { label: "Customer Directory", nav: "resources/customer-directory" },
             { label: "Sample Discounts", nav: "resources/sample-discounts" },
             { label: "Contracts", nav: "resources/contracts" },
         ].sort((a, b) => a.label.localeCompare(b.label))
     },
     {
-        category: "Dealer & Field Support",
+        category: "Customer Support & Field Service",
         items: [
             { label: "Loaner Pool", nav: "resources/loaner-pool" },
             { label: "Request Field Visit", nav: "resources/request-field-visit" },
