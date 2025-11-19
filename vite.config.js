@@ -6,5 +6,22 @@ export default defineConfig({
     server: {
         port: 5173,
         strictPort: true
+    },
+    build: {
+        sourcemap: true,
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'react-vendor': ['react', 'react-dom'],
+                    'framer': ['framer-motion'],
+                    'icons': ['lucide-react']
+                }
+            }
+        },
+        minify: 'esbuild',
+        target: 'es2015'
+    },
+    esbuild: {
+        jsxInject: `import React from 'react'`
     }
 })
