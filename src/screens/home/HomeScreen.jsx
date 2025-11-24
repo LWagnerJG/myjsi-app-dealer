@@ -11,7 +11,7 @@ import { UpcomingEventsWidget } from '../../components/dashboard/UpcomingEventsW
 import { KPIWidget } from '../../components/dashboard/KPIWidget.jsx';
 
 // Dashboard Stats Component
-const DashboardStats = ({ theme, opportunities = [], orders = [], customerDirectory = [] }) => {
+const DashboardStats = ({ theme, opportunities = [], orders = [], customerDirectory = [], onNavigate }) => {
     const stats = useMemo(() => {
         const pipelineValue = opportunities
             .filter(o => o.stage !== 'Won' && o.stage !== 'Lost')
@@ -44,7 +44,14 @@ const DashboardStats = ({ theme, opportunities = [], orders = [], customerDirect
 
     return (
         <div className="grid grid-cols-2 gap-3 mb-4">
-            <GlassCard theme={theme} className="p-4" variant="elevated">
+            <GlassCard
+                theme={theme}
+                className="p-4"
+                variant="interactive"
+                as="button"
+                type="button"
+                onClick={() => onNavigate?.('sales')}
+            >
                 <p className="text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>
                     Pipeline Value
                 </p>
@@ -406,11 +413,12 @@ export const HomeScreen = ({
                 />
 
                 {/* Dashboard Stats */}
-                <DashboardStats 
-                    theme={theme} 
+                <DashboardStats
+                    theme={theme}
                     opportunities={opportunities}
                     orders={orders}
                     customerDirectory={customerDirectory}
+                    onNavigate={onNavigate}
                 />
 
                 {/* NEW: Notifications Widget */}
