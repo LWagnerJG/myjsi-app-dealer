@@ -12,11 +12,17 @@ import { KPIWidget } from '../../components/dashboard/KPIWidget.jsx';
 
 // Dashboard Stats Component
 const DashboardStats = ({ theme, opportunities = [], orders = [], customerDirectory = [], onNavigate }) => {
+    const handlePipelineClick = useCallback(() => {
+        if (onNavigate) {
+            onNavigate('sales/performance');
+        }
+    }, [onNavigate]);
+
     const stats = useMemo(() => {
         const pipelineValue = opportunities
             .filter(o => o.stage !== 'Won' && o.stage !== 'Lost')
             .reduce((sum, o) => {
-                const val = typeof o.value === 'string' 
+                const val = typeof o.value === 'string'
                     ? parseFloat(o.value.replace(/[^0-9.]/g, '')) || 0
                     : o.value || 0;
                 return sum + val;
@@ -50,7 +56,8 @@ const DashboardStats = ({ theme, opportunities = [], orders = [], customerDirect
                 variant="interactive"
                 as="button"
                 type="button"
-                onClick={() => onNavigate?.('sales')}
+                onClick={handlePipelineClick}
+                aria-label="View sales performance"
             >
                 <p className="text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>
                     Pipeline Value
