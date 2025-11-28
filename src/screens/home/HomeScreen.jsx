@@ -11,74 +11,83 @@ import { UpcomingEventsWidget } from '../../components/dashboard/UpcomingEventsW
 import { KPIWidget } from '../../components/dashboard/KPIWidget.jsx';
 
 // Dashboard Stats Component
-const DashboardStats = ({ theme, opportunities = [], orders = [], customerDirectory = [] }) => {
+const DashboardStats = ({ theme, opportunities = [], orders = [], customerDirectory = [], onNavigate }) => {
     const stats = useMemo(() => {
         const pipelineValue = opportunities
             .filter(o => o.stage !== 'Won' && o.stage !== 'Lost')
             .reduce((sum, o) => {
-                const val = typeof o.value === 'string' 
+                const val = typeof o.value === 'string'
                     ? parseFloat(o.value.replace(/[^0-9.]/g, '')) || 0
                     : o.value || 0;
                 return sum + val;
             }, 0);
 
-        const activeProjects = opportunities.filter(o => 
+        const activeProjects = opportunities.filter(o =>
             o.stage !== 'Won' && o.stage !== 'Lost'
         ).length;
 
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        
+
         const recentOrders = orders.filter(o => {
             if (!o.date) return false;
             const date = new Date(o.date);
             return date >= thirtyDaysAgo;
         }).length;
 
-        const activeCustomers = customerDirectory.filter(c => 
+        const activeCustomers = customerDirectory.filter(c =>
             (c.projects?.length || 0) > 0
         ).length;
 
         return { pipelineValue, activeProjects, recentOrders, activeCustomers };
     }, [opportunities, orders, customerDirectory]);
 
+    const StatCard = ({ label, value, color, route, valueColor }) => (
+        <button
+            onClick={() => onNavigate(route)}
+            className="text-left w-full transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        >
+            <GlassCard theme={theme} className="p-4 h-full" variant="elevated">
+                <p className="text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>
+                    {label}
+                </p>
+                <p className="text-2xl font-bold" style={{ color: valueColor || theme.colors.textPrimary }}>
+                    {value}
+                </p>
+            </GlassCard>
+        </button>
+    );
+
     return (
         <div className="grid grid-cols-2 gap-3 mb-4">
-            <GlassCard theme={theme} className="p-4" variant="elevated">
-                <p className="text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>
-                    Pipeline Value
-                </p>
-                <p className="text-2xl font-bold" style={{ color: theme.colors.accent }}>
-                    ${stats.pipelineValue.toLocaleString()}
-                </p>
-            </GlassCard>
-            
-            <GlassCard theme={theme} className="p-4" variant="elevated">
-                <p className="text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>
-                    Active Projects
-                </p>
-                <p className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>
-                    {stats.activeProjects}
-                </p>
-            </GlassCard>
-            
-            <GlassCard theme={theme} className="p-4" variant="elevated">
-                <p className="text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>
-                    Orders (30d)
-                </p>
-                <p className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>
-                    {stats.recentOrders}
-                </p>
-            </GlassCard>
-            
-            <GlassCard theme={theme} className="p-4" variant="elevated">
-                <p className="text-xs font-semibold mb-1" style={{ color: theme.colors.textSecondary }}>
-                    Active Customers
-                </p>
-                <p className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>
-                    {stats.activeCustomers}
-                </p>
-            </GlassCard>
+            <StatCard
+                label="Pipeline Value"
+                value={`$${stats.pipelineValue.toLocaleString()}`}
+                route="sales"
+                valueColor={theme.colors.accent}
+                theme={theme}
+            />
+
+            <StatCard
+                label="Active Projects"
+                value={stats.activeProjects}
+                route="projects"
+                theme={theme}
+            />
+
+            <StatCard
+                label="Orders (30d)"
+                value={stats.recentOrders}
+                route="orders"
+                theme={theme}
+            />
+
+            <StatCard
+                label="Active Customers"
+                value={stats.activeCustomers}
+                route="resources/dealer-directory"
+                theme={theme}
+            />
         </div>
     );
 };
@@ -103,13 +112,13 @@ const QuickActions = ({ theme, onNavigate }) => {
                         key={action.route}
                         onClick={() => onNavigate(action.route)}
                         className="p-4 rounded-2xl flex flex-col items-center gap-2 transition-transform hover:scale-105 active:scale-95"
-                        style={{ 
+                        style={{
                             backgroundColor: `${action.color}15`,
                             border: `1px solid ${action.color}30`
                         }}
                     >
                         <div className="w-12 h-12 rounded-full flex items-center justify-center"
-                             style={{ backgroundColor: action.color }}>
+                            style={{ backgroundColor: action.color }}>
                             <action.icon className="w-6 h-6 text-white" />
                         </div>
                         <span className="text-xs font-semibold text-center" style={{ color: action.color }}>
@@ -126,7 +135,7 @@ const QuickActions = ({ theme, onNavigate }) => {
 const RecentActivityFeed = ({ theme, opportunities = [], orders = [], onNavigate }) => {
     const activities = useMemo(() => {
         const items = [];
-        
+
         // Recent opportunities (limit 3)
         opportunities.slice(0, 3).forEach(opp => {
             items.push({
@@ -140,13 +149,13 @@ const RecentActivityFeed = ({ theme, opportunities = [], orders = [], onNavigate
                 color: theme.colors.accent
             });
         });
-        
+
         // Recent orders (limit 2)
         const sortedOrders = [...orders]
             .filter(o => o.date && o.net)
             .sort((a, b) => new Date(b.date) - new Date(a.date))
             .slice(0, 2);
-            
+
         sortedOrders.forEach(order => {
             items.push({
                 type: 'order',
@@ -159,7 +168,7 @@ const RecentActivityFeed = ({ theme, opportunities = [], orders = [], onNavigate
                 color: '#10B981'
             });
         });
-        
+
         return items.slice(0, 5);
     }, [opportunities, orders, theme.colors.accent, onNavigate]);
 
@@ -171,16 +180,16 @@ const RecentActivityFeed = ({ theme, opportunities = [], orders = [], onNavigate
                 <h3 className="font-bold text-base" style={{ color: theme.colors.textPrimary }}>
                     Recent Activity
                 </h3>
-                <button 
+                <button
                     onClick={() => onNavigate('projects')}
-                    className="text-xs font-semibold flex items-center gap-1" 
+                    className="text-xs font-semibold flex items-center gap-1"
                     style={{ color: theme.colors.accent }}
                 >
                     View All
                     <ArrowRight className="w-3 h-3" />
                 </button>
             </div>
-            
+
             <div className="space-y-3">
                 {activities.map((activity, i) => (
                     <button
@@ -188,8 +197,8 @@ const RecentActivityFeed = ({ theme, opportunities = [], orders = [], onNavigate
                         onClick={activity.action}
                         className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left"
                     >
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" 
-                             style={{ backgroundColor: `${activity.color}20` }}>
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                            style={{ backgroundColor: `${activity.color}20` }}>
                             <activity.icon className="w-5 h-5" style={{ color: activity.color }} />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -231,16 +240,16 @@ const TopCustomersWidget = ({ theme, customerDirectory = [], onNavigate }) => {
                 <h3 className="font-bold text-base" style={{ color: theme.colors.textPrimary }}>
                     Top Customers
                 </h3>
-                <button 
+                <button
                     onClick={() => onNavigate('customer-rank')}
-                    className="text-xs font-semibold flex items-center gap-1" 
+                    className="text-xs font-semibold flex items-center gap-1"
                     style={{ color: theme.colors.accent }}
                 >
                     View All
                     <ArrowRight className="w-3 h-3" />
                 </button>
             </div>
-            
+
             <div className="space-y-2">
                 {topCustomers.map((customer, i) => (
                     <button
@@ -250,10 +259,10 @@ const TopCustomersWidget = ({ theme, customerDirectory = [], onNavigate }) => {
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs flex-shrink-0"
-                                 style={{ 
-                                     backgroundColor: i < 3 ? `${theme.colors.accent}20` : theme.colors.subtle,
-                                     color: i < 3 ? theme.colors.accent : theme.colors.textSecondary
-                                 }}>
+                                style={{
+                                    backgroundColor: i < 3 ? `${theme.colors.accent}20` : theme.colors.subtle,
+                                    color: i < 3 ? theme.colors.accent : theme.colors.textSecondary
+                                }}>
                                 {i + 1}
                             </div>
                             <div className="text-left min-w-0">
@@ -370,11 +379,11 @@ const SmartSearch = ({ theme, onNavigate, onAskAI, onVoiceActivate }) => {
 };
 
 // Main HomeScreen Component
-export const HomeScreen = ({ 
-    theme, 
-    onNavigate, 
-    onAskAI, 
-    onVoiceActivate, 
+export const HomeScreen = ({
+    theme,
+    onNavigate,
+    onAskAI,
+    onVoiceActivate,
     homeApps,
     opportunities = [],
     orders = [],
@@ -389,28 +398,29 @@ export const HomeScreen = ({
                         Dashboard
                     </h1>
                     <p className="text-sm" style={{ color: theme.colors.textSecondary }}>
-                        {new Date().toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            month: 'long', 
-                            day: 'numeric' 
+                        {new Date().toLocaleDateString('en-US', {
+                            weekday: 'long',
+                            month: 'long',
+                            day: 'numeric'
                         })}
                     </p>
                 </div>
 
                 {/* Search */}
-                <SmartSearch 
-                    theme={theme} 
-                    onNavigate={onNavigate} 
-                    onAskAI={onAskAI} 
-                    onVoiceActivate={onVoiceActivate} 
+                <SmartSearch
+                    theme={theme}
+                    onNavigate={onNavigate}
+                    onAskAI={onAskAI}
+                    onVoiceActivate={onVoiceActivate}
                 />
 
                 {/* Dashboard Stats */}
-                <DashboardStats 
-                    theme={theme} 
+                <DashboardStats
+                    theme={theme}
                     opportunities={opportunities}
                     orders={orders}
                     customerDirectory={customerDirectory}
+                    onNavigate={onNavigate}
                 />
 
                 {/* NEW: Notifications Widget */}
@@ -441,7 +451,7 @@ export const HomeScreen = ({
                 />
 
                 {/* Recent Activity */}
-                <RecentActivityFeed 
+                <RecentActivityFeed
                     theme={theme}
                     opportunities={opportunities}
                     orders={orders}
