@@ -6,50 +6,50 @@ import { HomeSearchInput } from '../../components/common/SearchInput.jsx';
 import { DropdownPortal } from '../../DropdownPortal.jsx';
 import { Plus, Briefcase, Package, Users, TrendingUp, DollarSign, ArrowRight, Bell, Calendar, CheckCircle, ChevronRight, Search } from 'lucide-react';
 
-// --- Redesigned Components ---
-
 // 1. Minimalist Header with integrated Search
 const HeroSection = ({ theme, onNavigate, onAskAI, onVoiceActivate }) => {
     return (
-        <div className="mb-6">
-            <div className="flex justify-between items-end mb-4 px-1">
+        <div className="mb-8 md:mb-10">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight" style={{ color: theme.colors.textPrimary }}>
+                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight" style={{ color: theme.colors.textPrimary }}>
                         Good Morning, Luke
                     </h1>
-                    <p className="text-sm font-medium mt-1 opacity-60" style={{ color: theme.colors.textSecondary }}>
+                    <p className="text-sm font-medium mt-1 opacity-50" style={{ color: theme.colors.textSecondary }}>
                         {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                     </p>
                 </div>
                 <button
                     onClick={() => onNavigate('settings')}
-                    className="w-10 h-10 rounded-full overflow-hidden border-2 transition-transform hover:scale-105"
+                    className="hidden md:block w-12 h-12 rounded-full overflow-hidden border-2 transition-transform hover:scale-105"
                     style={{ borderColor: theme.colors.border }}
                 >
                     <img src="https://i.pravatar.cc/150?u=luke" alt="Profile" className="w-full h-full object-cover" />
                 </button>
             </div>
 
-            {/* Simplified Search */}
-            <div className="relative group">
-                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                    <Search className="w-5 h-5 opacity-40" style={{ color: theme.colors.textSecondary }} />
+            {/* Simplified Search - Premium Feel */}
+            <div className="relative group max-w-3xl">
+                <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                    <Search className="w-5 h-5 opacity-30" style={{ color: theme.colors.textPrimary }} />
                 </div>
                 <input
                     type="text"
-                    placeholder="Search projects, orders, or customers..."
-                    className="w-full pl-10 pr-4 py-3 rounded-2xl text-sm transition-all outline-none border border-transparent focus:border-opacity-50"
+                    placeholder="Ask anything..."
+                    className="w-full pl-12 pr-12 py-4 rounded-2xl text-base transition-all outline-none border"
                     style={{
                         backgroundColor: theme.colors.surface,
                         color: theme.colors.textPrimary,
-                        boxShadow: '0 4px 20px -2px rgba(0,0,0,0.05)',
-                        borderColor: theme.colors.accent
+                        boxShadow: '0 2px 10px -1px rgba(0,0,0,0.03)',
+                        borderColor: 'transparent'
                     }}
+                    onFocus={(e) => e.target.style.borderColor = theme.colors.accent}
+                    onBlur={(e) => e.target.style.borderColor = 'transparent'}
                     onKeyDown={(e) => e.key === 'Enter' && onAskAI(e.target.value)}
                 />
-                <div className="absolute inset-y-0 right-3 flex items-center">
-                    <button onClick={() => onVoiceActivate()} className="p-1.5 rounded-full hover:bg-black/5 transition-colors">
-                        <div className="w-4 h-4 rounded-full bg-red-500/80 animate-pulse" />
+                <div className="absolute inset-y-0 right-4 flex items-center">
+                    <button onClick={() => onVoiceActivate()} className="p-2 rounded-full hover:bg-black/5 transition-colors opacity-50 hover:opacity-100">
+                        <div className="w-2 h-2 rounded-full bg-current" style={{ color: theme.colors.textPrimary }} />
                     </button>
                 </div>
             </div>
@@ -57,7 +57,7 @@ const HeroSection = ({ theme, onNavigate, onAskAI, onVoiceActivate }) => {
     );
 };
 
-// 2. Horizontal Scrollable Stats (Saves vertical space)
+// 2. Responsive Stats (Scroll on Mobile, Grid on Desktop)
 const StatsStrip = ({ theme, opportunities = [], orders = [], customerDirectory = [], onNavigate }) => {
     const stats = useMemo(() => {
         const pipelineValue = opportunities
@@ -84,113 +84,109 @@ const StatsStrip = ({ theme, opportunities = [], orders = [], customerDirectory 
     }, [opportunities, orders, customerDirectory, theme]);
 
     return (
-        <div className="mb-8 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide flex gap-3 snap-x">
-            {stats.map((stat, i) => (
-                <button
-                    key={i}
-                    onClick={() => onNavigate(stat.route)}
-                    className="snap-start min-w-[140px] flex-1 p-4 rounded-2xl text-left transition-all hover:scale-[1.02] active:scale-[0.98] border border-transparent hover:border-opacity-20"
-                    style={{
-                        backgroundColor: theme.colors.surface,
-                        boxShadow: '0 4px 12px -2px rgba(0,0,0,0.03)',
-                        borderColor: stat.color
-                    }}
-                >
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center mb-3"
-                        style={{ backgroundColor: `${stat.color}15` }}>
-                        <stat.icon className="w-4 h-4" style={{ color: stat.color }} />
-                    </div>
-                    <p className="text-xs font-semibold opacity-60 mb-0.5" style={{ color: theme.colors.textSecondary }}>
-                        {stat.label}
-                    </p>
-                    <p className="text-lg font-bold tracking-tight" style={{ color: theme.colors.textPrimary }}>
-                        {stat.value}
-                    </p>
-                </button>
-            ))}
+        <div className="mb-10">
+            {/* Mobile: Horizontal Scroll | Desktop: 4-Column Grid */}
+            <div className="flex overflow-x-auto pb-4 -mx-5 px-5 scrollbar-hide md:grid md:grid-cols-4 md:gap-6 md:mx-0 md:pb-0 md:px-0 snap-x">
+                {stats.map((stat, i) => (
+                    <button
+                        key={i}
+                        onClick={() => onNavigate(stat.route)}
+                        className="snap-start min-w-[160px] flex-1 p-5 rounded-2xl text-left transition-all hover:-translate-y-1 border border-transparent hover:border-opacity-10 group"
+                        style={{
+                            backgroundColor: theme.colors.surface,
+                            boxShadow: '0 4px 20px -4px rgba(0,0,0,0.03)',
+                        }}
+                    >
+                        <div className="flex justify-between items-start mb-4">
+                            <p className="text-xs font-bold uppercase tracking-wider opacity-40" style={{ color: theme.colors.textSecondary }}>
+                                {stat.label}
+                            </p>
+                            <stat.icon className="w-4 h-4 opacity-20 group-hover:opacity-100 transition-opacity" style={{ color: theme.colors.textPrimary }} />
+                        </div>
+                        <p className="text-2xl md:text-3xl font-light tracking-tight" style={{ color: theme.colors.textPrimary }}>
+                            {stat.value}
+                        </p>
+                    </button>
+                ))}
+            </div>
         </div>
     );
 };
 
-// 3. Unified "Focus Center" (Combines Notifications & Tasks)
+// 3. Unified "Focus Center" - Minimalist List
 const FocusCenter = ({ theme, onNavigate }) => {
     return (
-        <div className="mb-8">
-            <div className="flex items-center justify-between mb-3 px-1">
-                <h2 className="text-lg font-bold" style={{ color: theme.colors.textPrimary }}>Focus Center</h2>
-                <span className="text-xs font-medium px-2 py-1 rounded-full bg-red-100 text-red-600">3 Urgent</span>
+        <div className="mb-10">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+                <h2 className="text-lg font-bold tracking-tight" style={{ color: theme.colors.textPrimary }}>Focus Center</h2>
             </div>
 
-            <div className="space-y-3">
-                {/* Urgent Alert */}
-                <div className="p-4 rounded-2xl flex items-start gap-4 transition-transform hover:scale-[1.01] cursor-pointer"
-                    style={{ backgroundColor: '#FEF2F2', border: '1px solid #FECACA' }}>
-                    <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                        <Bell className="w-4 h-4 text-red-600" />
+            <div className="grid md:grid-cols-2 gap-4">
+                {/* Urgent Item - Subtle Alert */}
+                <div className="p-5 rounded-2xl flex items-center gap-4 cursor-pointer transition-all hover:shadow-md border-l-4"
+                    style={{
+                        backgroundColor: theme.colors.surface,
+                        borderColor: theme.colors.accent, // Use brand accent instead of red
+                        boxShadow: '0 2px 12px -2px rgba(0,0,0,0.03)'
+                    }}>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: `${theme.colors.accent}15` }}>
+                        <Bell className="w-5 h-5" style={{ color: theme.colors.accent }} />
                     </div>
                     <div className="flex-1">
-                        <h3 className="text-sm font-bold text-gray-900">2 Orders Pending Approval</h3>
-                        <p className="text-xs text-gray-600 mt-1">Requires your immediate acknowledgment to proceed.</p>
+                        <h3 className="text-sm font-bold" style={{ color: theme.colors.textPrimary }}>2 Orders Pending</h3>
+                        <p className="text-xs opacity-60 mt-0.5" style={{ color: theme.colors.textSecondary }}>Awaiting your approval</p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-red-400" />
+                    <ChevronRight className="w-4 h-4 opacity-30" style={{ color: theme.colors.textPrimary }} />
                 </div>
 
-                {/* Top Task */}
-                <GlassCard theme={theme} className="p-4 flex items-center gap-4 cursor-pointer hover:bg-black/5 transition-colors" variant="elevated">
-                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                        <Calendar className="w-4 h-4 text-amber-600" />
+                {/* Task Item */}
+                <div className="p-5 rounded-2xl flex items-center gap-4 cursor-pointer transition-all hover:shadow-md border border-transparent hover:border-opacity-10"
+                    style={{
+                        backgroundColor: theme.colors.surface,
+                        boxShadow: '0 2px 12px -2px rgba(0,0,0,0.03)'
+                    }}>
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: theme.colors.background }}>
+                        <Calendar className="w-5 h-5 opacity-60" style={{ color: theme.colors.textPrimary }} />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-bold truncate" style={{ color: theme.colors.textPrimary }}>Follow up: Startup Collaboration Space</h3>
-                        <p className="text-xs opacity-60 truncate" style={{ color: theme.colors.textSecondary }}>Expected PO: Within 30 Days • High Priority</p>
+                        <h3 className="text-sm font-bold truncate" style={{ color: theme.colors.textPrimary }}>Follow up: Startup Space</h3>
+                        <p className="text-xs opacity-60 mt-0.5 truncate" style={{ color: theme.colors.textSecondary }}>Expected PO: Within 30 Days</p>
                     </div>
-                    <button className="text-xs font-bold px-3 py-1.5 rounded-lg bg-black/5 hover:bg-black/10 transition-colors" style={{ color: theme.colors.textPrimary }}>
-                        Done
-                    </button>
-                </GlassCard>
-
-                {/* Secondary Task */}
-                <GlassCard theme={theme} className="p-4 flex items-center gap-4 cursor-pointer hover:bg-black/5 transition-colors" variant="elevated">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle className="w-4 h-4 text-blue-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-bold truncate" style={{ color: theme.colors.textPrimary }}>Process order #450080-01</h3>
-                        <p className="text-xs opacity-60 truncate" style={{ color: theme.colors.textSecondary }}>Business Furnishings • $55,000</p>
-                    </div>
-                    <button className="text-xs font-bold px-3 py-1.5 rounded-lg bg-black/5 hover:bg-black/10 transition-colors" style={{ color: theme.colors.textPrimary }}>
-                        View
-                    </button>
-                </GlassCard>
+                </div>
             </div>
         </div>
     );
 };
 
-// 4. Clean Quick Actions
+// 4. Monochrome Quick Actions
 const QuickActionsStrip = ({ theme, onNavigate }) => {
     const actions = [
-        { label: 'New Project', route: 'new-lead', icon: Plus, color: theme.colors.accent },
-        { label: 'Directory', route: 'resources/dealer-directory', icon: Users, color: '#10B981' },
-        { label: 'Samples', route: 'samples', icon: Package, color: '#8B5CF6' },
-        { label: 'Catalog', route: 'products', icon: Briefcase, color: '#F59E0B' },
+        { label: 'New Project', route: 'new-lead', icon: Plus },
+        { label: 'Directory', route: 'resources/dealer-directory', icon: Users },
+        { label: 'Samples', route: 'samples', icon: Package },
+        { label: 'Catalog', route: 'products', icon: Briefcase },
     ];
 
     return (
         <div className="mb-8">
-            <h2 className="text-sm font-bold mb-3 px-1 opacity-70" style={{ color: theme.colors.textSecondary }}>Quick Access</h2>
-            <div className="grid grid-cols-4 gap-2">
+            <h2 className="text-xs font-bold uppercase tracking-wider mb-4 opacity-40" style={{ color: theme.colors.textSecondary }}>Quick Access</h2>
+            <div className="grid grid-cols-4 gap-3 md:gap-6">
                 {actions.map((action, i) => (
                     <button
                         key={i}
                         onClick={() => onNavigate(action.route)}
-                        className="flex flex-col items-center gap-2 group"
+                        className="flex flex-col items-center gap-3 group p-4 rounded-2xl transition-all hover:bg-black/5"
                     >
-                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 group-active:scale-95 shadow-sm"
-                            style={{ backgroundColor: theme.colors.surface }}>
-                            <action.icon className="w-6 h-6" style={{ color: action.color }} />
+                        <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110 shadow-sm border"
+                            style={{
+                                backgroundColor: theme.colors.surface,
+                                borderColor: theme.colors.border
+                            }}>
+                            <action.icon className="w-5 h-5 md:w-6 md:h-6 opacity-70 group-hover:opacity-100" style={{ color: theme.colors.textPrimary }} />
                         </div>
-                        <span className="text-[10px] font-semibold text-center opacity-80" style={{ color: theme.colors.textPrimary }}>
+                        <span className="text-[10px] md:text-xs font-semibold text-center opacity-60 group-hover:opacity-100" style={{ color: theme.colors.textPrimary }}>
                             {action.label}
                         </span>
                     </button>
