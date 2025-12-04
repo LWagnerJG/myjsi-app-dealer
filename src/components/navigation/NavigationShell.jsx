@@ -42,25 +42,25 @@ export const NavigationShell = ({ currentScreen, onNavigate, theme }) => {
             </div>
 
             {/* Mobile Bottom Tab Bar - Floating Glass Pill */}
-            <div className="lg:hidden fixed bottom-6 left-6 right-6 z-50">
-                <div className="bg-white/90 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-white/20 p-2 rounded-[2rem] flex justify-between items-center px-6">
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 pb-[env(safe-area-inset-bottom)] px-4 pt-2 pb-4" style={{ background: 'linear-gradient(to top, rgba(250,249,246,0.95) 70%, rgba(250,249,246,0))' }}>
+                <div className="bg-white/95 backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] border border-black/5 p-1.5 rounded-2xl flex justify-around items-center">
                     {navItems.slice(0, 4).map((item) => (
                         <button
                             key={item.id}
                             onClick={() => onNavigate(item.id)}
-                            className={`p-3 rounded-full transition-all duration-300 ${isActive(item.id)
-                                    ? 'bg-black text-white shadow-lg -translate-y-2'
-                                    : 'text-gray-400 hover:text-gray-900'
+                            className={`p-3 rounded-xl transition-all duration-200 ${isActive(item.id)
+                                    ? 'bg-black text-white shadow-md scale-105'
+                                    : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
                                 }`}
                         >
-                            <item.icon className="w-6 h-6" />
+                            <item.icon className="w-5 h-5" />
                         </button>
                     ))}
                     <button
                         onClick={() => onNavigate('settings')}
-                        className={`p-3 rounded-full transition-all duration-300 text-gray-400 hover:text-gray-900`}
+                        className={`p-3 rounded-xl transition-all duration-200 text-gray-400 hover:text-gray-700 hover:bg-gray-100`}
                     >
-                        <Settings className="w-6 h-6" />
+                        <Settings className="w-5 h-5" />
                     </button>
                 </div>
             </div>

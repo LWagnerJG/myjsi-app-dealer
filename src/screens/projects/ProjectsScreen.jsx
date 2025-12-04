@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
-import { Plus, Briefcase, DollarSign, LineChart, Percent, ArrowRight, X } from 'lucide-react';
+import { Briefcase, ArrowRight } from 'lucide-react';
 import { STAGES, VERTICALS, COMPETITORS, DISCOUNT_OPTIONS, PO_TIMEFRAMES, INITIAL_DESIGN_FIRMS } from './data.js';
 import { ProbabilitySlider } from '../../components/forms/ProbabilitySlider.jsx';
 import { ToggleSwitch } from '../../components/forms/ToggleSwitch.jsx';
@@ -29,7 +29,7 @@ const SuggestInputPill = ({ placeholder, suggestions, onAdd, theme }) => {
   </div>;
 };
 
-// Helper label / inputs (restored)
+// Helper label / inputs
 const SoftLabel = ({ children, theme }) => <span className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: theme.colors.textSecondary }}>{children}</span>;
 const InlineTextInput = ({ value, onChange, theme, placeholder, className='' }) => (
   <input value={value||''} onChange={e=>onChange(e.target.value)} placeholder={placeholder} className={`bg-transparent outline-none border-b border-transparent focus:border-[currentColor] transition-colors ${className}`} style={{ color: theme.colors.textPrimary }} />
@@ -39,19 +39,17 @@ const CurrencyInput = ({ value, onChange, theme }) => {
   return <input inputMode="numeric" value={raw} onChange={e=>{ const val=e.target.value.replace(/[^0-9]/g,''); onChange(val? ('$'+parseInt(val,10).toLocaleString()):''); }} className="bg-transparent outline-none px-0 py-1 text-sm font-semibold border-b border-transparent focus:border-[currentColor] w-32" style={{ color: theme.colors.textPrimary }} />;
 };
 
-// ================= Opportunity Detail (clean UI) =================
+// Opportunity Detail
 const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
   const [draft,setDraft]=useState(opp); const dirty=useRef(false); const saveRef=useRef(null);
   useEffect(()=>{ setDraft(opp); },[opp.id]);
   const update=(k,v)=> setDraft(p=>{ const n={...p,[k]:v}; dirty.current= true; return n; });
   useEffect(()=>{ if(!dirty.current) return; clearTimeout(saveRef.current); saveRef.current=setTimeout(()=>{ onUpdate(draft); dirty.current=false; },500); return ()=>clearTimeout(saveRef.current); },[draft,onUpdate]);
 
-  // Discount dropdown
   const [discountOpen,setDiscountOpen]=useState(false); const discBtn=useRef(null); const discMenu=useRef(null); const [discPos,setDiscPos]=useState({top:0,left:0,width:0});
   const openDiscount=()=>{ if(discBtn.current){ const r=discBtn.current.getBoundingClientRect(); setDiscPos({ top:r.bottom+8+window.scrollY, left:r.left+window.scrollX, width:r.width }); } setDiscountOpen(true); };
   useEffect(()=>{ if(!discountOpen) return; const handler=e=>{ if(discMenu.current && !discMenu.current.contains(e.target) && !discBtn.current.contains(e.target)) setDiscountOpen(false); }; window.addEventListener('mousedown',handler); window.addEventListener('resize',()=>setDiscountOpen(false)); return ()=>window.removeEventListener('mousedown',handler); },[discountOpen]);
 
-  // Tag helpers
   const removeFrom=(key,val)=> update(key,(draft[key]||[]).filter(x=>x!==val));
   const addUnique=(key,val)=>{ if(!val) return; const list=draft[key]||[]; if(!list.includes(val)) update(key,[...list,val]); };
   const addProductSeries = (series)=>{ if(!series) return; const list=draft.products||[]; if(!list.some(p=>p.series===series)) update('products',[...list,{series}]); };
@@ -61,13 +59,11 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
     <div className="flex flex-col h-full" style={{ background: theme.colors.background }}>
       <div className="px-4 pt-5 pb-40 overflow-y-auto scrollbar-hide">
         <GlassCard theme={theme} className="p-6 rounded-3xl space-y-8" variant="elevated">
-          {/* Header */}
           <div className="space-y-1">
             <InlineTextInput value={draft.project||draft.name} onChange={v=>update('project',v)} theme={theme} className="text-[20px] leading-tight" />
             <InlineTextInput value={draft.company} onChange={v=>update('company',v)} theme={theme} placeholder="Company" className="text-sm font-medium opacity-80" />
           </div>
 
-          {/* Stage & Discount row */}
           <div className="flex flex-col gap-6">
             <div>
               <SoftLabel theme={theme}>Stage</SoftLabel>
@@ -89,20 +85,18 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
               <div className="flex flex-col gap-2">
                 <SoftLabel theme={theme}>PO Timeframe</SoftLabel>
                 <div className="flex flex-wrap gap-2 max-w-[360px]">
-                  {PO_TIMEFRAMES.map(t=>{ const a=t===draft.poTimeframe; return <button key={t} onClick={()=>update('poTimeFrame',t)} className="px-3 h-8 rounded-full text-[11px] font-medium border transition-colors" style={{ backgroundColor:a? theme.colors.accent:theme.colors.surface, color:a? '#fff': theme.colors.textPrimary, borderColor:a? theme.colors.accent: theme.colors.border }}>{t}</button>; })}
+                  {PO_TIMEFRAMES.map(t=>{ const a=t===draft.poTimeframe; return <button key={t} onClick={()=>update('poTimeframe',t)} className="px-3 h-8 rounded-full text-[11px] font-medium border transition-colors" style={{ backgroundColor:a? theme.colors.accent:theme.colors.surface, color:a? '#fff': theme.colors.textPrimary, borderColor:a? theme.colors.accent: theme.colors.border }}>{t}</button>; })}
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Metrics */}
           <div className="flex flex-wrap gap-3">
             <div className="px-3 h-8 flex items-center gap-1 rounded-full border text-[11px] font-semibold" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>$ {draft.value?.toString().replace(/[^0-9]/g,'') || '0'}</div>
             <div className="px-3 h-8 flex items-center gap-1 rounded-full border text-[11px] font-semibold" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>Win {draft.winProbability||0}%</div>
             <div className="px-3 h-8 flex items-center gap-1 rounded-full border text-[11px] font-semibold" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{draft.discount||'Undecided'}</div>
           </div>
 
-          {/* Probability & competition */}
           <div className="grid gap-8 md:grid-cols-2">
             <div className="space-y-4">
               <div className="flex flex-col gap-2">
@@ -180,7 +174,7 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
   );
 };
 
-// Project card component (restored)
+// Project card component
 const ProjectCard = ({ opp, theme, onClick }) => {
   const discountPct = typeof opp.discount === 'string' ? opp.discount : typeof opp.discount === 'number' ? opp.discount+'%' : null;
   let displayValue = opp.value;
@@ -209,7 +203,7 @@ const ProjectCard = ({ opp, theme, onClick }) => {
   );
 };
 
-// InstallationDetail (restored minimal)
+// InstallationDetail
 const InstallationDetail = ({ project, theme, onAddPhotoFiles }) => {
   const fileRef = useRef(null);
   return (
@@ -235,7 +229,7 @@ const InstallationDetail = ({ project, theme, onAddPhotoFiles }) => {
   );
 };
 
-// Exported main ProjectsScreen (restored)
+// Main ProjectsScreen
 export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, setOpportunities, myProjects, setMyProjects, projectsInitialTab, clearProjectsInitialTab }, ref) => {
   const initial = projectsInitialTab || 'pipeline';
   const [projectsTab, setProjectsTab] = useState(initial);
@@ -246,40 +240,31 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
   const [selectedInstall,setSelectedInstall] = useState(null);
   const scrollContainerRef = useRef(null);
   const [isScrolled,setIsScrolled]=useState(false);
-  const stagesScrollRef = useRef(null);
-  const [stageSlider,setStageSlider]=useState({left:0,width:0,opacity:0});
-  const stageButtonRefs = useRef([]);
-  const [showStageFadeLeft,setShowStageFadeLeft]=useState(false);
-  const [showStageFadeRight,setShowStageFadeRight]=useState(false);
+
   useImperativeHandle(ref,()=>({ clearSelection:()=>{ let cleared=false; if(selectedOpportunity){ setSelectedOpportunity(null); cleared=true;} if(selectedInstall){ setSelectedInstall(null); cleared=true;} return cleared; } }));
   const handleScroll = useCallback(()=>{ if(scrollContainerRef.current) setIsScrolled(scrollContainerRef.current.scrollTop>10); },[]);
-  const updateStageFade = useCallback(()=>{ const el=stagesScrollRef.current; if(!el) return; const {scrollLeft,scrollWidth,clientWidth}=el; setShowStageFadeLeft(scrollLeft>4); setShowStageFadeRight(scrollLeft+clientWidth<scrollWidth-4); },[]);
-  useEffect(()=>{ const idx=STAGES.findIndex(s=>s===selectedPipelineStage); const el=stageButtonRefs.current[idx]; if(el) setStageSlider({ left:el.offsetLeft, width:el.offsetWidth, opacity:1 }); },[selectedPipelineStage]);
-  useEffect(()=>{ updateStageFade(); },[projectsTab, updateStageFade]);
+
   const filteredOpportunities = useMemo(()=> (opportunities||[]).filter(o=>o.stage===selectedPipelineStage),[selectedPipelineStage, opportunities]);
   const stageTotals = useMemo(()=>{ const totalValue = filteredOpportunities.reduce((sum,o)=>{ const raw= typeof o.value==='string'? o.value.replace(/[^0-9.]/g,''): o.value; const num=parseFloat(raw)||0; return sum+num; },0); return { totalValue }; },[filteredOpportunities]);
   const updateOpportunity = updated => setOpportunities(prev=> prev.map(o=> o.id===updated.id? updated:o));
   const addInstallPhotos = files => { if(!files||!selectedInstall) return; const arr=Array.from(files); setMyProjects(prev=> prev.map(p=> p.id===selectedInstall.id? {...p, photos:[...(p.photos||[]), ...arr]}:p)); setSelectedInstall(prev=> prev? {...prev, photos:[...(prev.photos||[]), ...arr]}: prev); };
   
-  // Responsive max-width
   const contentMaxWidth = isDesktop ? 'max-w-3xl mx-auto w-full' : '';
   
-  // Toggle options
   const projectTabOptions = [
     { key: 'pipeline', label: 'Active Projects' },
     { key: 'my-projects', label: 'Installations' },
   ];
   
-  // Stage filter options for FilterChips
   const stageOptions = STAGES.map(stage => ({ key: stage, label: stage }));
   
   if(selectedOpportunity) return <OpportunityDetail opp={selectedOpportunity} theme={theme} onBack={()=>setSelectedOpportunity(null)} onUpdate={u=>{ updateOpportunity(u); setSelectedOpportunity(u); }} />;
   if(selectedInstall) return <InstallationDetail project={selectedInstall} theme={theme} onAddPhotoFiles={addInstallPhotos} />;
+  
   return (
     <div className="h-full flex flex-col" style={{ backgroundColor: theme.colors.background }}>
       <div className={`sticky top-0 z-10 transition-all duration-300 ${isScrolled?'shadow-md':''}`} style={{ backgroundColor: isScrolled? `${theme.colors.background}e0`: theme.colors.background, backdropFilter: isScrolled? 'blur(12px)': 'none', WebkitBackdropFilter: isScrolled? 'blur(12px)': 'none', borderBottom:`1px solid ${isScrolled? theme.colors.border+'40':'transparent'}` }}>
         <div className={`px-4 pt-4 pb-2 flex items-center gap-3 ${contentMaxWidth}`}>
-          {/* JSI Unified Toggle */}
           <div className="flex-grow max-w-sm">
             <TabToggle
               options={projectTabOptions}
@@ -305,40 +290,60 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
         )}
       </div>
       <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className={`px-4 pt-4 pb-40 space-y-3 ${contentMaxWidth}`}>
+        <div className={`px-4 pt-4 pb-44 space-y-3 ${contentMaxWidth}`}>
           {projectsTab==='pipeline' && (
-            filteredOpportunities.length? (
+            filteredOpportunities.length ? (
               <div className={isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-3'}>
                 {filteredOpportunities.map(opp=> <ProjectCard key={opp.id} opp={opp} theme={theme} onClick={()=>setSelectedOpportunity(opp)} />)}
               </div>
-            ):
-            <div className="flex flex-col items-center justify-center py-12"><Briefcase className="w-12 h-12 mb-4" style={{ color: theme.colors.textSecondary }} /><p className="text-center text-sm font-medium" style={{ color: theme.colors.textSecondary }}>No projects in {selectedPipelineStage}</p><p className="text-center text-xs mt-1" style={{ color: theme.colors.textSecondary }}>Add a new project to get started</p></div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Briefcase className="w-12 h-12 mb-4" style={{ color: theme.colors.textSecondary }} />
+                <p className="text-center text-sm font-medium" style={{ color: theme.colors.textSecondary }}>No projects in {selectedPipelineStage}</p>
+                <p className="text-center text-xs mt-1" style={{ color: theme.colors.textSecondary }}>Add a new project to get started</p>
+              </div>
+            )
           )}
           {projectsTab==='my-projects' && (
-            (myProjects||[]).length? (
+            (myProjects||[]).length ? (
               <div className={isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-3'}>
                 {(myProjects||[]).map(p=> (
                   <GlassCard key={p.id} theme={theme} className="p-0 overflow-hidden cursor-pointer group transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0" variant="elevated" onClick={()=>setSelectedInstall(p)} style={{ borderRadius:'16px' }}>
                     <div className="relative aspect-video w-full">
                       <img src={p.image} alt={p.name} className="absolute h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                      <div className="absolute bottom-0 left-0 p-4"><h3 className="text-xl font-bold text-white tracking-tight mb-1">{p.name}</h3><p className="text-white/90 font-medium text-sm">{p.location}</p></div>
+                      <div className="absolute bottom-0 left-0 p-4">
+                        <h3 className="text-xl font-bold text-white tracking-tight mb-1">{p.name}</h3>
+                        <p className="text-white/90 font-medium text-sm">{p.location}</p>
+                      </div>
                     </div>
                   </GlassCard>
                 ))}
               </div>
-            ): <div className="flex flex-col items-center justify-center py-12"><Briefcase className="w-12 h-12 mb-4" style={{ color: theme.colors.textSecondary }} /><p className="text-center text-sm font-medium" style={{ color: theme.colors.textSecondary }}>No installations recorded yet</p><p className="text-center text-xs mt-1" style={{ color: theme.colors.textSecondary }}>Add install photos and details to build your portfolio</p></div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12">
+                <Briefcase className="w-12 h-12 mb-4" style={{ color: theme.colors.textSecondary }} />
+                <p className="text-center text-sm font-medium" style={{ color: theme.colors.textSecondary }}>No installations recorded yet</p>
+                <p className="text-center text-xs mt-1" style={{ color: theme.colors.textSecondary }}>Add install photos and details to build your portfolio</p>
+              </div>
+            )
           )}
         </div>
       </div>
+      {/* Total footer - positioned above bottom nav */}
       {projectsTab==='pipeline' && (
-        <div className="fixed bottom-0 left-0 right-0 z-30" style={{ backgroundColor: theme.colors.surface, borderTop:`1px solid ${theme.colors.border}` }}>
-          <div className={`px-5 py-9 flex items-center justify-between ${contentMaxWidth}`}>
-            <div className="inline-flex items-center gap-2 text-[16px] font-bold" style={{ color: theme.colors.textPrimary }}><span>Total:</span></div>
-            <div className="text-3xl font-extrabold tracking-tight" style={{ color: theme.colors.accent }}>{fmtCurrency(stageTotals.totalValue)}</div>
+        <div className="sticky bottom-0 left-0 right-0 z-20 pb-[env(safe-area-inset-bottom)]" style={{ backgroundColor: theme.colors.surface, borderTop:`1px solid ${theme.colors.border}` }}>
+          <div className={`px-5 py-4 flex items-center justify-between ${contentMaxWidth}`}>
+            <div className="inline-flex items-center gap-2 text-[16px] font-bold" style={{ color: theme.colors.textPrimary }}>
+              <span>Total:</span>
+            </div>
+            <div className="text-2xl font-extrabold tracking-tight" style={{ color: theme.colors.accent }}>
+              {fmtCurrency(stageTotals.totalValue)}
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 });
+

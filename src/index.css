@@ -66,6 +66,25 @@ html, body {
     color: var(--jsi-charcoal);
 }
 
+/* iOS PWA Status Bar - extend background to safe area */
+@supports (padding-top: env(safe-area-inset-top)) {
+    html {
+        padding-top: env(safe-area-inset-top);
+        background-color: var(--jsi-warm-beige);
+    }
+    
+    body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: env(safe-area-inset-top);
+        background-color: var(--jsi-warm-beige);
+        z-index: 9999;
+    }
+}
+
 #root { 
     height: var(--app-height); 
     width: 100%; 
