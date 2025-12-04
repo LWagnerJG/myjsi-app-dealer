@@ -224,18 +224,29 @@ export const CommunityScreen = ({
             {/* Top controls raised */}
             <div className={`px-4 pt-3 pb-1 w-full ${contentMaxWidth}`}>
               <div className="flex w-full gap-3 items-center">
-                {/* JSI Unified Toggle */}
+                {/* JSI Unified Pill Toggle - Inset style matching Projects */}
                 <div className="flex-grow max-w-xs">
-                  <TabToggle
-                    options={viewModeOptions}
-                    value={viewMode}
-                    onChange={setViewMode}
-                    theme={theme}
-                    size="md"
-                  />
+                  <div className="inline-flex rounded-full p-1 shadow-inner" style={{ backgroundColor: theme.colors.stone || '#E3E0D8' }}>
+                    {viewModeOptions.map(opt => {
+                      const isActive = opt.key === viewMode;
+                      return (
+                        <button
+                          key={opt.key}
+                          onClick={() => setViewMode(opt.key)}
+                          className={`px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${isActive ? 'shadow-md' : ''}`}
+                          style={{
+                            backgroundColor: isActive ? '#fff' : 'transparent',
+                            color: isActive ? theme.colors.accent : theme.colors.textSecondary,
+                          }}
+                        >
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <button onClick={openCreateContentModal} className="community-post-btn h-11 ml-auto inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-sm px-6" style={{ backgroundColor: theme.colors.accent, color:'#fff', boxShadow:'0 4px 14px rgba(0,0,0,0.08)' }}>
-                  <Plus className="w-4.5 h-4.5" /> <span className="truncate">Post</span>
+                <button onClick={openCreateContentModal} className="community-post-btn h-10 ml-auto inline-flex items-center justify-center gap-2 rounded-full text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-md px-5" style={{ backgroundColor: theme.colors.accent, color:'#fff' }}>
+                  <Plus className="w-4 h-4" /> <span className="truncate">Post</span>
                 </button>
               </div>
             </div>

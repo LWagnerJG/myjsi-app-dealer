@@ -249,7 +249,8 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
   const updateOpportunity = updated => setOpportunities(prev=> prev.map(o=> o.id===updated.id? updated:o));
   const addInstallPhotos = files => { if(!files||!selectedInstall) return; const arr=Array.from(files); setMyProjects(prev=> prev.map(p=> p.id===selectedInstall.id? {...p, photos:[...(p.photos||[]), ...arr]}:p)); setSelectedInstall(prev=> prev? {...prev, photos:[...(prev.photos||[]), ...arr]}: prev); };
   
-  const contentMaxWidth = isDesktop ? 'max-w-3xl mx-auto w-full' : '';
+  // Desktop: center content, account for sidebar
+  const contentMaxWidth = isDesktop ? 'max-w-4xl mx-auto w-full lg:pl-20' : '';
   
   const projectTabOptions = [
     { key: 'pipeline', label: 'Active Projects' },
@@ -263,55 +264,87 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
   
   return (
     <div className="h-full flex flex-col" style={{ backgroundColor: theme.colors.background }}>
-      <div className={`sticky top-0 z-10 transition-all duration-300 ${isScrolled?'shadow-md':''}`} style={{ backgroundColor: isScrolled? `${theme.colors.background}e0`: theme.colors.background, backdropFilter: isScrolled? 'blur(12px)': 'none', WebkitBackdropFilter: isScrolled? 'blur(12px)': 'none', borderBottom:`1px solid ${isScrolled? theme.colors.border+'40':'transparent'}` }}>
-        <div className={`px-4 pt-4 pb-2 flex items-center gap-3 ${contentMaxWidth}`}>
-          <div className="flex-grow max-w-sm">
-            <TabToggle
-              options={projectTabOptions}
-              value={projectsTab}
-              onChange={setProjectsTab}
-              theme={theme}
-              size="md"
-            />
+      {/* Premium Header */}
+      <div className={`sticky top-0 z-10 transition-all duration-300 ${isScrolled ? 'shadow-lg' : ''}`} style={{ backgroundColor: isScrolled ? `${theme.colors.background}f5` : theme.colors.background, backdropFilter: isScrolled ? 'blur(16px)' : 'none', WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'none' }}>
+        <div className={`px-4 lg:px-6 pt-4 lg:pt-6 pb-3 ${contentMaxWidth}`}>
+          {/* Top row: Toggle + New Button */}
+          <div className="flex items-center gap-3">
+            {/* Premium Pill Tab Toggle - Inset style */}
+            <div className="flex-1 max-w-md">
+              <div className="inline-flex rounded-full p-1 shadow-inner" style={{ backgroundColor: theme.colors.stone || '#E3E0D8' }}>
+                {projectTabOptions.map(opt => {
+                  const isActive = opt.key === projectsTab;
+                  return (
+                    <button
+                      key={opt.key}
+                      onClick={() => setProjectsTab(opt.key)}
+                      className={`px-5 lg:px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${isActive ? 'shadow-md' : ''}`}
+                      style={{
+                        backgroundColor: isActive ? '#fff' : 'transparent',
+                        color: isActive ? theme.colors.accent : theme.colors.textSecondary,
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Premium + New Button - Pill shape */}
+            <button 
+              onClick={() => onNavigate(projectsTab === 'pipeline' ? 'new-lead' : 'add-new-install')} 
+              className="h-11 px-6 rounded-full text-sm font-bold transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg flex items-center gap-2"
+              style={{ 
+                backgroundColor: theme.colors.accent, 
+                color: '#fff',
+              }}
+            >
+              <span className="text-lg leading-none">+</span>
+              <span className="hidden sm:inline">New {projectsTab === 'pipeline' ? 'Project' : 'Install'}</span>
+              <span className="sm:hidden">New</span>
+            </button>
           </div>
-          {projectsTab==='pipeline' && <button onClick={()=>onNavigate('new-lead')} className="h-11 inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all shadow-sm px-5" style={{ backgroundColor: theme.colors.accent, color:'#fff' }}>+ New</button>}
-          {projectsTab==='my-projects' && <button onClick={()=>onNavigate('add-new-install')} className="h-11 inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all shadow-sm px-5" style={{ backgroundColor: theme.colors.accent, color:'#fff' }}>+ New</button>}
+          
+          {/* Stage Pipeline Filter */}
+          {projectsTab === 'pipeline' && (
+            <div className="mt-4">
+              <FilterChips
+                options={stageOptions}
+                value={selectedPipelineStage}
+                onChange={setSelectedPipelineStage}
+                theme={theme}
+                showArrows={true}
+              />
+            </div>
+          )}
         </div>
-        {projectsTab==='pipeline' && (
-          <div className={`px-4 mt-1 pb-3 ${contentMaxWidth}`}>
-            <FilterChips
-              options={stageOptions}
-              value={selectedPipelineStage}
-              onChange={setSelectedPipelineStage}
-              theme={theme}
-              showArrows={true}
-            />
-          </div>
-        )}
       </div>
+      
+      {/* Content Area */}
       <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className={`px-4 pt-4 pb-44 space-y-3 ${contentMaxWidth}`}>
+        <div className={`px-4 lg:px-6 pt-4 space-y-3 ${contentMaxWidth}`} style={{ paddingBottom: projectsTab === 'pipeline' ? '180px' : '120px' }}>
           {projectsTab==='pipeline' && (
             filteredOpportunities.length ? (
               <div className={isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-3'}>
                 {filteredOpportunities.map(opp=> <ProjectCard key={opp.id} opp={opp} theme={theme} onClick={()=>setSelectedOpportunity(opp)} />)}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Briefcase className="w-12 h-12 mb-4" style={{ color: theme.colors.textSecondary }} />
-                <p className="text-center text-sm font-medium" style={{ color: theme.colors.textSecondary }}>No projects in {selectedPipelineStage}</p>
-                <p className="text-center text-xs mt-1" style={{ color: theme.colors.textSecondary }}>Add a new project to get started</p>
+              <div className="flex flex-col items-center justify-center py-16">
+                <Briefcase className="w-14 h-14 mb-4" style={{ color: theme.colors.textSecondary, opacity: 0.5 }} />
+                <p className="text-center text-base font-semibold" style={{ color: theme.colors.textSecondary }}>No projects in {selectedPipelineStage}</p>
+                <p className="text-center text-sm mt-1" style={{ color: theme.colors.textSecondary, opacity: 0.7 }}>Add a new project to get started</p>
               </div>
             )
           )}
           {projectsTab==='my-projects' && (
             (myProjects||[]).length ? (
-              <div className={isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-3'}>
+              <div className={isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'}>
                 {(myProjects||[]).map(p=> (
-                  <GlassCard key={p.id} theme={theme} className="p-0 overflow-hidden cursor-pointer group transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0" variant="elevated" onClick={()=>setSelectedInstall(p)} style={{ borderRadius:'16px' }}>
+                  <GlassCard key={p.id} theme={theme} className="p-0 overflow-hidden cursor-pointer group transition-all duration-200 hover:-translate-y-1 hover:shadow-xl active:translate-y-0" variant="elevated" onClick={()=>setSelectedInstall(p)} style={{ borderRadius:'20px' }}>
                     <div className="relative aspect-video w-full">
-                      <img src={p.image} alt={p.name} className="absolute h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <img src={p.image} alt={p.name} className="absolute h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                       <div className="absolute bottom-0 left-0 p-4">
                         <h3 className="text-xl font-bold text-white tracking-tight mb-1">{p.name}</h3>
                         <p className="text-white/90 font-medium text-sm">{p.location}</p>
@@ -321,23 +354,35 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Briefcase className="w-12 h-12 mb-4" style={{ color: theme.colors.textSecondary }} />
-                <p className="text-center text-sm font-medium" style={{ color: theme.colors.textSecondary }}>No installations recorded yet</p>
-                <p className="text-center text-xs mt-1" style={{ color: theme.colors.textSecondary }}>Add install photos and details to build your portfolio</p>
+              <div className="flex flex-col items-center justify-center py-16">
+                <Briefcase className="w-14 h-14 mb-4" style={{ color: theme.colors.textSecondary, opacity: 0.5 }} />
+                <p className="text-center text-base font-semibold" style={{ color: theme.colors.textSecondary }}>No installations recorded yet</p>
+                <p className="text-center text-sm mt-1" style={{ color: theme.colors.textSecondary, opacity: 0.7 }}>Add install photos to build your portfolio</p>
               </div>
             )
           )}
         </div>
       </div>
-      {/* Total footer - positioned above bottom nav */}
+      
+      {/* Total Footer - Elevated above bottom nav with better contrast */}
       {projectsTab==='pipeline' && (
-        <div className="sticky bottom-0 left-0 right-0 z-20 pb-[env(safe-area-inset-bottom)]" style={{ backgroundColor: theme.colors.surface, borderTop:`1px solid ${theme.colors.border}` }}>
-          <div className={`px-5 py-4 flex items-center justify-between ${contentMaxWidth}`}>
-            <div className="inline-flex items-center gap-2 text-[16px] font-bold" style={{ color: theme.colors.textPrimary }}>
-              <span>Total:</span>
+        <div 
+          className={`${isDesktop ? 'absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full shadow-2xl max-w-md w-[calc(100%-3rem)]' : 'fixed bottom-20 left-4 right-4 rounded-full shadow-2xl'}`}
+          style={{ 
+            background: 'linear-gradient(135deg, rgba(53,53,53,0.95) 0%, rgba(74,69,67,0.95) 100%)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            zIndex: 25,
+          }}
+        >
+          <div className="px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-white/70">
+                {selectedPipelineStage} Total
+              </span>
             </div>
-            <div className="text-2xl font-extrabold tracking-tight" style={{ color: theme.colors.accent }}>
+            <div className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
               {fmtCurrency(stageTotals.totalValue)}
             </div>
           </div>

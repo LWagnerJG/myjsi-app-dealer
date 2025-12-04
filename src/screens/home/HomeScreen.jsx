@@ -133,30 +133,31 @@ const CustomizeHomeModal = ({ theme, isOpen, onClose, activeAppIds, onSave }) =>
         });
     };
 
-    const handleSave = () => { onSave(selectedIds); onClose(); };
+    // Auto-save and close when clicking backdrop
+    const handleBackdropClick = () => { onSave(selectedIds); onClose(); };
     const handleReset = () => { setSelectedIds(DEFAULT_QUICK_ACCESS_IDS); };
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-end justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.4)' }} onClick={onClose}>
-            <div className="w-full max-w-lg rounded-t-2xl max-h-[80vh] overflow-hidden flex flex-col" style={{ backgroundColor: theme.colors.background }} onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-end justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={handleBackdropClick}>
+            <div className="w-full max-w-lg rounded-t-3xl max-h-[70vh] overflow-hidden flex flex-col mb-0" style={{ backgroundColor: theme.colors.background, paddingBottom: 'calc(80px + env(safe-area-inset-bottom))' }} onClick={e => e.stopPropagation()}>
                 <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: theme.colors.border }}>
                     <div>
                         <h2 className="text-base font-bold" style={{ color: theme.colors.textPrimary }}>Customize Quick Access</h2>
                         <p className="text-xs mt-0.5" style={{ color: theme.colors.textSecondary }}>{selectedCount} of {MAX_QUICK_ACCESS_APPS} apps selected</p>
                     </div>
-                    <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.colors.subtle }}>
+                    <button onClick={handleBackdropClick} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.colors.subtle }}>
                         <X className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
                     </button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-4">
-                    <div className="grid grid-cols-3 gap-2">
+                <div className="flex-1 overflow-y-auto p-4 pb-6">
+                    <div className="grid grid-cols-3 gap-2.5">
                         {allAppsForSelection.map(app => {
                             const isActive = selectedIds.includes(app.id);
                             const isDisabled = !isActive && !canAddMore;
                             return (
-                                <button key={app.id} onClick={() => !isDisabled && toggleApp(app.id)} disabled={isDisabled} className="flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all relative" style={{ backgroundColor: isActive ? `${theme.colors.accent}10` : theme.colors.surface, border: `1.5px solid ${isActive ? theme.colors.accent : theme.colors.border}`, opacity: isDisabled ? 0.4 : 1, cursor: isDisabled ? 'not-allowed' : 'pointer' }}>
+                                <button key={app.id} onClick={() => !isDisabled && toggleApp(app.id)} disabled={isDisabled} className="flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all relative" style={{ backgroundColor: isActive ? `${theme.colors.accent}10` : theme.colors.surface, border: `1.5px solid ${isActive ? theme.colors.accent : theme.colors.border}`, opacity: isDisabled ? 0.4 : 1, cursor: isDisabled ? 'not-allowed' : 'pointer' }}>
                                     {isActive && <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.colors.accent }}><Check className="w-2.5 h-2.5 text-white" /></div>}
                                     <app.icon className="w-5 h-5" style={{ color: isActive ? theme.colors.accent : theme.colors.textSecondary }} />
                                     <span className="text-[10px] font-medium text-center leading-tight" style={{ color: isActive ? theme.colors.accent : theme.colors.textPrimary }}>{app.name}</span>
@@ -166,8 +167,8 @@ const CustomizeHomeModal = ({ theme, isOpen, onClose, activeAppIds, onSave }) =>
                     </div>
                 </div>
                 <div className="p-4 border-t flex gap-3" style={{ borderColor: theme.colors.border }}>
-                    <button onClick={handleReset} className="flex-1 py-2.5 rounded-xl font-medium text-sm transition-all active:scale-[0.98]" style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textSecondary }}>Reset</button>
-                    <button onClick={handleSave} className="flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all active:scale-[0.98]" style={{ backgroundColor: theme.colors.accent, color: '#FFFFFF' }}>Save</button>
+                    <button onClick={handleReset} className="flex-1 py-3 rounded-full font-semibold text-sm transition-all active:scale-[0.98]" style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textSecondary }}>Reset</button>
+                    <button onClick={handleBackdropClick} className="flex-1 py-3 rounded-full font-bold text-sm transition-all active:scale-[0.98]" style={{ backgroundColor: theme.colors.accent, color: '#FFFFFF' }}>Done</button>
                 </div>
             </div>
         </div>

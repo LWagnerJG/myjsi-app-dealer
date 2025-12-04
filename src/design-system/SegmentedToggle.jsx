@@ -249,7 +249,7 @@ export const SegmentedToggle = ({
 
 /**
  * JSI TabToggle - Simpler two-option toggle
- * Commonly used for binary choices like "Active/Installations", "Ship Date/PO Date"
+ * Now uses inset pill style with white sliding indicator
  */
 export const TabToggle = ({
     options = [],           // [{ key: string, label: string }]
@@ -260,38 +260,37 @@ export const TabToggle = ({
     className = '',
 }) => {
     const sizes = {
-        sm: { height: 36, text: 12 },
-        md: { height: 44, text: 13 },
-        lg: { height: 52, text: 14 },
+        sm: { height: 36, text: 12, py: 6 },
+        md: { height: 44, text: 13, py: 8 },
+        lg: { height: 52, text: 14, py: 10 },
     };
     
     const s = sizes[size] || sizes.md;
     const accentColor = theme?.colors?.accent || JSI_COLORS.charcoal;
+    const stoneColor = theme?.colors?.stone || JSI_COLORS.stone || '#E3E0D8';
     
     return (
         <div
-            className={`inline-flex rounded-full border overflow-hidden ${className}`}
+            className={`inline-flex rounded-full p-1 shadow-inner ${className}`}
             style={{
-                height: s.height,
-                borderColor: theme?.colors?.border || JSI_COLORS.stone,
-                backgroundColor: JSI_COLORS.white,
-                boxShadow: DESIGN_TOKENS.shadows.sm,
+                backgroundColor: stoneColor,
             }}
         >
-            {options.map((opt, index) => {
+            {options.map((opt) => {
                 const isActive = opt.key === value;
                 
                 return (
                     <button
                         key={opt.key}
                         onClick={() => onChange?.(opt.key)}
-                        className="flex-1 px-5 flex items-center justify-center transition-all duration-200"
+                        className={`flex-1 px-5 flex items-center justify-center transition-all duration-300 rounded-full ${isActive ? 'shadow-md' : ''}`}
                         style={{
+                            height: s.height - 8,
                             fontSize: s.text,
                             fontFamily: JSI_TYPOGRAPHY.fontFamily,
                             fontWeight: 600,
-                            backgroundColor: isActive ? accentColor : 'transparent',
-                            color: isActive ? JSI_COLORS.white : theme?.colors?.textPrimary || JSI_COLORS.charcoal,
+                            backgroundColor: isActive ? '#ffffff' : 'transparent',
+                            color: isActive ? accentColor : theme?.colors?.textSecondary || '#666666',
                         }}
                     >
                         {opt.label}
