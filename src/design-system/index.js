@@ -22,6 +22,7 @@ export {
 export { Button, IconButton, ArrowButton } from './Button.jsx';
 export { Badge, StatusBadge, CountBadge, NewBadge, QuickshipBadge, TagBadge } from './Badge.jsx';
 export { Input, SearchInput, Textarea, Select } from './Input.jsx';
+export { SegmentedToggle, TabToggle, FilterChips } from './SegmentedToggle.jsx';
 export { 
     Skeleton, 
     SkeletonText, 

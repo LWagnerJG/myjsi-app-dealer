@@ -4,6 +4,7 @@ import { Plus, Briefcase, DollarSign, LineChart, Percent, ArrowRight, X } from '
 import { STAGES, VERTICALS, COMPETITORS, DISCOUNT_OPTIONS, PO_TIMEFRAMES, INITIAL_DESIGN_FIRMS } from './data.js';
 import { ProbabilitySlider } from '../../components/forms/ProbabilitySlider.jsx';
 import { ToggleSwitch } from '../../components/forms/ToggleSwitch.jsx';
+import { TabToggle, FilterChips } from '../../design-system/SegmentedToggle.jsx';
 import { JSI_SERIES } from '../products/data.js';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
 
@@ -263,41 +264,43 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
   // Responsive max-width
   const contentMaxWidth = isDesktop ? 'max-w-3xl mx-auto w-full' : '';
   
+  // Toggle options
+  const projectTabOptions = [
+    { key: 'pipeline', label: 'Active Projects' },
+    { key: 'my-projects', label: 'Installations' },
+  ];
+  
+  // Stage filter options for FilterChips
+  const stageOptions = STAGES.map(stage => ({ key: stage, label: stage }));
+  
   if(selectedOpportunity) return <OpportunityDetail opp={selectedOpportunity} theme={theme} onBack={()=>setSelectedOpportunity(null)} onUpdate={u=>{ updateOpportunity(u); setSelectedOpportunity(u); }} />;
   if(selectedInstall) return <InstallationDetail project={selectedInstall} theme={theme} onAddPhotoFiles={addInstallPhotos} />;
   return (
     <div className="h-full flex flex-col" style={{ backgroundColor: theme.colors.background }}>
       <div className={`sticky top-0 z-10 transition-all duration-300 ${isScrolled?'shadow-md':''}`} style={{ backgroundColor: isScrolled? `${theme.colors.background}e0`: theme.colors.background, backdropFilter: isScrolled? 'blur(12px)': 'none', WebkitBackdropFilter: isScrolled? 'blur(12px)': 'none', borderBottom:`1px solid ${isScrolled? theme.colors.border+'40':'transparent'}` }}>
-        <div className={`px-4 pt-4 pb-2 flex items-center gap-4 ${contentMaxWidth}`}>
-          <div className="flex w-full gap-3">
-            <div className="flex flex-[2] rounded-full border overflow-hidden h-12 shadow-sm" style={{ borderColor: theme.colors.border, background:'#fff', minWidth:260 }}>
-              <button onClick={()=>setProjectsTab('pipeline')} className="flex-1 h-full px-6 text-sm font-semibold flex flex-col items-center justify-center transition-colors" style={{ backgroundColor: projectsTab==='pipeline'? theme.colors.accent:'#fff', color: projectsTab==='pipeline'? '#fff': theme.colors.textPrimary }}>
-                <span>Active</span><span className="-mt-[0px]">Projects</span>
-              </button>
-              <button onClick={()=>setProjectsTab('my-projects')} className="flex-1 h-full px-6 text-sm font-semibold flex items-center justify-center transition-colors" style={{ backgroundColor: projectsTab==='my-projects'? theme.colors.accent:'#fff', color: projectsTab==='my-projects'? '#fff': theme.colors.textPrimary }}>Installations</button>
-            </div>
-            {projectsTab==='pipeline' && <button onClick={()=>onNavigate('new-lead')} className="flex-[1] h-12 inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all shadow-sm px-6" style={{ backgroundColor: theme.colors.accent, color:'#fff' }}>+ New Project</button>}
-            {projectsTab==='my-projects' && <button onClick={()=>onNavigate('add-new-install')} className="flex-[1] h-12 inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all shadow-sm px-6" style={{ backgroundColor: theme.colors.accent, color:'#fff' }}>+ New Install</button>}
+        <div className={`px-4 pt-4 pb-2 flex items-center gap-3 ${contentMaxWidth}`}>
+          {/* JSI Unified Toggle */}
+          <div className="flex-grow max-w-sm">
+            <TabToggle
+              options={projectTabOptions}
+              value={projectsTab}
+              onChange={setProjectsTab}
+              theme={theme}
+              size="md"
+            />
           </div>
+          {projectsTab==='pipeline' && <button onClick={()=>onNavigate('new-lead')} className="h-11 inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all shadow-sm px-5" style={{ backgroundColor: theme.colors.accent, color:'#fff' }}>+ New</button>}
+          {projectsTab==='my-projects' && <button onClick={()=>onNavigate('add-new-install')} className="h-11 inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all shadow-sm px-5" style={{ backgroundColor: theme.colors.accent, color:'#fff' }}>+ New</button>}
         </div>
         {projectsTab==='pipeline' && (
-          <div className={`px-4 mt-3 pt-1 pb-3 relative ${contentMaxWidth}`}>
-            <div ref={stagesScrollRef} onScroll={updateStageFade} className="relative overflow-x-auto scrollbar-hide">
-              <div className="relative flex items-center gap-4 pb-2 whitespace-nowrap pr-2">
-                {STAGES.map((stage,i)=>{ const active= selectedPipelineStage===stage; const showIndex= stage!=='Won' && stage!=='Lost'; return (
-                  <React.Fragment key={stage}>
-                    <button ref={el=> stageButtonRefs.current[i]=el} onClick={()=>setSelectedPipelineStage(stage)} className="flex items-center gap-1 text-sm font-medium transition-colors" style={{ color: active? theme.colors.accent: theme.colors.textSecondary }}>
-                      {showIndex && <span className="text-[11px] opacity-55">{i+1}.</span>}<span>{stage}</span>
-                    </button>
-                    {i<STAGES.length-1 && <ArrowRight className="w-3 h-3 opacity-40" style={{ color: theme.colors.textSecondary }} />}
-                  </React.Fragment>
-                ); })}
-                <div className="absolute left-0 right-0 bottom-0 h-px" style={{ backgroundColor: theme.colors.border }} />
-                <div className="absolute bottom-0 h-[2px] rounded-full transition-all duration-300" style={{ left:stageSlider.left, width:stageSlider.width, backgroundColor: theme.colors.accent, opacity: stageSlider.opacity }} />
-              </div>
-            </div>
-            {showStageFadeLeft && <div className="pointer-events-none absolute inset-y-0 left-0 w-6" style={{ background:`linear-gradient(to right, ${theme.colors.background}, ${theme.colors.background}00)` }} />}
-            {showStageFadeRight && <div className="pointer-events-none absolute inset-y-0 right-0 w-6" style={{ background:`linear-gradient(to left, ${theme.colors.background}, ${theme.colors.background}00)` }} />}
+          <div className={`px-4 mt-1 pb-3 ${contentMaxWidth}`}>
+            <FilterChips
+              options={stageOptions}
+              value={selectedPipelineStage}
+              onChange={setSelectedPipelineStage}
+              theme={theme}
+              showArrows={true}
+            />
           </div>
         )}
       </div>

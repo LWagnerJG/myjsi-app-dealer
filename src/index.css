@@ -9,7 +9,7 @@
 /* ============================================
    JSI VISUAL IDENTITY STYLES
    Typography: Neue Haas Grotesk Display Pro
-   Primary Color: Charcoal #353535 (NO pure black)
+   Primary Color: Warm Charcoal #4A4543 (softer than stark #353535)
    Background: Warm Beige #F0EDE8
    ============================================ */
 
@@ -22,6 +22,7 @@
     
     /* JSI Brand Colors */
     --jsi-charcoal: #353535;
+    --jsi-warm-charcoal: #4A4543;   /* Softer accent - warm brown-grey */
     --jsi-white: #FFFFFF;
     --jsi-stone: #E3E0D8;
     --jsi-warm-beige: #F0EDE8;

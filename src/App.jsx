@@ -18,6 +18,7 @@ import { CreateContentModal } from './screens/community/CreateContentModal.jsx';
 import { AnimatedScreenWrapper } from './components/common/AnimatedScreenWrapper.jsx';
 import { ProjectsScreen } from './screens/projects/ProjectsScreen.jsx';
 import { usePersistentState } from './hooks/usePersistentState.js';
+import { NavigationShell } from './components/navigation/NavigationShell.jsx';
 import { ToastHost } from './components/common/ToastHost.jsx';
 
 // Lazy load less-frequently visited resource feature screens for bundle splitting
@@ -312,31 +313,39 @@ function App() {
 
     return (
         <ToastHost theme={currentTheme}>
-        <div className="h-screen-safe w-screen font-sans flex flex-col relative" style={{ backgroundColor: currentTheme.colors.background }}>
-            <AppHeader
-                theme={currentTheme}
-                userName={userSettings.firstName}
-                showBack={navigationHistory.length > 1}
-                handleBack={handleBack}
-                onHomeClick={handleHome}
-                onProfileClick={() => setShowProfileMenu(p => !p)}
-                isDarkMode={isDarkMode}
-            />
-            <div className="flex-1 pt-[76px] overflow-hidden" style={{ backgroundColor: currentTheme.colors.background }}>
-                <AnimatedScreenWrapper screenKey={currentScreen} direction={lastNavigationDirection} onSwipeBack={navigationHistory.length > 1 ? handleBack : null}>
-                    <ScreenRouter screenKey={currentScreen} projectsScreenRef={projectsScreenRef} SuspenseFallback={suspenseFallback} {...screenProps} />
-                </AnimatedScreenWrapper>
+            <div className="h-screen-safe w-screen font-sans flex flex-col relative" style={{ backgroundColor: currentTheme.colors.background }}>
+                <AppHeader
+                    theme={currentTheme}
+                    userName={userSettings.firstName}
+                    showBack={navigationHistory.length > 1}
+                    handleBack={handleBack}
+                    onHomeClick={handleHome}
+                    onProfileClick={() => setShowProfileMenu(p => !p)}
+                    isDarkMode={isDarkMode}
+                />
+
+                {/* Persistent Navigation Layer */}
+                <NavigationShell
+                    currentScreen={currentScreen}
+                    onNavigate={handleNavigate}
+                    theme={currentTheme}
+                />
+
+                <div className="flex-1 pt-[76px] lg:pl-24 overflow-hidden" style={{ backgroundColor: currentTheme.colors.background }}>
+                    <AnimatedScreenWrapper screenKey={currentScreen} direction={lastNavigationDirection} onSwipeBack={navigationHistory.length > 1 ? handleBack : null}>
+                        <ScreenRouter screenKey={currentScreen} projectsScreenRef={projectsScreenRef} SuspenseFallback={suspenseFallback} {...screenProps} />
+                    </AnimatedScreenWrapper>
+                </div>
+                {showProfileMenu && (
+                    <ProfileMenu show={showProfileMenu} onClose={() => setShowProfileMenu(false)} onNavigate={handleNavigate} theme={currentTheme} />
+                )}
+                <VoiceModal message={voiceMessage} show={!!voiceMessage} theme={currentTheme} />
+                <SuccessToast message={successMessage} show={!!successMessage} theme={currentTheme} />
+                <CreateContentModal show={showCreateContentModal} onClose={() => setShowCreateContentModal(false)} theme={currentTheme} onCreatePost={handleCreatePost} />
+                <Modal show={alertInfo.show} onClose={() => setAlertInfo({ show: false, message: '' })} title="Alert" theme={currentTheme}>
+                    <p>{alertInfo.message}</p>
+                </Modal>
             </div>
-            {showProfileMenu && (
-                <ProfileMenu show={showProfileMenu} onClose={() => setShowProfileMenu(false)} onNavigate={handleNavigate} theme={currentTheme} />
-            )}
-            <VoiceModal message={voiceMessage} show={!!voiceMessage} theme={currentTheme} />
-            <SuccessToast message={successMessage} show={!!successMessage} theme={currentTheme} />
-            <CreateContentModal show={showCreateContentModal} onClose={() => setShowCreateContentModal(false)} theme={currentTheme} onCreatePost={handleCreatePost} />
-            <Modal show={alertInfo.show} onClose={() => setAlertInfo({ show: false, message: '' })} title="Alert" theme={currentTheme}>
-                <p>{alertInfo.message}</p>
-            </Modal>
-        </div>
         </ToastHost>
     );
 }

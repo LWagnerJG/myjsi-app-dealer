@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { LibraryGrid } from '../library/LibraryGrid.jsx';
 import { CommunityScreen } from '../community/CommunityScreen.jsx';
 import StandardSearchBar from '../../components/common/StandardSearchBar.jsx';
+import { TabToggle } from '../../design-system/SegmentedToggle.jsx';
 
 export const CommunityLibraryLayout = ({
   theme,
@@ -36,34 +37,30 @@ export const CommunityLibraryLayout = ({
 
   // Animation helper styles
   const paneTransition = prefersReducedMotion ? 'none' : 'opacity 240ms ease, transform 240ms ease';
+  
+  // Toggle options
+  const tabOptions = [
+    { key: 'community', label: 'Community' },
+    { key: 'library', label: 'Library' },
+  ];
 
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
       <div ref={headerRef} className={`sticky top-0 z-10 transition-all ${isScrolled ? 'shadow-md':''}`} style={{ backgroundColor: isScrolled? `${theme.colors.background}e8`: theme.colors.background, backdropFilter: isScrolled? 'blur(12px)':'none', borderBottom:`1px solid ${isScrolled? theme.colors.border+'40':'transparent'}`, WebkitBackdropFilter: isScrolled? 'blur(12px)':'none' }}>
         {/* Segmented toggle + Post CTA */}
         <div className="px-4 pt-4 pb-1 w-full">
-          <div className="flex w-full gap-4 items-center">
-            <div className="relative flex flex-[3] rounded-full border overflow-hidden h-12 shadow-sm" style={{ borderColor: theme.colors.border, background: '#ffffff' }}>
-              {/* animated background indicator */}
-              <div aria-hidden="true" style={{ position:'absolute', top:4, bottom:4, left: activeTab==='community'?4:'50%', width:'calc(50% - 8px)', borderRadius:9999, background: theme.colors.accent, transition: prefersReducedMotion? 'none':'left 240ms cubic-bezier(.3,1,.3,1)' }} />
-              <button
-                onClick={()=>switchTab('community')}
-                className="flex-1 h-full px-6 text-sm font-semibold flex items-center justify-center relative"
-                style={{ color: activeTab==='community'? '#ffffff' : theme.colors.textPrimary, transition:'color 160ms ease' }}
-                aria-pressed={activeTab==='community'}
-              >
-                Community
-              </button>
-              <button
-                onClick={()=>switchTab('library')}
-                className="flex-1 h-full px-6 text-sm font-semibold flex items-center justify-center relative"
-                style={{ color: activeTab==='library'? '#ffffff' : theme.colors.textPrimary, transition:'color 160ms ease' }}
-                aria-pressed={activeTab==='library'}
-              >
-                Library
-              </button>
+          <div className="flex w-full gap-3 items-center">
+            {/* JSI Unified Toggle */}
+            <div className="flex-grow max-w-xs">
+              <TabToggle
+                options={tabOptions}
+                value={activeTab}
+                onChange={switchTab}
+                theme={theme}
+                size="md"
+              />
             </div>
-            <button onClick={openCreateContentModal} className="flex-[1.2] h-12 inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-sm" style={{ backgroundColor: theme.colors.accent, color:'#fff', boxShadow:'0 4px 14px rgba(0,0,0,0.08)' }}>
+            <button onClick={openCreateContentModal} className="h-11 inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-sm px-5" style={{ backgroundColor: theme.colors.accent, color:'#fff', boxShadow:'0 4px 14px rgba(0,0,0,0.08)' }}>
               + Post
             </button>
           </div>

@@ -18,12 +18,14 @@ import {
     Filter
 } from 'lucide-react';
 import { PRODUCTS_CATEGORIES_DATA, PRODUCT_DATA, FABRICS_DATA, JSI_MODELS } from './data.js';
+import { useIsDesktop } from '../../hooks/useResponsive.js';
 
 const CategoryCard = React.memo(({
     category,
     theme,
     viewMode,
     onClick,
+    isDesktop,
     className = ''
 }) => {
     const handleClick = useCallback(() => {
@@ -39,12 +41,25 @@ const CategoryCard = React.memo(({
                 className={`p-4 overflow-hidden cursor-pointer transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${className}`}
                 onClick={handleClick}
             >
-                <h2 className="text-2xl font-bold mb-2" style={{ color: theme.colors.textPrimary }}>
+                <h2 
+                    className="font-bold mb-2" 
+                    style={{ 
+                        color: theme.colors.textPrimary,
+                        fontSize: isDesktop ? '1.5rem' : '1.25rem',
+                    }}
+                >
                     {category.name}
                 </h2>
                 <div className={`flex space-x-3 -mb-2 justify-end pr-2`}>
-                    {category.images?.map((img, index) => (
-                        <div key={index} className="overflow-hidden rounded-md w-24 h-20 flex-shrink-0 bg-neutral-100">
+                    {category.images?.slice(0, isDesktop ? 4 : 3).map((img, index) => (
+                        <div 
+                            key={index} 
+                            className="overflow-hidden rounded-lg flex-shrink-0 bg-neutral-100"
+                            style={{
+                                width: isDesktop ? '7rem' : '6rem',
+                                height: isDesktop ? '5.5rem' : '5rem',
+                            }}
+                        >
                             <img
                                 src={img}
                                 alt={`${category.name} example ${index + 1}`}
@@ -108,7 +123,8 @@ const StickyHeader = React.memo(({
     viewMode,
     onToggleViewMode,
     searchTerm,
-    onSearchChange
+    onSearchChange,
+    isDesktop
 }) => (
     <div
         className={`sticky top-0 z-10 transition-all duration-300 ${isScrolled ? 'shadow-md' : ''
@@ -121,7 +137,13 @@ const StickyHeader = React.memo(({
             padding: '16px'
         }}
     >
-        <div className="flex items-center space-x-3">
+        <div 
+            className="flex items-center space-x-3"
+            style={{
+                maxWidth: isDesktop ? '56rem' : '100%',
+                margin: isDesktop ? '0 auto' : '0',
+            }}
+        >
             <StandardSearchBar
                 value={searchTerm}
                 onChange={onSearchChange}
@@ -157,6 +179,7 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
     const [viewMode, setViewMode] = useState('grid');
     const [isScrolled, setIsScrolled] = useState(false);
     const scrollContainerRef = useRef(null);
+    const isDesktop = useIsDesktop();
 
     const handleScroll = useCallback(() => {
         if (scrollContainerRef.current) {
@@ -188,8 +211,11 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
         setSearchTerm(e.target.value);
     }, []);
 
+    // Responsive content max-width
+    const contentMaxWidth = isDesktop ? 'max-w-4xl mx-auto w-full' : '';
+
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
             <StickyHeader
                 isScrolled={isScrolled}
                 theme={theme}
@@ -197,28 +223,39 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
                 onToggleViewMode={toggleViewMode}
                 searchTerm={searchTerm}
                 onSearchChange={handleSearchChange}
+                isDesktop={isDesktop}
             />
             <div
                 ref={scrollContainerRef}
                 onScroll={handleScroll}
                 className="flex-1 overflow-y-auto px-4 pb-4 scrollbar-hide"
             >
-                {filteredCategories.length === 0 ? (
-                    <EmptyState searchTerm={searchTerm} theme={theme} />
-                ) : (
-                    <div className={viewMode === 'grid' ? 'space-y-6' : 'space-y-2'} style={{ paddingTop: '8px' }}>
-                        {filteredCategories.map(category => (
-                            <CategoryCard
-                                key={category.name}
-                                category={category}
-                                theme={theme}
-                                viewMode={viewMode}
-                                onClick={handleCategoryClick}
-                                className={category.name === 'Benches' ? 'mt-4' : ''}
-                            />
-                        ))}
-                    </div>
-                )}
+                <div className={contentMaxWidth}>
+                    {filteredCategories.length === 0 ? (
+                        <EmptyState searchTerm={searchTerm} theme={theme} />
+                    ) : (
+                        <div 
+                            className={
+                                viewMode === 'grid' 
+                                    ? (isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-4')
+                                    : (isDesktop ? 'grid grid-cols-2 gap-3' : 'space-y-2')
+                            } 
+                            style={{ paddingTop: '8px' }}
+                        >
+                            {filteredCategories.map(category => (
+                                <CategoryCard
+                                    key={category.name}
+                                    category={category}
+                                    theme={theme}
+                                    viewMode={viewMode}
+                                    onClick={handleCategoryClick}
+                                    isDesktop={isDesktop}
+                                    className={category.name === 'Benches' ? 'mt-4' : ''}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -16,6 +16,11 @@ const JSI_PALETTE = {
     sageGrey: '#DFE2DD',      // Cool neutral
     lightGrey: '#EAECE9',     // Lightest neutral
     
+    // Softer Accent Options (less stark than pure charcoal)
+    warmCharcoal: '#4A4543',  // Warmer, softer charcoal
+    earthBrown: '#5C534A',    // Earth-toned brown-grey
+    slateGrey: '#4E5552',     // Cooler slate option
+    
     // Semantic
     success: '#4A7C59',       // Earthy green
     warning: '#C4956A',       // Warm amber
@@ -27,8 +32,8 @@ export const lightTheme = {
     colors: {
         background: JSI_PALETTE.warmBeige,        // #F0EDE8 - Warm Beige
         surface: JSI_PALETTE.white,               // #FFFFFF - Clean white for cards
-        primary: JSI_PALETTE.charcoal,            // #353535 - Primary action color
-        accent: JSI_PALETTE.charcoal,             // #353535 - Buttons, CTAs
+        primary: JSI_PALETTE.charcoal,            // #353535 - Primary text
+        accent: JSI_PALETTE.warmCharcoal,         // #4A4543 - Softer accent for buttons/CTAs
         secondary: JSI_PALETTE.sageGrey,          // #DFE2DD - Secondary elements
         textPrimary: JSI_PALETTE.charcoal,        // #353535 - Main text (NO pure black)
         textSecondary: '#5C5C5C',                 // Softer secondary text
@@ -52,7 +57,7 @@ export const darkTheme = {
         background: '#1A1A1A',                    // Deep charcoal (not pure black)
         surface: '#252525',                       // Card surfaces
         primary: JSI_PALETTE.white,               // Inverted for dark mode
-        accent: JSI_PALETTE.white,                // White accents on dark
+        accent: '#B8B0A8',                        // Warm light accent on dark
         secondary: '#888888',                     // Muted secondary
         textPrimary: '#F5F5F5',                   // Off-white text
         textSecondary: '#A0A0A0',                 // Softer secondary

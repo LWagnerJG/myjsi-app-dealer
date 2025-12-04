@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import { Calendar, List, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 import { SearchInput } from '../../components/common/SearchInput.jsx';
+import { TabToggle } from '../../design-system/SegmentedToggle.jsx';
 import { ORDER_DATA, STATUS_COLORS } from './data.js';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
 
@@ -155,7 +156,12 @@ export const OrdersScreen = ({ theme, onNavigate }) => {
 
   const grouped = useMemo(()=> filtered.reduce((acc,o)=>{ const raw=o[dateType]; if(!raw) return acc; const d=new Date(raw); if(isNaN(d)) return acc; const key=d.toISOString().split('T')[0]; if(!acc[key]) acc[key]={orders:[], total:0}; acc[key].orders.push(o); acc[key].total+=o.net||0; return acc; },{}),[filtered,dateType]);
   const groupKeys = useMemo(()=> Object.keys(grouped).sort((a,b)=> new Date(b)-new Date(a)),[grouped]);
-  const underlineTransform = dateType==='shipDate'? 'translateX(0%)':'translateX(100%)';
+
+  // Date toggle options
+  const dateOptions = [
+    { key: 'shipDate', label: 'Ship Date' },
+    { key: 'date', label: 'PO Date' },
+  ];
 
   // Responsive max-width for content
   const contentMaxWidth = isDesktop ? 'max-w-3xl mx-auto w-full' : '';
@@ -163,19 +169,20 @@ export const OrdersScreen = ({ theme, onNavigate }) => {
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
       <div className={`sticky top-0 z-10 transition-all duration-300 ${isScrolled?'shadow-md':''}`} style={{ backgroundColor: isScrolled? `${theme.colors.background}e0`:'transparent', backdropFilter: isScrolled? 'blur(12px)':'none', WebkitBackdropFilter: isScrolled? 'blur(12px)':'none', borderBottom:`1px solid ${isScrolled? theme.colors.border+'40':'transparent'}` }}>
-        <div className={`px-4 pt-3 pb-2 flex flex-col gap-2 ${contentMaxWidth}`}>
+        <div className={`px-4 pt-3 pb-2 flex flex-col gap-3 ${contentMaxWidth}`}>
           <div style={{ height:56 }} className="flex-grow">
             <SearchInput value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} placeholder="Search Orders" theme={theme} variant="header" />
           </div>
-          <div className="flex gap-3">
-            <div className="relative flex-grow max-w-md h-11 flex items-end">
-              <div className="flex relative select-none w-full">
-                {['shipDate','date'].map(t=> (
-                  <button key={t} onClick={()=>setDateType(t)} className="flex-1 pb-2 text-sm font-medium" style={{ color: t===dateType? theme.colors.textPrimary: theme.colors.textSecondary, transition:'color .25s' }}>{t==='shipDate'? 'Ship Date':'PO Date'}</button>
-                ))}
-                <span className="absolute bottom-0 left-0 h-[3px] w-1/2 rounded-full transition-transform duration-300" style={{ backgroundColor: theme.colors.accent, transform: underlineTransform }} />
-                <span className="absolute bottom-0 left-0 w-full h-px" style={{ backgroundColor: theme.colors.subtle }} />
-              </div>
+          <div className="flex items-center gap-3">
+            {/* JSI Unified Toggle */}
+            <div className="flex-grow max-w-xs">
+              <TabToggle
+                options={dateOptions}
+                value={dateType}
+                onChange={setDateType}
+                theme={theme}
+                size="md"
+              />
             </div>
             <button onClick={()=> setViewMode(v=> v==='list'? 'calendar':'list')} className="h-11 w-11 rounded-full flex items-center justify-center active:scale-90 transition flex-shrink-0" style={{ backgroundColor: theme.colors.surface, boxShadow:'0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }} title={viewMode==='list'? 'Calendar View':'List View'}>
               {viewMode==='list'? <Calendar className="w-5 h-5" style={{ color: theme.colors.textPrimary }} /> : <List className="w-5 h-5" style={{ color: theme.colors.textPrimary }} />}
