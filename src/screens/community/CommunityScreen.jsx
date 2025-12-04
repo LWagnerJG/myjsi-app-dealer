@@ -2,6 +2,7 @@ import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 import StandardSearchBar from '../../components/common/StandardSearchBar.jsx';
 import { Heart, MessageCircle, Share2, Plus, Users, Send } from 'lucide-react';
+import { useIsDesktop } from '../../hooks/useResponsive.js';
 
 // Community feed screen
 export const CommunityScreen = ({
@@ -24,6 +25,7 @@ export const CommunityScreen = ({
   const [refreshKey, setRefreshKey] = useState(0);
   const [viewMode, setViewMode] = useState('feed'); // 'feed' | 'library'
   const scrollRef = useRef(null);
+  const isDesktop = useIsDesktop();
 
   useEffect(() => {
     if (document.getElementById('community-no-scrollbar-style')) return;
@@ -205,56 +207,61 @@ export const CommunityScreen = ({
 
   const doRefresh = () => { if (onRefresh) { onRefresh(); } else { setRefreshKey(k=>k+1); } };
 
-  return (
-    <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
-      {!embedMode && (
-        <div className={`sticky top-0 z-10 transition-all ${isScrolled?'shadow-md':''}`} style={{ backgroundColor: isScrolled?`${theme.colors.background}e8`:theme.colors.background, backdropFilter:isScrolled?'blur(12px)':'none', borderBottom:`1px solid ${isScrolled?theme.colors.border+'40':'transparent'}` }}>
-          {/* Top controls raised */}
-          <div className="px-4 pt-3 pb-1 w-full">
-            <div className="flex w-full gap-3 items-center">
-              <div className="flex gap-2">
-                <button onClick={()=>setViewMode('feed')} className="h-11 px-6 text-sm font-semibold rounded-full transition-all" style={{ backgroundColor: viewMode==='feed'? theme.colors.accent:'#ffffff', color: viewMode==='feed'? '#fff': theme.colors.textPrimary, boxShadow:'0 2px 4px rgba(0,0,0,0.06)', border:`1px solid ${viewMode==='feed'? theme.colors.accent: theme.colors.border}` }}>Community</button>
-                <button onClick={()=>setViewMode('library')} className="h-11 px-6 text-sm font-semibold rounded-full transition-all" style={{ backgroundColor: viewMode==='library'? theme.colors.accent:'#ffffff', color: viewMode==='library'? '#fff': theme.colors.textPrimary, boxShadow:'0 2px 4px rgba(0,0,0,0.06)', border:`1px solid ${viewMode==='library'? theme.colors.accent: theme.colors.border}` }}>Library</button>
+    // Responsive container class
+    const contentMaxWidth = isDesktop ? 'max-w-2xl mx-auto' : '';
+
+    return (
+      <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
+        {!embedMode && (
+          <div className={`sticky top-0 z-10 transition-all ${isScrolled?'shadow-md':''}`} style={{ backgroundColor: isScrolled?`${theme.colors.background}e8`:theme.colors.background, backdropFilter:isScrolled?'blur(12px)':'none', borderBottom:`1px solid ${isScrolled?theme.colors.border+'40':'transparent'}` }}>
+            {/* Top controls raised */}
+            <div className={`px-4 pt-3 pb-1 w-full ${contentMaxWidth}`}>
+              <div className="flex w-full gap-3 items-center">
+                <div className="flex gap-2">
+                  <button onClick={()=>setViewMode('feed')} className="h-11 px-6 text-sm font-semibold rounded-full transition-all" style={{ backgroundColor: viewMode==='feed'? theme.colors.accent:'#ffffff', color: viewMode==='feed'? '#fff': theme.colors.textPrimary, boxShadow:'0 2px 4px rgba(0,0,0,0.06)', border:`1px solid ${viewMode==='feed'? theme.colors.accent: theme.colors.border}` }}>Community</button>
+                  <button onClick={()=>setViewMode('library')} className="h-11 px-6 text-sm font-semibold rounded-full transition-all" style={{ backgroundColor: viewMode==='library'? theme.colors.accent:'#ffffff', color: viewMode==='library'? '#fff': theme.colors.textPrimary, boxShadow:'0 2px 4px rgba(0,0,0,0.06)', border:`1px solid ${viewMode==='library'? theme.colors.accent: theme.colors.border}` }}>Library</button>
+                </div>
+                <button onClick={openCreateContentModal} className="community-post-btn h-11 ml-auto inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-sm px-6" style={{ backgroundColor: theme.colors.accent, color:'#fff', boxShadow:'0 4px 14px rgba(0,0,0,0.08)' }}>
+                  <Plus className="w-4.5 h-4.5" /> <span className="truncate">Post</span>
+                </button>
               </div>
-              <button onClick={openCreateContentModal} className="community-post-btn h-11 ml-auto inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-sm px-6" style={{ backgroundColor: theme.colors.accent, color:'#fff', boxShadow:'0 4px 14px rgba(0,0,0,0.08)' }}>
-                <Plus className="w-4.5 h-4.5" /> <span className="truncate">Post</span>
-              </button>
+            </div>
+            {/* Search bar (whiter & closer) */}
+            <div className={`px-4 pb-1 ${contentMaxWidth}`}>
+              <StandardSearchBar
+                value={query}
+                onChange={setQuery}
+                placeholder={viewMode==='feed'? 'Search posts, people, tags':'Search library'}
+                theme={{...theme, colors:{...theme.colors, surface:'#ffffff'}}}
+                className="shadow-sm"
+              />
             </div>
           </div>
-          {/* Search bar (whiter & closer) */}
-          <div className="px-4 pb-1">
-            <StandardSearchBar
-              value={query}
-              onChange={setQuery}
-              placeholder={viewMode==='feed'? 'Search posts, people, tags':'Search library'}
-              theme={{...theme, colors:{...theme.colors, surface:'#ffffff'}}}
-              className="shadow-sm"
-            />
+        )}
+        <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto no-scrollbar pb-10 pt-1 -mt-1">
+          <div className={`px-4 space-y-4 ${contentMaxWidth}`}>
+            {effectiveViewMode==='feed' && !filteredContent.length && (
+              <div className="text-center text-sm pt-20" style={{ color: theme.colors.textSecondary }}>No content found.</div>
+            )}
+            {effectiveViewMode==='feed' && filteredContent.map(item => item.question ? <PollCard key={`poll-${item.id}`} poll={item} /> : <PostCard key={`post-${item.id}`} post={item} />)}
+            {effectiveViewMode==='library' && !embedMode && (
+              <div className={`grid gap-3 ${isDesktop ? 'grid-cols-4' : 'grid-cols-2 sm:grid-cols-3'}`}>
+                {photoLibrary.map(photo => (
+                  <div key={photo.id} className="group relative rounded-xl overflow-hidden border" style={{ borderColor: theme.colors.border, backgroundColor: theme.colors.surface }}>
+                    <img src={photo.src} alt={photo.post.title||'post image'} className="w-full h-40 object-cover group-hover:scale-105 transition-transform" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                      <p className="text-[11px] leading-tight text-white line-clamp-2">{photo.post.title || photo.post.text || photo.post.user?.name}</p>
+                    </div>
+                  </div>
+                ))}
+                {!photoLibrary.length && <p className="col-span-full text-center text-sm" style={{ color: theme.colors.textSecondary }}>No photos found.</p>}
+              </div>
+            )}
+            <div className="h-2" />
           </div>
         </div>
-      )}
-      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto no-scrollbar pb-10 pt-1 -mt-1 space-y-4">
-        {effectiveViewMode==='feed' && !filteredContent.length && (
-          <div className="text-center text-sm pt-20" style={{ color: theme.colors.textSecondary }}>No content found.</div>
-        )}
-        {effectiveViewMode==='feed' && filteredContent.map(item => item.question ? <PollCard key={`poll-${item.id}`} poll={item} /> : <PostCard key={`post-${item.id}`} post={item} />)}
-        {effectiveViewMode==='library' && !embedMode && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {photoLibrary.map(photo => (
-              <div key={photo.id} className="group relative rounded-xl overflow-hidden border" style={{ borderColor: theme.colors.border, backgroundColor: theme.colors.surface }}>
-                <img src={photo.src} alt={photo.post.title||'post image'} className="w-full h-40 object-cover group-hover:scale-105 transition-transform" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                  <p className="text-[11px] leading-tight text-white line-clamp-2">{photo.post.title || photo.post.text || photo.post.user?.name}</p>
-                </div>
-              </div>
-            ))}
-            {!photoLibrary.length && <p className="col-span-full text-center text-sm" style={{ color: theme.colors.textSecondary }}>No photos found.</p>}
-          </div>
-        )}
-        <div className="h-2" />
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 export default CommunityScreen;

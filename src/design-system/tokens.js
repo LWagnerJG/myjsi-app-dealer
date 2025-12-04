@@ -1,7 +1,71 @@
-// Design System Tokens
-// Unified design system for consistent UI across the dealer app
+// Design System Tokens - JSI Visual Identity
+// ============================================
+// Brand Philosophy: Modern, Accessible, Confident
+// Typography: Neue Haas Grotesk Display Pro
+// Color Approach: Earth-toned, warm, grounded (NO pure black)
 
+// ============================================
+// JSI BRAND COLOR PALETTE
+// ============================================
+export const JSI_COLORS = {
+  // Primary Colors
+  charcoal: '#353535',        // Primary text & action color (replaces pure black)
+  white: '#FFFFFF',           // High contrast pairing
+  
+  // Earth-Toned Neutrals (for backgrounds & soft tonal variations)
+  stone: '#E3E0D8',           // Warm neutral
+  warmBeige: '#F0EDE8',       // Soft background
+  sageGrey: '#DFE2DD',        // Cool neutral
+  lightGrey: '#EAECE9',       // Lightest neutral
+  
+  // Semantic Colors (adjusted to work with JSI palette)
+  success: '#4A7C59',         // Earthy green
+  warning: '#C4956A',         // Warm amber
+  error: '#B85C5C',           // Muted red
+  info: '#5B7B8C',            // Slate blue
+};
+
+// ============================================
+// TYPOGRAPHY - Neue Haas Grotesk Display Pro
+// ============================================
+export const JSI_TYPOGRAPHY = {
+  fontFamily: '"Neue Haas Grotesk Display Pro", "Helvetica Neue", Helvetica, Arial, sans-serif',
+  
+  // Aggressive heading scale for visual impact
+  // Desktop sizes (scale down proportionally for mobile)
+  headings: {
+    h1: { size: '3.5rem', mobilSize: '2.25rem', weight: 700, lineHeight: 1.05, letterSpacing: '-0.02em' },  // 56px / 36px
+    h2: { size: '2.75rem', mobileSize: '1.875rem', weight: 700, lineHeight: 1.1, letterSpacing: '-0.015em' }, // 44px / 30px
+    h3: { size: '2rem', mobileSize: '1.5rem', weight: 600, lineHeight: 1.15, letterSpacing: '-0.01em' },     // 32px / 24px
+    h4: { size: '1.5rem', mobileSize: '1.25rem', weight: 600, lineHeight: 1.2, letterSpacing: '-0.005em' },  // 24px / 20px
+    h5: { size: '1.25rem', mobileSize: '1.125rem', weight: 600, lineHeight: 1.25, letterSpacing: '0' },      // 20px / 18px
+    h6: { size: '1.125rem', mobileSize: '1rem', weight: 600, lineHeight: 1.3, letterSpacing: '0' },          // 18px / 16px
+  },
+  
+  // Body text with weight variations
+  body: {
+    large: { size: '1.125rem', weight: 400, lineHeight: 1.6 },    // 18px - Light/Regular
+    default: { size: '1rem', weight: 400, lineHeight: 1.6 },      // 16px - Regular
+    small: { size: '0.875rem', weight: 400, lineHeight: 1.5 },    // 14px - Regular
+    tiny: { size: '0.75rem', weight: 500, lineHeight: 1.4 },      // 12px - Medium
+    micro: { size: '0.625rem', weight: 500, lineHeight: 1.3 },    // 10px - Medium (labels)
+  },
+  
+  // Font weights
+  weights: {
+    light: 300,
+    regular: 400,
+    medium: 500,
+    semibold: 600,
+    bold: 700,
+  },
+};
+
+// ============================================
+// DESIGN TOKENS (Updated for JSI)
+// ============================================
 export const DESIGN_TOKENS = {
+  // Spacing scale
   spacing: {
     xs: '0.25rem',   // 4px
     sm: '0.5rem',    // 8px
@@ -9,85 +73,210 @@ export const DESIGN_TOKENS = {
     lg: '1.5rem',    // 24px
     xl: '2rem',      // 32px
     '2xl': '3rem',   // 48px
+    '3xl': '4rem',   // 64px
   },
   
+  // Border radius - JSI uses pill shapes for interactive elements
   borderRadius: {
+    none: '0',
     sm: '8px',
     md: '12px',
     lg: '16px',
-    xl: '24px',
+    xl: '24px',           // Content cards
     '2xl': '32px',
-    full: '9999px'
+    pill: '9999px',       // Primary buttons, badges, tags (STRICT)
+    full: '9999px',       // Circular elements
   },
   
+  // Typography (reference to JSI_TYPOGRAPHY)
   typography: {
-    h1: { size: '2rem', weight: 700, lineHeight: 1.2 },
-    h2: { size: '1.5rem', weight: 600, lineHeight: 1.3 },
-    h3: { size: '1.25rem', weight: 600, lineHeight: 1.4 },
-    h4: { size: '1.125rem', weight: 600, lineHeight: 1.4 },
-    body: { size: '0.875rem', weight: 400, lineHeight: 1.5 },
-    bodyLarge: { size: '1rem', weight: 400, lineHeight: 1.5 },
-    small: { size: '0.75rem', weight: 400, lineHeight: 1.4 },
-    tiny: { size: '0.625rem', weight: 500, lineHeight: 1.3 }
+    fontFamily: JSI_TYPOGRAPHY.fontFamily,
+    h1: { size: '3.5rem', weight: 700, lineHeight: 1.05 },
+    h2: { size: '2.75rem', weight: 700, lineHeight: 1.1 },
+    h3: { size: '2rem', weight: 600, lineHeight: 1.15 },
+    h4: { size: '1.5rem', weight: 600, lineHeight: 1.2 },
+    h5: { size: '1.25rem', weight: 600, lineHeight: 1.25 },
+    h6: { size: '1.125rem', weight: 600, lineHeight: 1.3 },
+    body: { size: '1rem', weight: 400, lineHeight: 1.6 },
+    bodyLarge: { size: '1.125rem', weight: 400, lineHeight: 1.6 },
+    small: { size: '0.875rem', weight: 400, lineHeight: 1.5 },
+    tiny: { size: '0.75rem', weight: 500, lineHeight: 1.4 },
+    micro: { size: '0.625rem', weight: 500, lineHeight: 1.3 },
   },
   
+  // Shadows - softer, more refined for JSI aesthetic
   shadows: {
-    sm: '0 1px 2px rgba(0,0,0,0.05)',
-    md: '0 4px 6px rgba(0,0,0,0.07)',
-    lg: '0 10px 15px rgba(0,0,0,0.1)',
-    xl: '0 20px 25px rgba(0,0,0,0.15)',
-    '2xl': '0 25px 50px rgba(0,0,0,0.25)'
+    none: 'none',
+    sm: '0 1px 3px rgba(53,53,53,0.04)',
+    md: '0 2px 8px rgba(53,53,53,0.06), 0 1px 3px rgba(53,53,53,0.04)',
+    lg: '0 4px 16px rgba(53,53,53,0.08), 0 2px 6px rgba(53,53,53,0.04)',
+    xl: '0 8px 28px rgba(53,53,53,0.1), 0 4px 10px rgba(53,53,53,0.06)',
+    '2xl': '0 16px 48px rgba(53,53,53,0.12), 0 8px 16px rgba(53,53,53,0.06)',
+    card: '0 4px 20px rgba(53,53,53,0.07), 0 2px 6px rgba(53,53,53,0.03)',
+    cardHover: '0 8px 32px rgba(53,53,53,0.12), 0 4px 12px rgba(53,53,53,0.06)',
+    button: '0 2px 8px rgba(53,53,53,0.1), 0 1px 3px rgba(53,53,53,0.06)',
+    buttonHover: '0 4px 12px rgba(53,53,53,0.15), 0 2px 4px rgba(53,53,53,0.08)',
+    modal: '0 24px 64px rgba(53,53,53,0.18), 0 12px 28px rgba(53,53,53,0.1)',
+    drawer: '0 -8px 32px rgba(53,53,53,0.12), 0 -2px 8px rgba(53,53,53,0.06)',
+  },
+
+  // Dark mode shadows (adjusted for JSI)
+  shadowsDark: {
+    none: 'none',
+    sm: '0 1px 3px rgba(0,0,0,0.2)',
+    md: '0 2px 8px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2)',
+    lg: '0 4px 16px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.25)',
+    xl: '0 8px 28px rgba(0,0,0,0.4), 0 4px 10px rgba(0,0,0,0.3)',
+    '2xl': '0 16px 48px rgba(0,0,0,0.45), 0 8px 16px rgba(0,0,0,0.35)',
+    card: '0 4px 20px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.3)',
+    cardHover: '0 8px 32px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.35)',
+    button: '0 2px 8px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.25)',
+    buttonHover: '0 4px 12px rgba(0,0,0,0.45), 0 2px 4px rgba(0,0,0,0.3)',
+    modal: '0 24px 64px rgba(0,0,0,0.55), 0 12px 28px rgba(0,0,0,0.4)',
+    drawer: '0 -8px 32px rgba(0,0,0,0.45), 0 -2px 8px rgba(0,0,0,0.35)',
   },
   
+  // Transitions - smooth, confident
   transitions: {
+    instant: '0ms',
     fast: '150ms cubic-bezier(0.4, 0, 0.2, 1)',
-    normal: '300ms cubic-bezier(0.4, 0, 0.2, 1)',
-    slow: '500ms cubic-bezier(0.4, 0, 0.2, 1)'
-  }
+    normal: '250ms cubic-bezier(0.4, 0, 0.2, 1)',
+    slow: '400ms cubic-bezier(0.4, 0, 0.2, 1)',
+    bounce: '400ms cubic-bezier(0.34, 1.56, 0.64, 1)',
+    spring: '300ms cubic-bezier(0.3, 1, 0.3, 1)',
+    elegant: '350ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+  },
+
+  // Z-index scale
+  zIndex: {
+    base: 0,
+    dropdown: 10,
+    sticky: 20,
+    fixed: 30,
+    overlay: 35,
+    modalBackdrop: 40,
+    modal: 50,
+    popover: 60,
+    tooltip: 70,
+    toast: 80,
+  },
+
+  // Max-width for responsive layouts
+  maxWidth: {
+    sm: '480px',
+    md: '640px',
+    lg: '768px',
+    xl: '896px',
+    '2xl': '1024px',
+    '3xl': '1152px',
+    '4xl': '1280px',
+  },
+  
+  // Blur effects for overlays (JSI brand)
+  blur: {
+    light: 'blur(24px)',
+    medium: 'blur(34px)',
+    heavy: 'blur(44px)',
+  },
 };
 
-// Status color mappings
+// ============================================
+// STATUS STYLES (Updated for JSI palette)
+// ============================================
 export const STATUS_STYLES = {
   success: { 
-    bg: '#10B98120', 
-    color: '#10B981', 
-    darkBg: '#10B98130',
-    darkColor: '#34D399'
+    bg: `${JSI_COLORS.success}15`, 
+    color: JSI_COLORS.success, 
+    darkBg: `${JSI_COLORS.success}25`,
+    darkColor: '#6B9B7A'
   },
   warning: { 
-    bg: '#F59E0B20', 
-    color: '#F59E0B',
-    darkBg: '#F59E0B30',
-    darkColor: '#FBBF24'
+    bg: `${JSI_COLORS.warning}15`, 
+    color: JSI_COLORS.warning,
+    darkBg: `${JSI_COLORS.warning}25`,
+    darkColor: '#D4A87A'
   },
   error: { 
-    bg: '#EF444420', 
-    color: '#EF4444',
-    darkBg: '#EF444430',
-    darkColor: '#F87171'
+    bg: `${JSI_COLORS.error}15`, 
+    color: JSI_COLORS.error,
+    darkBg: `${JSI_COLORS.error}25`,
+    darkColor: '#C87070'
   },
   info: { 
-    bg: '#3B82F620', 
-    color: '#3B82F6',
-    darkBg: '#3B82F630',
-    darkColor: '#60A5FA'
+    bg: `${JSI_COLORS.info}15`, 
+    color: JSI_COLORS.info,
+    darkBg: `${JSI_COLORS.info}25`,
+    darkColor: '#7B9BAC'
   },
   pending: { 
-    bg: '#6B728020', 
-    color: '#6B7280',
-    darkBg: '#6B728030',
-    darkColor: '#9CA3AF'
+    bg: `${JSI_COLORS.charcoal}10`, 
+    color: '#666666',
+    darkBg: `${JSI_COLORS.charcoal}20`,
+    darkColor: '#999999'
+  },
+  accent: {
+    bg: `${JSI_COLORS.charcoal}08`,
+    color: JSI_COLORS.charcoal,
+    darkBg: `${JSI_COLORS.charcoal}15`,
+    darkColor: '#555555'
+  },
+  new: {
+    bg: JSI_COLORS.charcoal,
+    color: JSI_COLORS.white,
+    darkBg: JSI_COLORS.white,
+    darkColor: JSI_COLORS.charcoal
+  },
+  quickship: {
+    bg: JSI_COLORS.success,
+    color: JSI_COLORS.white,
+    darkBg: '#6B9B7A',
+    darkColor: JSI_COLORS.white
   }
 };
 
-// Helper function to get spacing value
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+// Get spacing value
 export const spacing = (key) => DESIGN_TOKENS.spacing[key] || DESIGN_TOKENS.spacing.md;
 
-// Helper function to get border radius
+// Get border radius
 export const radius = (key) => DESIGN_TOKENS.borderRadius[key] || DESIGN_TOKENS.borderRadius.md;
 
-// Helper function to get shadow
-export const shadow = (key) => DESIGN_TOKENS.shadows[key] || DESIGN_TOKENS.shadows.md;
+// Check if dark theme
+export const isDarkTheme = (theme) => {
+  const bg = (theme?.colors?.background || '').toLowerCase();
+  return bg.startsWith('#0') || bg.startsWith('#1') || bg.startsWith('#2') || 
+         bg.startsWith('rgb(0') || bg.startsWith('rgb(1') || bg.startsWith('rgb(2');
+};
 
-// Helper function to get transition
+// Get shadow based on theme
+export const shadow = (key, theme) => {
+  const shadows = isDarkTheme(theme) ? DESIGN_TOKENS.shadowsDark : DESIGN_TOKENS.shadows;
+  return shadows[key] || shadows.md;
+};
+
+// Get transition
 export const transition = (key) => DESIGN_TOKENS.transitions[key] || DESIGN_TOKENS.transitions.normal;
+
+// Get max-width class
+export const getMaxWidthClass = (size = 'lg') => {
+  const map = {
+    sm: 'max-w-md',
+    md: 'max-w-lg', 
+    lg: 'max-w-3xl',
+    xl: 'max-w-4xl',
+    '2xl': 'max-w-5xl',
+    '3xl': 'max-w-6xl',
+  };
+  return map[size] || map.lg;
+};
+
+// Get JSI color
+export const getJSIColor = (key) => JSI_COLORS[key] || JSI_COLORS.charcoal;
+
+// Get typography style
+export const getTypography = (variant) => {
+  return DESIGN_TOKENS.typography[variant] || DESIGN_TOKENS.typography.body;
+};

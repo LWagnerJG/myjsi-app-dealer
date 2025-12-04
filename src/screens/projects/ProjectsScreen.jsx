@@ -5,6 +5,7 @@ import { STAGES, VERTICALS, COMPETITORS, DISCOUNT_OPTIONS, PO_TIMEFRAMES, INITIA
 import { ProbabilitySlider } from '../../components/forms/ProbabilitySlider.jsx';
 import { ToggleSwitch } from '../../components/forms/ToggleSwitch.jsx';
 import { JSI_SERIES } from '../products/data.js';
+import { useIsDesktop } from '../../hooks/useResponsive.js';
 
 // currency util
 const fmtCurrency = (v) => typeof v === 'string' ? (v.startsWith('$')? v : '$'+v) : (v ?? 0).toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
@@ -237,6 +238,7 @@ const InstallationDetail = ({ project, theme, onAddPhotoFiles }) => {
 export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, setOpportunities, myProjects, setMyProjects, projectsInitialTab, clearProjectsInitialTab }, ref) => {
   const initial = projectsInitialTab || 'pipeline';
   const [projectsTab, setProjectsTab] = useState(initial);
+  const isDesktop = useIsDesktop();
   useEffect(()=>{ if(projectsInitialTab) clearProjectsInitialTab && clearProjectsInitialTab(); },[projectsInitialTab, clearProjectsInitialTab]);
   const [selectedPipelineStage,setSelectedPipelineStage] = useState('Discovery');
   const [selectedOpportunity,setSelectedOpportunity] = useState(null);
@@ -257,12 +259,16 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
   const stageTotals = useMemo(()=>{ const totalValue = filteredOpportunities.reduce((sum,o)=>{ const raw= typeof o.value==='string'? o.value.replace(/[^0-9.]/g,''): o.value; const num=parseFloat(raw)||0; return sum+num; },0); return { totalValue }; },[filteredOpportunities]);
   const updateOpportunity = updated => setOpportunities(prev=> prev.map(o=> o.id===updated.id? updated:o));
   const addInstallPhotos = files => { if(!files||!selectedInstall) return; const arr=Array.from(files); setMyProjects(prev=> prev.map(p=> p.id===selectedInstall.id? {...p, photos:[...(p.photos||[]), ...arr]}:p)); setSelectedInstall(prev=> prev? {...prev, photos:[...(prev.photos||[]), ...arr]}: prev); };
+  
+  // Responsive max-width
+  const contentMaxWidth = isDesktop ? 'max-w-3xl mx-auto w-full' : '';
+  
   if(selectedOpportunity) return <OpportunityDetail opp={selectedOpportunity} theme={theme} onBack={()=>setSelectedOpportunity(null)} onUpdate={u=>{ updateOpportunity(u); setSelectedOpportunity(u); }} />;
   if(selectedInstall) return <InstallationDetail project={selectedInstall} theme={theme} onAddPhotoFiles={addInstallPhotos} />;
   return (
     <div className="h-full flex flex-col" style={{ backgroundColor: theme.colors.background }}>
       <div className={`sticky top-0 z-10 transition-all duration-300 ${isScrolled?'shadow-md':''}`} style={{ backgroundColor: isScrolled? `${theme.colors.background}e0`: theme.colors.background, backdropFilter: isScrolled? 'blur(12px)': 'none', WebkitBackdropFilter: isScrolled? 'blur(12px)': 'none', borderBottom:`1px solid ${isScrolled? theme.colors.border+'40':'transparent'}` }}>
-        <div className="px-4 pt-4 pb-2 flex items-center gap-4">
+        <div className={`px-4 pt-4 pb-2 flex items-center gap-4 ${contentMaxWidth}`}>
           <div className="flex w-full gap-3">
             <div className="flex flex-[2] rounded-full border overflow-hidden h-12 shadow-sm" style={{ borderColor: theme.colors.border, background:'#fff', minWidth:260 }}>
               <button onClick={()=>setProjectsTab('pipeline')} className="flex-1 h-full px-6 text-sm font-semibold flex flex-col items-center justify-center transition-colors" style={{ backgroundColor: projectsTab==='pipeline'? theme.colors.accent:'#fff', color: projectsTab==='pipeline'? '#fff': theme.colors.textPrimary }}>
@@ -275,7 +281,7 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
           </div>
         </div>
         {projectsTab==='pipeline' && (
-          <div className="px-4 mt-3 pt-1 pb-3 relative">
+          <div className={`px-4 mt-3 pt-1 pb-3 relative ${contentMaxWidth}`}>
             <div ref={stagesScrollRef} onScroll={updateStageFade} className="relative overflow-x-auto scrollbar-hide">
               <div className="relative flex items-center gap-4 pb-2 whitespace-nowrap pr-2">
                 {STAGES.map((stage,i)=>{ const active= selectedPipelineStage===stage; const showIndex= stage!=='Won' && stage!=='Lost'; return (
@@ -296,27 +302,35 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
         )}
       </div>
       <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className="px-4 pt-4 pb-40 space-y-3">
+        <div className={`px-4 pt-4 pb-40 space-y-3 ${contentMaxWidth}`}>
           {projectsTab==='pipeline' && (
-            filteredOpportunities.length? filteredOpportunities.map(opp=> <ProjectCard key={opp.id} opp={opp} theme={theme} onClick={()=>setSelectedOpportunity(opp)} />):
+            filteredOpportunities.length? (
+              <div className={isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-3'}>
+                {filteredOpportunities.map(opp=> <ProjectCard key={opp.id} opp={opp} theme={theme} onClick={()=>setSelectedOpportunity(opp)} />)}
+              </div>
+            ):
             <div className="flex flex-col items-center justify-center py-12"><Briefcase className="w-12 h-12 mb-4" style={{ color: theme.colors.textSecondary }} /><p className="text-center text-sm font-medium" style={{ color: theme.colors.textSecondary }}>No projects in {selectedPipelineStage}</p><p className="text-center text-xs mt-1" style={{ color: theme.colors.textSecondary }}>Add a new project to get started</p></div>
           )}
           {projectsTab==='my-projects' && (
-            (myProjects||[]).length? (myProjects||[]).map(p=> (
-              <GlassCard key={p.id} theme={theme} className="p-0 overflow-hidden cursor-pointer group transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0" variant="elevated" onClick={()=>setSelectedInstall(p)} style={{ borderRadius:'16px' }}>
-                <div className="relative aspect-video w/full">
-                  <img src={p.image} alt={p.name} className="absolute h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 p-4"><h3 className="text-xl font-bold text-white tracking-tight mb-1">{p.name}</h3><p className="text-white/90 font-medium text-sm">{p.location}</p></div>
-                </div>
-              </GlassCard>
-            )): <div className="flex flex-col items-center justify-center py-12"><Briefcase className="w-12 h-12 mb-4" style={{ color: theme.colors.textSecondary }} /><p className="text-center text-sm font-medium" style={{ color: theme.colors.textSecondary }}>No installations recorded yet</p><p className="text-center text-xs mt-1" style={{ color: theme.colors.textSecondary }}>Add install photos and details to build your portfolio</p></div>
+            (myProjects||[]).length? (
+              <div className={isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-3'}>
+                {(myProjects||[]).map(p=> (
+                  <GlassCard key={p.id} theme={theme} className="p-0 overflow-hidden cursor-pointer group transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0" variant="elevated" onClick={()=>setSelectedInstall(p)} style={{ borderRadius:'16px' }}>
+                    <div className="relative aspect-video w-full">
+                      <img src={p.image} alt={p.name} className="absolute h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="absolute bottom-0 left-0 p-4"><h3 className="text-xl font-bold text-white tracking-tight mb-1">{p.name}</h3><p className="text-white/90 font-medium text-sm">{p.location}</p></div>
+                    </div>
+                  </GlassCard>
+                ))}
+              </div>
+            ): <div className="flex flex-col items-center justify-center py-12"><Briefcase className="w-12 h-12 mb-4" style={{ color: theme.colors.textSecondary }} /><p className="text-center text-sm font-medium" style={{ color: theme.colors.textSecondary }}>No installations recorded yet</p><p className="text-center text-xs mt-1" style={{ color: theme.colors.textSecondary }}>Add install photos and details to build your portfolio</p></div>
           )}
         </div>
       </div>
       {projectsTab==='pipeline' && (
         <div className="fixed bottom-0 left-0 right-0 z-30" style={{ backgroundColor: theme.colors.surface, borderTop:`1px solid ${theme.colors.border}` }}>
-          <div className="max-w-screen-md mx-auto px-5 py-9 flex items-center justify-between">
+          <div className={`px-5 py-9 flex items-center justify-between ${contentMaxWidth}`}>
             <div className="inline-flex items-center gap-2 text-[16px] font-bold" style={{ color: theme.colors.textPrimary }}><span>Total:</span></div>
             <div className="text-3xl font-extrabold tracking-tight" style={{ color: theme.colors.accent }}>{fmtCurrency(stageTotals.totalValue)}</div>
           </div>

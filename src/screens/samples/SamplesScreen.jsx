@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { SAMPLE_PRODUCTS, SAMPLE_CATEGORIES, FINISH_CATEGORIES, FINISH_SAMPLES } from './data.js';
 import { getSampleProduct } from './sampleIndex.js';
+import { useIsDesktop } from '../../hooks/useResponsive.js';
 
 const idOf = (x) => String(x);
 const COLLAPSED_HEIGHT = 96; // slightly taller collapsed drawer
@@ -267,6 +268,7 @@ export const SamplesScreen = ({ theme, onNavigate, cart: cartProp, onUpdateCart:
     const onUpdateCart = onUpdateCartProp ?? useCallback((item, delta) => { setCartInternal((prev) => { const id = idOf(item.id); const current = prev[id] || 0; const quantity = Math.max(0, current + delta); const next = { ...prev }; if (quantity === 0) delete next[id]; else next[id] = quantity; return next; }); }, []);
     const [selectedCategory, setSelectedCategory] = useState('tfl');
     const totalCartItems = useMemo(() => Object.values(cart).reduce((s, q) => s + q, 0), [cart]);
+    const isDesktop = useIsDesktop();
 
     const addSet = useCallback(() => { const cat = FINISH_CATEGORIES.find((c) => c.id === selectedCategory) || SAMPLE_CATEGORIES.find((c) => c.id === selectedCategory); const categoryName = cat?.name || 'Unknown'; const key = `set-${selectedCategory}`; const id = idOf(key); const currentQty = cart[id] || 0; onUpdateCart({ id, name: `Complete ${categoryName} Set` }, currentQty > 0 ? -currentQty : 1); }, [selectedCategory, onUpdateCart, cart]);
     const addFull = useCallback(() => { const id = idOf('full-jsi-set'); const currentQty = cart[id] || 0; onUpdateCart({ id, name: 'Full JSI Sample Set' }, currentQty > 0 ? -currentQty : 1); }, [onUpdateCart, cart]);
@@ -278,20 +280,103 @@ export const SamplesScreen = ({ theme, onNavigate, cart: cartProp, onUpdateCart:
     const currentCategoryName = FINISH_CATEGORIES.find((c) => c.id === selectedCategory)?.name || SAMPLE_CATEGORIES.find((c) => c.id === selectedCategory)?.name || 'Unknown';
     const allCategories = [...FINISH_CATEGORIES, ...SAMPLE_CATEGORIES.filter((cat) => cat.id !== 'finishes')];
 
+    // Responsive grid columns
+    const gridCols = isDesktop ? 'grid-cols-4 md:grid-cols-5 lg:grid-cols-6' : 'grid-cols-3';
+    const contentMaxWidth = isDesktop ? 'max-w-4xl mx-auto' : '';
+
+    // Sample card component to avoid duplication
+    const SampleCard = ({ product }) => {
+        const pid = idOf(product.id);
+        const qty = cart[pid] || 0;
+        const hasImage = !!product.image;
+        const bg = hasImage ? theme.colors.subtle : product.color || '#E5E7EB';
+        const addOne = (e) => { if (e) e.stopPropagation(); onUpdateCart({ ...product, id: pid }, 1); };
+        const removeOne = (e) => { if (e) e.stopPropagation(); onUpdateCart({ ...product, id: pid }, -1); };
+        
+        return (
+            <div className="w-full">
+                <div 
+                    role="button" 
+                    tabIndex={0} 
+                    onClick={addOne} 
+                    onKeyPress={e => { if (e.key === 'Enter') addOne(e); }} 
+                    className="relative w-full aspect-square rounded-2xl overflow-hidden transition-all duration-200 cursor-pointer" 
+                    style={{ 
+                        border: `2px solid ${qty > 0 ? theme.colors.accent : theme.colors.border}`, 
+                        backgroundColor: bg, 
+                        transform: qty > 0 ? 'scale(0.95)' : 'scale(1)', 
+                        boxShadow: qty > 0 ? `0 0 15px ${theme.colors.accent}40` : 'none' 
+                    }}
+                >
+                    {hasImage && (
+                        <img 
+                            loading="lazy" 
+                            width="300" 
+                            height="300" 
+                            src={product.image} 
+                            alt={product.name} 
+                            className="w-full h-full object-cover select-none pointer-events-none" 
+                            draggable={false} 
+                        />
+                    )}
+                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-24">
+                        <GlassCard theme={theme} className="p-0.5 flex items-center justify-between gap-1">
+                            {qty === 0 ? (
+                                <button type="button" onClick={addOne} className="w-full h-7 rounded-full flex items-center justify-center active:scale-95">
+                                    <Plus className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
+                                </button>
+                            ) : (
+                                <>
+                                    <button type="button" onClick={removeOne} className="w-7 h-7 rounded-full flex items-center justify-center active:scale-95">
+                                        {qty === 1 ? <Trash2 className="w-3.5 h-3.5 text-red-500" /> : <Minus className="w-3.5 h-3.5" style={{ color: theme.colors.textSecondary }} />}
+                                    </button>
+                                    <span className="font-bold text-sm select-none" style={{ color: theme.colors.textPrimary }}>{qty}</span>
+                                    <button type="button" onClick={addOne} className="w-7 h-7 rounded-full flex items-center justify-center active:scale-95">
+                                        <Plus className="w-3.5 h-3.5" style={{ color: theme.colors.textSecondary }} />
+                                    </button>
+                                </>
+                            )}
+                        </GlassCard>
+                    </div>
+                </div>
+                <div className="mt-1 text-[10px] text-center text-gray-700 truncate select-none">{product.name}</div>
+            </div>
+        );
+    };
+
     return (
         <div className="flex flex-col h-full" style={{ paddingBottom: totalCartItems > 0 ? `${COLLAPSED_HEIGHT + 4}px` : '0' }}>
             <div className="flex-1 overflow-y-auto scrollbar-hide" style={{ backgroundColor: theme.colors.background }}>
                 <div className="sticky top-0 z-10 px-4 pt-2 pb-3 space-y-3" style={{ background: theme.colors.background, borderBottom: `1px solid ${theme.colors.border}40` }}>
-                    <div className="relative flex overflow-x-auto scrollbar-hide whitespace-nowrap">
-                        {allCategories.map((cat) => (
-                            <button key={cat.id} onClick={() => setSelectedCategory(cat.id)} className="relative px-4 py-3 font-semibold text-sm rounded-full" style={{ color: selectedCategory === cat.id ? theme.colors.accent : theme.colors.textSecondary }} aria-pressed={selectedCategory === cat.id}>{cat.name}{selectedCategory === cat.id && (<div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: theme.colors.accent }} />)}</button>
+                    <div className={contentMaxWidth}>
+                        <div className="relative flex overflow-x-auto scrollbar-hide whitespace-nowrap">
+                            {allCategories.map((cat) => (
+                                <button 
+                                    key={cat.id} 
+                                    onClick={() => setSelectedCategory(cat.id)} 
+                                    className="relative px-4 py-3 font-semibold text-sm rounded-full" 
+                                    style={{ color: selectedCategory === cat.id ? theme.colors.accent : theme.colors.textSecondary }} 
+                                    aria-pressed={selectedCategory === cat.id}
+                                >
+                                    {cat.name}
+                                    {selectedCategory === cat.id && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ backgroundColor: theme.colors.accent }} />
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="flex gap-3 mt-3">
+                            <OrderFullSetButton onClick={addFull} theme={theme} inCart={fullSetInCart} />
+                            <AddCompleteSetButton onClick={addSet} theme={theme} inCart={setInCartQuantity > 0} categoryName={currentCategoryName} />
+                        </div>
+                    </div>
+                </div>
+                <div className={`px-4 pb-4 pt-3 ${contentMaxWidth}`}>
+                    <div className={`grid gap-3 ${gridCols}`}>
+                        {filteredProducts.map(product => (
+                            <SampleCard key={idOf(product.id)} product={product} />
                         ))}
                     </div>
-                    <div className="flex gap-3"><OrderFullSetButton onClick={addFull} theme={theme} inCart={fullSetInCart} /><AddCompleteSetButton onClick={addSet} theme={theme} inCart={setInCartQuantity > 0} categoryName={currentCategoryName} /></div>
-                </div>
-                <div className="px-4 pb-4 pt-3">
-                    {selectedCategory === 'tfl' && (<div className="grid grid-cols-3 gap-3">{filteredProducts.map(product => { const pid = idOf(product.id); const qty = cart[pid] || 0; const hasImage = !!product.image; const bg = hasImage ? theme.colors.subtle : product.color || '#E5E7EB'; const addOne = (e) => { if (e) e.stopPropagation(); onUpdateCart({ ...product, id: pid }, 1); }; const removeOne = (e) => { if (e) e.stopPropagation(); onUpdateCart({ ...product, id: pid }, -1); }; return (<div key={pid} className="w-full"><div role="button" tabIndex={0} onClick={addOne} onKeyPress={e => { if (e.key === 'Enter') addOne(e); }} className="relative w-full aspect-square rounded-2xl overflow-hidden transition-all duration-200 cursor-pointer" style={{ border: `2px solid ${qty > 0 ? theme.colors.accent : theme.colors.border}`, backgroundColor: bg, transform: qty > 0 ? 'scale(0.95)' : 'scale(1)', boxShadow: qty > 0 ? `0 0 15px ${theme.colors.accent}40` : 'none' }}>{hasImage && (<img loading="lazy" width="300" height="300" src={product.image} alt={product.name} className="w-full h-full object-cover select-none pointer-events-none" draggable={false} />)}<div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-24"><GlassCard theme={theme} className="p-0.5 flex items-center justify-between gap-1">{qty === 0 ? (<button type="button" onClick={addOne} className="w-full h-7 rounded-full flex items-center justify-center active:scale-95"><Plus className="w-4 h-4" style={{ color: theme.colors.textSecondary }} /></button>) : (<><button type="button" onClick={removeOne} className="w-7 h-7 rounded-full flex items-center justify-center active:scale-95">{qty === 1 ? <Trash2 className="w-3.5 h-3.5 text-red-500" /> : <Minus className="w-3.5 h-3.5" style={{ color: theme.colors.textSecondary }} />}</button><span className="font-bold text-sm select-none" style={{ color: theme.colors.textPrimary }}>{qty}</span><button type="button" onClick={addOne} className="w-7 h-7 rounded-full flex items-center justify-center active:scale-95"><Plus className="w-3.5 h-3.5" style={{ color: theme.colors.textSecondary }} /></button></>)}</GlassCard></div></div><div className="mt-1 text-[10px] text-center text-gray-700 truncate select-none">{product.name}</div></div>); })}</div>)}
-                    {selectedCategory !== 'tfl' && (<div className="grid grid-cols-3 gap-3">{filteredProducts.map(product => { const pid = idOf(product.id); const qty = cart[pid] || 0; const hasImage = !!product.image; const bg = hasImage ? theme.colors.subtle : product.color || '#E5E7EB'; const addOne = (e) => { if (e) e.stopPropagation(); onUpdateCart({ ...product, id: pid }, 1); }; const removeOne = (e) => { if (e) e.stopPropagation(); onUpdateCart({ ...product, id: pid }, -1); }; return (<div key={pid} className="w-full"><div role="button" tabIndex={0} onClick={addOne} onKeyPress={e => { if (e.key === 'Enter') addOne(e); }} className="relative w-full aspect-square rounded-2xl overflow-hidden transition-all duration-200 cursor-pointer" style={{ border: `2px solid ${qty > 0 ? theme.colors.accent : theme.colors.border}`, backgroundColor: bg, transform: qty > 0 ? 'scale(0.95)' : 'scale(1)', boxShadow: qty > 0 ? `0 0 15px ${theme.colors.accent}40` : 'none' }}>{hasImage && (<img loading="lazy" width="300" height="300" src={product.image} alt={product.name} className="w-full h-full object-cover select-none pointer-events-none" draggable={false} />)}<div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-24"><GlassCard theme={theme} className="p-0.5 flex items-center justify-between gap-1">{qty === 0 ? (<button type="button" onClick={addOne} className="w-full h-7 rounded-full flex items-center justify-center active:scale-95"><Plus className="w-4 h-4" style={{ color: theme.colors.textSecondary }} /></button>) : (<><button type="button" onClick={removeOne} className="w-7 h-7 rounded-full flex items-center justify-center active:scale-95">{qty === 1 ? <Trash2 className="w-3.5 h-3.5 text-red-500" /> : <Minus className="w-3.5 h-3.5" style={{ color: theme.colors.textSecondary }} />}</button><span className="font-bold text-sm select-none" style={{ color: theme.colors.textPrimary }}>{qty}</span><button type="button" onClick={addOne} className="w-7 h-7 rounded-full flex items-center justify-center active:scale-95"><Plus className="w-3.5 h-3.5" style={{ color: theme.colors.textSecondary }} /></button></>)}</GlassCard></div></div><div className="mt-1 text-[10px] text-center text-gray-700 truncate select-none">{product.name}</div></div>); })}</div>)}
                 </div>
             </div>
             <CartDrawer cart={cart} onUpdateCart={onUpdateCart} theme={theme} userSettings={userSettings} dealers={dealerDirectory} designFirms={designFirms} initialOpen={initialCartOpen} onNavigate={onNavigate} />

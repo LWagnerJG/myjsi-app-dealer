@@ -14,4 +14,4 @@ export {
 export { INITIAL_POSTS, INITIAL_WINS, INITIAL_POLLS, SOCIAL_MEDIA_POSTS } from '../screens/community/data.js';
 
 // Projects data (already migrated)
-export { INITIAL_OPPORTUNITIES, MY_PROJECTS_DATA, INITIAL_DESIGN_FIRMS, INITIAL_DEALERS, EMPTY_LEAD } from '../screens/projects/data.js';
+export { INITIAL_OPPORTUNITIES, MY_PROJECTS_DATA, INITIAL_DESIGN_FIRMS, EMPTY_LEAD } from '../screens/projects/data.js';

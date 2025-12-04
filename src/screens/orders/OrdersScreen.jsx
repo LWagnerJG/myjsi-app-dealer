@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { Calendar, List, ChevronLeft, ChevronRight, Search } from 'lucide-react'; // removed Building2
+import { Calendar, List, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 import { SearchInput } from '../../components/common/SearchInput.jsx';
 import { ORDER_DATA, STATUS_COLORS } from './data.js';
+import { useIsDesktop } from '../../hooks/useResponsive.js';
 
 /* ---------------------------- Helpers ---------------------------- */
 const formatTitleCase = (name='') => name.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());
@@ -140,6 +141,7 @@ export const OrdersScreen = ({ theme, onNavigate }) => {
   const [viewMode,setViewMode]=useState('list');
   const [isScrolled,setIsScrolled]=useState(false);
   const scrollRef=useRef(null);
+  const isDesktop = useIsDesktop();
 
   const handleScroll=useCallback(()=>{ if(scrollRef.current) setIsScrolled(scrollRef.current.scrollTop>10); },[]);
 
@@ -155,10 +157,13 @@ export const OrdersScreen = ({ theme, onNavigate }) => {
   const groupKeys = useMemo(()=> Object.keys(grouped).sort((a,b)=> new Date(b)-new Date(a)),[grouped]);
   const underlineTransform = dateType==='shipDate'? 'translateX(0%)':'translateX(100%)';
 
+  // Responsive max-width for content
+  const contentMaxWidth = isDesktop ? 'max-w-3xl mx-auto w-full' : '';
+
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
       <div className={`sticky top-0 z-10 transition-all duration-300 ${isScrolled?'shadow-md':''}`} style={{ backgroundColor: isScrolled? `${theme.colors.background}e0`:'transparent', backdropFilter: isScrolled? 'blur(12px)':'none', WebkitBackdropFilter: isScrolled? 'blur(12px)':'none', borderBottom:`1px solid ${isScrolled? theme.colors.border+'40':'transparent'}` }}>
-        <div className="px-4 pt-3 pb-2 flex flex-col gap-2">
+        <div className={`px-4 pt-3 pb-2 flex flex-col gap-2 ${contentMaxWidth}`}>
           <div style={{ height:56 }} className="flex-grow">
             <SearchInput value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} placeholder="Search Orders" theme={theme} variant="header" />
           </div>
@@ -179,7 +184,7 @@ export const OrdersScreen = ({ theme, onNavigate }) => {
         </div>
       </div>
       <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className="px-4 pt-4 pb-24 space-y-4">
+        <div className={`px-4 pt-4 pb-24 space-y-4 ${contentMaxWidth}`}>
           {viewMode==='list'? (
             groupKeys.length? <div className="space-y-4">{groupKeys.map(k=> <GroupTile key={k} theme={theme} dateKey={k} group={grouped[k]} onNavigate={onNavigate} />)}</div> : <p className="text-sm" style={{ color: theme.colors.textSecondary }}>No orders found.</p>
           ) : (

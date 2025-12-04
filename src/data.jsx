@@ -76,6 +76,36 @@ export const allApps = [
 // Default 8 home screen apps (expanded from 6)
 export const DEFAULT_HOME_APPS = ['orders','sales','products','resources','projects','community','samples','replacements'];
 
+// Quick Access configuration for customizable home screen grid
+export const QUICK_ACCESS_APPS = [
+    // Default 6 apps (always shown initially)
+    { id: 'replacements', name: 'Replacements', route: 'replacements', icon: RotateCw, isDefault: true },
+    { id: 'samples', name: 'Samples', route: 'samples', icon: Package, isDefault: true },
+    { id: 'orders', name: 'Orders', route: 'orders', icon: MousePointer, isDefault: true },
+    { id: 'projects', name: 'Projects', route: 'projects', icon: Briefcase, isDefault: true },
+    { id: 'products', name: 'Products', route: 'products', icon: Armchair, isDefault: true },
+    { id: 'community', name: 'Community', route: 'community', icon: MessageSquare, isDefault: true },
+    // Optional apps (can be toggled on/off)
+    { id: 'lead-times', name: 'Lead Times', route: 'resources/lead-times', icon: Hourglass, isDefault: false },
+    { id: 'customer-directory', name: 'Customers', route: 'resources/customer-directory', icon: Users, isDefault: false },
+    { id: 'sales', name: 'Sales', route: 'sales', icon: PieChart, isDefault: false },
+    { id: 'resources', name: 'Resources', route: 'resources', icon: Database, isDefault: false },
+    { id: 'contracts', name: 'Contracts', route: 'resources/contracts', icon: FileText, isDefault: false },
+    { id: 'sample-discounts', name: 'Sample Discounts', route: 'resources/sample_discounts', icon: Percent, isDefault: false },
+    { id: 'loaner-pool', name: 'Loaner Pool', route: 'resources/loaner_pool', icon: Package, isDefault: false },
+    { id: 'discontinued-finishes', name: 'Discontinued Finishes', route: 'resources/discontinued_finishes', icon: Palette, isDefault: false },
+    { id: 'social-media', name: 'Social Media', route: 'resources/social_media', icon: Share2, isDefault: false },
+    { id: 'design-days', name: 'Design Days', route: 'resources/design_days', icon: Calendar, isDefault: false },
+    { id: 'presentations', name: 'Presentations', route: 'resources/presentations', icon: MonitorPlay, isDefault: false },
+    { id: 'install-instructions', name: 'Install Instructions', route: 'resources/install_instructions', icon: Wrench, isDefault: false },
+    { id: 'customer-ranking', name: 'Customer Ranking', route: 'customer-rank', icon: BarChart2, isDefault: false },
+    { id: 'members', name: 'Members', route: 'members', icon: Users, isDefault: false },
+    { id: 'settings', name: 'Settings', route: 'settings', icon: Settings, isDefault: false },
+];
+
+// Get default Quick Access app IDs
+export const DEFAULT_QUICK_ACCESS_IDS = QUICK_ACCESS_APPS.filter(app => app.isDefault).map(app => app.id);
+
 export const RESOURCES_DATA = [
     {
         category: "Product & Finish Resources",

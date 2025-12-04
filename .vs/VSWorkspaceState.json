@@ -2,11 +2,7 @@
   "ExpandedNodes": [
     "",
     "\\public",
-    "\\src",
-    "\\src\\screens\\resources",
-    "\\src\\screens\\resources\\discontinued-finishes",
-    "\\src\\screens\\resources\\lead-times"
+    "\\src"
   ],
-  "SelectedNode": "\\public\\myjsi-icon.png",
   "PreviewInSolutionExplorer": false
 }
