@@ -1,5 +1,3 @@
-﻿```javascript
-// HomeScreen with comprehensive dealer dashboard
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 import { Plus, Briefcase, Package, Users, TrendingUp, Bell, Calendar, ChevronRight, Search, ArrowUpRight, Clock, AlertCircle, X, Check, BarChart3, Command } from 'lucide-react';
@@ -7,12 +5,12 @@ import { Plus, Briefcase, Package, Users, TrendingUp, Bell, Calendar, ChevronRig
 // --- Shared Components ---
 
 const WidgetCard = ({ children, className = "", onClick }) => (
-    <div 
-        onClick={onClick}
-        className={`bg - white p - 6 rounded - [2rem] shadow - sm border border - black / 5 transition - all duration - 300 hover: shadow - md ${ onClick ? 'cursor-pointer hover:scale-[1.01] active:scale-[0.99]' : '' } ${ className } `}
-    >
-        {children}
-    </div>
+  <div
+    onClick={onClick}
+    className={`bg-white p-6 rounded-[2rem] shadow-sm border border-black/5 transition-all duration-300 hover:bg-gray-50 ${className}`}
+  >
+    {children}
+  </div>
 );
 
 // --- Skeleton Loading State ---
