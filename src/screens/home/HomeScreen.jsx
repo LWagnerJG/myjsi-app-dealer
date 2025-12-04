@@ -476,4 +476,3 @@ export const HomeScreen = ({
         </div>
     );
 };
-```
