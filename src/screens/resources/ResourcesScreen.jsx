@@ -15,7 +15,7 @@ const sublabelMap = {
     'Commission Rates': 'Rep commission by discount',
     'Contracts': 'Information and discounts',
     'Dealer Directory': 'Partner contact finder',
-    'Sample Discounts': 'Demo pricing overview',
+    'Discounts': 'Dealer sample pricing',
     'Install Instructions': 'Assembly guidance and videos',
     'Loaner Pool': 'Search sample chairs',
     'Request Field Visit': 'Onsite tech scheduling',

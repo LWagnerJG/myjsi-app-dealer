@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowLeft, User } from 'lucide-react';
 import { logoLight } from '../../data.jsx';
+import { DESIGN_TOKENS } from '../../design-system/tokens.js';
 
 export const AppHeader = React.memo(({
     onHomeClick,
@@ -23,7 +24,10 @@ export const AppHeader = React.memo(({
     };
 
     return (
-        <div className="px-4 pt-4 pb-1 fixed top-0 left-0 right-0 z-20">
+        <div 
+            className="px-4 pt-4 pb-1 fixed top-0 left-0 right-0"
+            style={{ zIndex: DESIGN_TOKENS.zIndex.header }}
+        >
             <div className="w-full flex items-center justify-between px-5" style={PILL}>
                 <div className="flex items-center">
                     <button
@@ -62,7 +66,7 @@ export const AppHeader = React.memo(({
                         className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-black/5 dark:hover:bg:white/5"
                         style={{ backgroundColor: theme.colors.surface, boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }}
                     >
-                        <User className="w-5 h-5" style={{ color: theme.colors.secondary }} />
+                        <User className="w-5 h-5" style={{ color: theme.colors.textPrimary }} strokeWidth={2} />
                     </button>
                 </div>
             </div>

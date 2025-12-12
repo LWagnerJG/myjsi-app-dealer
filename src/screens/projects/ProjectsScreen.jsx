@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+import { createPortal } from 'react-dom';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 import { Briefcase, ArrowRight, Users, Building2, MapPin, Shield, Package, X, Search, ChevronRight, Plus, FileText, Send, CheckCircle } from 'lucide-react';
 import { STAGES, VERTICALS, COMPETITORS, DISCOUNT_OPTIONS, PO_TIMEFRAMES, INITIAL_DESIGN_FIRMS } from './data.js';
@@ -8,6 +9,7 @@ import { TabToggle, FilterChips } from '../../design-system/SegmentedToggle.jsx'
 import { JSI_SERIES } from '../products/data.js';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
 import { MOCK_CUSTOMERS, STATUS_COLORS, CUSTOMER_FILTER_OPTIONS } from '../../data/mockCustomers.js';
+import { DESIGN_TOKENS } from '../../design-system/tokens.js';
 
 // currency util
 const fmtCurrency = (v) => typeof v === 'string' ? (v.startsWith('$')? v : '$'+v) : (v ?? 0).toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
@@ -270,7 +272,7 @@ const CustomerCard = ({ customer, theme, onClick }) => {
 };
 
 // New Project/Customer Modal Component
-const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers }) => {
+const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCustomer }) => {
   const [mode, setMode] = useState(null); // null, 'project', 'customer'
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerSearch, setCustomerSearch] = useState('');
@@ -279,8 +281,31 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers }) => {
   const [customerName, setCustomerName] = useState('');
   const [customerCity, setCustomerCity] = useState('');
   const [customerState, setCustomerState] = useState('');
+  const [customerStreet, setCustomerStreet] = useState('');
+  const [customerVertical, setCustomerVertical] = useState('Corporate');
   const [customerNotes, setCustomerNotes] = useState('');
   const [submitted, setSubmitted] = useState(false);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      return () => { document.body.style.overflow = ''; };
+    }
+  }, [isOpen]);
+
+  // Handle escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+        resetModal();
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onClose]);
 
   const filteredCustomers = useMemo(() => {
     if (!customerSearch.trim()) return customers;
@@ -298,6 +323,27 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers }) => {
   };
 
   const handleSubmitCustomerRequest = () => {
+    // Create new customer and add to local data
+    const newCustomer = {
+      id: `cust-${Date.now()}`,
+      name: customerName.trim(),
+      location: { city: customerCity.trim(), state: customerState.trim() },
+      vertical: customerVertical,
+      activeProjectIds: [],
+      image: 'https://webresources.jsifurniture.com/production/uploads/jsi_vision_install_0000010.jpg',
+      standardsPrograms: [],
+      approvedMaterials: { laminates: [], metals: [], upholstery: [], woods: [], paintPlastic: [] },
+      orders: { current: [], history: [] },
+      installs: [],
+      documents: [],
+      contacts: []
+    };
+    
+    // Callback to add customer to parent state
+    if (onAddCustomer) {
+      onAddCustomer(newCustomer);
+    }
+    
     setSubmitted(true);
     setTimeout(() => {
       onClose();
@@ -306,6 +352,8 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers }) => {
       setCustomerName('');
       setCustomerCity('');
       setCustomerState('');
+      setCustomerStreet('');
+      setCustomerVertical('Corporate');
       setCustomerNotes('');
     }, 1500);
   };
@@ -320,231 +368,299 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers }) => {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => { onClose(); resetModal(); }}>
+  // Use portal to render at document body level for proper stacking
+  return createPortal(
+    <>
+      {/* Full-screen dimming backdrop - covers header and nav */}
       <div 
-        className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl max-h-[85vh] overflow-hidden flex flex-col"
-        style={{ backgroundColor: theme.colors.background }}
-        onClick={e => e.stopPropagation()}
+        className="fixed inset-0 bg-black/40 pointer-events-none"
+        style={{ zIndex: DESIGN_TOKENS.zIndex.overlay - 1 }}
+      />
+      
+      {/* Interactive Backdrop - positioned below header (top: 76px on mobile, adjusts for desktop) */}
+      <div 
+        className="fixed inset-0 lg:left-24"
+        style={{ 
+          top: 76, // Below the header
+          zIndex: DESIGN_TOKENS.zIndex.overlay 
+        }}
+        onClick={() => { onClose(); resetModal(); }}
+      />
+      
+      {/* Modal Container */}
+      <div 
+        className="fixed inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center lg:pl-24"
+        style={{ 
+          top: 76, // Below the header
+          zIndex: DESIGN_TOKENS.zIndex.modal 
+        }}
+        onClick={() => { onClose(); resetModal(); }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: theme.colors.border }}>
-          <div>
-            <h2 className="font-bold text-lg" style={{ color: theme.colors.textPrimary }}>
-              {mode === null && '+ New'}
-              {mode === 'project' && (selectedCustomer ? 'New Project' : 'Select Customer')}
-              {mode === 'customer' && 'Request New Customer'}
-            </h2>
-            {mode === 'project' && selectedCustomer && (
-              <p className="text-sm" style={{ color: theme.colors.textSecondary }}>for {selectedCustomer.name}</p>
-            )}
-          </div>
-          <button onClick={() => { onClose(); resetModal(); }} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.colors.subtle }}>
-            <X className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {/* Initial Choice */}
-          {mode === null && (
-            <div className="space-y-3">
-              <button
-                onClick={() => setMode('project')}
-                className="w-full p-4 rounded-2xl text-left flex items-center gap-4 transition-all hover:shadow-md"
-                style={{ backgroundColor: theme.colors.subtle }}
-              >
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: theme.colors.accent + '20' }}>
-                  <Briefcase className="w-6 h-6" style={{ color: theme.colors.accent }} />
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-base" style={{ color: theme.colors.textPrimary }}>Create New Project</p>
-                  <p className="text-sm" style={{ color: theme.colors.textSecondary }}>For an existing customer</p>
-                </div>
-                <ChevronRight className="w-5 h-5" style={{ color: theme.colors.textSecondary }} />
-              </button>
-              <button
-                onClick={() => setMode('customer')}
-                className="w-full p-4 rounded-2xl text-left flex items-center gap-4 transition-all hover:shadow-md"
-                style={{ backgroundColor: theme.colors.subtle }}
-              >
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: theme.colors.accent + '20' }}>
-                  <Building2 className="w-6 h-6" style={{ color: theme.colors.accent }} />
-                </div>
-                <div className="flex-1">
-                  <p className="font-bold text-base" style={{ color: theme.colors.textPrimary }}>Request New Customer</p>
-                  <p className="text-sm" style={{ color: theme.colors.textSecondary }}>Submit request to JSI rep team</p>
-                </div>
-                <ChevronRight className="w-5 h-5" style={{ color: theme.colors.textSecondary }} />
-              </button>
+        <div 
+          className="w-full sm:max-w-lg sm:mx-4 rounded-t-3xl sm:rounded-3xl max-h-[calc(100%-env(safe-area-inset-bottom))] sm:max-h-[85vh] overflow-hidden flex flex-col shadow-2xl"
+          style={{ backgroundColor: theme.colors.background }}
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: theme.colors.border }}>
+            <div>
+              <h2 className="font-bold text-lg" style={{ color: theme.colors.textPrimary }}>
+                {mode === null && '+ New'}
+                {mode === 'project' && (selectedCustomer ? 'New Project' : 'Select Customer')}
+                {mode === 'customer' && 'Request New Customer'}
+              </h2>
+              {mode === 'project' && selectedCustomer && (
+                <p className="text-sm" style={{ color: theme.colors.textSecondary }}>for {selectedCustomer.name}</p>
+              )}
             </div>
-          )}
-
-          {/* Project Flow - Step 1: Select Customer */}
-          {mode === 'project' && !selectedCustomer && (
-            <div className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: theme.colors.textSecondary }} />
-                <input
-                  value={customerSearch}
-                  onChange={e => setCustomerSearch(e.target.value)}
-                  placeholder="Search customers..."
-                  className="w-full pl-10 pr-4 py-3 rounded-xl text-sm outline-none"
-                  style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
-                />
-              </div>
-              <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                {filteredCustomers.map(c => (
-                  <button
-                    key={c.id}
-                    onClick={() => setSelectedCustomer(c)}
-                    className="w-full p-3 rounded-xl text-left flex items-center gap-3 transition-all hover:shadow-sm"
-                    style={{ backgroundColor: theme.colors.subtle }}
-                  >
-                    <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
-                      <img src={c.image} alt={c.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate" style={{ color: theme.colors.textPrimary }}>{c.name}</p>
-                      <p className="text-xs" style={{ color: theme.colors.textSecondary }}>{c.location.city}, {c.location.state}</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Project Flow - Step 2: Project Details */}
-          {mode === 'project' && selectedCustomer && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>Project Name *</label>
-                <input
-                  value={projectName}
-                  onChange={e => setProjectName(e.target.value)}
-                  placeholder="e.g., Lobby Refresh Phase 2"
-                  className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                  style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>Vertical (Optional)</label>
-                <div className="flex flex-wrap gap-2">
-                  {VERTICALS.map(v => (
-                    <button
-                      key={v}
-                      onClick={() => setProjectVertical(projectVertical === v ? '' : v)}
-                      className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
-                      style={{
-                        backgroundColor: projectVertical === v ? theme.colors.accent : theme.colors.subtle,
-                        color: projectVertical === v ? '#fff' : theme.colors.textSecondary,
-                      }}
-                    >
-                      {v}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <button
-                onClick={handleSubmitProject}
-                disabled={!projectName.trim()}
-                className="w-full py-3 rounded-full font-bold text-white disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
-                style={{ backgroundColor: theme.colors.accent }}
-              >
-                <Plus className="w-4 h-4" />
-                Create Project
-              </button>
-            </div>
-          )}
-
-          {/* Customer Request Flow */}
-          {mode === 'customer' && (
-            submitted ? (
-              <div className="py-8 text-center">
-                <CheckCircle className="w-12 h-12 mx-auto mb-3" style={{ color: '#059669' }} />
-                <p className="font-semibold" style={{ color: theme.colors.textPrimary }}>Request Sent!</p>
-                <p className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>Your JSI rep team will review your request.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>Customer Name *</label>
-                  <input
-                    value={customerName}
-                    onChange={e => setCustomerName(e.target.value)}
-                    placeholder="e.g., Acme Corporation"
-                    className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                    style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>City</label>
-                    <input
-                      value={customerCity}
-                      onChange={e => setCustomerCity(e.target.value)}
-                      placeholder="City"
-                      className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                      style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>State</label>
-                    <input
-                      value={customerState}
-                      onChange={e => setCustomerState(e.target.value)}
-                      placeholder="State"
-                      className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-                      style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>Notes</label>
-                  <textarea
-                    value={customerNotes}
-                    onChange={e => setCustomerNotes(e.target.value)}
-                    placeholder="Any additional information..."
-                    rows={3}
-                    className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
-                    style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
-                  />
-                </div>
-                <button
-                  onClick={handleSubmitCustomerRequest}
-                  disabled={!customerName.trim()}
-                  className="w-full py-3 rounded-full font-bold text-white disabled:opacity-50 flex items-center justify-center gap-2"
-                  style={{ backgroundColor: theme.colors.accent }}
-                >
-                  <Send className="w-4 h-4" />
-                  Submit Request
-                </button>
-              </div>
-            )
-          )}
-        </div>
-
-        {/* Back button for sub-flows */}
-        {mode !== null && !submitted && (
-          <div className="p-4 border-t" style={{ borderColor: theme.colors.border }}>
-            <button
-              onClick={() => {
-                if (mode === 'project' && selectedCustomer) {
-                  setSelectedCustomer(null);
-                } else {
-                  setMode(null);
-                }
-              }}
-              className="w-full py-2.5 rounded-full font-medium text-sm"
-              style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textSecondary }}
-            >
-              Back
+            <button onClick={() => { onClose(); resetModal(); }} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.colors.subtle }}>
+              <X className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
             </button>
           </div>
-        )}
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-4 scrollbar-hide">
+            {/* Initial Choice */}
+            {mode === null && (
+              <div className="space-y-3">
+                <button
+                  onClick={() => setMode('project')}
+                  className="w-full p-4 rounded-2xl text-left flex items-center gap-4 transition-all hover:shadow-md"
+                  style={{ backgroundColor: theme.colors.subtle }}
+                >
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: theme.colors.accent + '20' }}>
+                    <Briefcase className="w-6 h-6" style={{ color: theme.colors.accent }} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-base" style={{ color: theme.colors.textPrimary }}>Create New Project</p>
+                    <p className="text-sm" style={{ color: theme.colors.textSecondary }}>For an existing customer</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5" style={{ color: theme.colors.textSecondary }} />
+                </button>
+                <button
+                  onClick={() => setMode('customer')}
+                  className="w-full p-4 rounded-2xl text-left flex items-center gap-4 transition-all hover:shadow-md"
+                  style={{ backgroundColor: theme.colors.subtle }}
+                >
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: theme.colors.accent + '20' }}>
+                    <Building2 className="w-6 h-6" style={{ color: theme.colors.accent }} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-base" style={{ color: theme.colors.textPrimary }}>Request New Customer</p>
+                    <p className="text-sm" style={{ color: theme.colors.textSecondary }}>Submit request to JSI rep team</p>
+                  </div>
+                  <ChevronRight className="w-5 h-5" style={{ color: theme.colors.textSecondary }} />
+                </button>
+              </div>
+            )}
+
+            {/* Project Flow - Step 1: Select Customer */}
+            {mode === 'project' && !selectedCustomer && (
+              <div className="space-y-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: theme.colors.textSecondary }} />
+                  <input
+                    value={customerSearch}
+                    onChange={e => setCustomerSearch(e.target.value)}
+                    placeholder="Search customers..."
+                    className="w-full pl-10 pr-4 py-3 rounded-xl text-sm outline-none"
+                    style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
+                    autoFocus
+                  />
+                </div>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto scrollbar-hide">
+                  {filteredCustomers.map(c => (
+                    <button
+                      key={c.id}
+                      onClick={() => setSelectedCustomer(c)}
+                      className="w-full p-3 rounded-xl text-left flex items-center gap-3 transition-all hover:shadow-sm"
+                      style={{ backgroundColor: theme.colors.subtle }}
+                    >
+                      <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+                        <img src={c.image} alt={c.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate" style={{ color: theme.colors.textPrimary }}>{c.name}</p>
+                        <p className="text-xs" style={{ color: theme.colors.textSecondary }}>{c.location.city}, {c.location.state}</p>
+                      </div>
+                      <ChevronRight className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
+                    </button>
+                  ))}
+                  {filteredCustomers.length === 0 && (
+                    <div className="py-8 text-center">
+                      <p className="text-sm" style={{ color: theme.colors.textSecondary }}>No customers found</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Project Flow - Step 2: Project Details */}
+            {mode === 'project' && selectedCustomer && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>Project Name *</label>
+                  <input
+                    value={projectName}
+                    onChange={e => setProjectName(e.target.value)}
+                    placeholder="e.g., Lobby Refresh Phase 2"
+                    className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                    style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
+                    autoFocus
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>Vertical (Optional)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {VERTICALS.map(v => (
+                      <button
+                        key={v}
+                        onClick={() => setProjectVertical(projectVertical === v ? '' : v)}
+                        className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+                        style={{
+                          backgroundColor: projectVertical === v ? theme.colors.accent : theme.colors.subtle,
+                          color: projectVertical === v ? '#fff' : theme.colors.textSecondary,
+                        }}
+                      >
+                        {v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  onClick={handleSubmitProject}
+                  disabled={!projectName.trim()}
+                  className="w-full py-3 rounded-full font-bold text-white disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
+                  style={{ backgroundColor: theme.colors.accent }}
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Project
+                </button>
+              </div>
+            )}
+
+            {/* Customer Request Flow - Now adds directly to dataset */}
+            {mode === 'customer' && (
+              submitted ? (
+                <div className="py-8 text-center">
+                  <CheckCircle className="w-12 h-12 mx-auto mb-3" style={{ color: '#059669' }} />
+                  <p className="font-semibold" style={{ color: theme.colors.textPrimary }}>Customer Added!</p>
+                  <p className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>You can now create projects for this customer.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>Customer Name *</label>
+                    <input
+                      value={customerName}
+                      onChange={e => setCustomerName(e.target.value)}
+                      placeholder="e.g., Acme Corporation"
+                      className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                      style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
+                      autoFocus
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>Street Address</label>
+                    <input
+                      value={customerStreet}
+                      onChange={e => setCustomerStreet(e.target.value)}
+                      placeholder="123 Main St"
+                      className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                      style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>City</label>
+                      <input
+                        value={customerCity}
+                        onChange={e => setCustomerCity(e.target.value)}
+                        placeholder="City"
+                        className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                        style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>State</label>
+                      <input
+                        value={customerState}
+                        onChange={e => setCustomerState(e.target.value)}
+                        placeholder="State"
+                        className="w-full px-4 py-3 rounded-xl text-sm outline-none"
+                        style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>Vertical</label>
+                    <div className="flex flex-wrap gap-2">
+                      {['Corporate', 'Healthcare', 'HigherEd', 'Government', 'Hospitality', 'Other'].map(v => (
+                        <button
+                          key={v}
+                          type="button"
+                          onClick={() => setCustomerVertical(v)}
+                          className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
+                          style={{
+                            backgroundColor: customerVertical === v ? theme.colors.accent : theme.colors.subtle,
+                            color: customerVertical === v ? '#fff' : theme.colors.textSecondary,
+                          }}
+                        >
+                          {v}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>Notes</label>
+                    <textarea
+                      value={customerNotes}
+                      onChange={e => setCustomerNotes(e.target.value)}
+                      placeholder="Any additional information..."
+                      rows={2}
+                      className="w-full px-4 py-3 rounded-xl text-sm outline-none resize-none"
+                      style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
+                    />
+                  </div>
+                  <button
+                    onClick={handleSubmitCustomerRequest}
+                    disabled={!customerName.trim()}
+                    className="w-full py-3 rounded-full font-bold text-white disabled:opacity-50 flex items-center justify-center gap-2"
+                    style={{ backgroundColor: theme.colors.accent }}
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Customer
+                  </button>
+                </div>
+              )
+            )}
+          </div>
+
+          {/* Back button for sub-flows */}
+          {mode !== null && !submitted && (
+            <div className="p-4 border-t" style={{ borderColor: theme.colors.border }}>
+              <button
+                onClick={() => {
+                  if (mode === 'project' && selectedCustomer) {
+                    setSelectedCustomer(null);
+                  } else {
+                    setMode(null);
+                  }
+                }}
+                className="w-full py-2.5 rounded-full font-medium text-sm"
+                style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textSecondary }}
+              >
+                Back
+              </button>
+            </div>
+          )}
+          
+          {/* Safe area padding for iOS */}
+          <div className="h-[env(safe-area-inset-bottom)]" />
+        </div>
       </div>
-    </div>
+    </>,
+    document.body
   );
 };
 
@@ -562,6 +678,12 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
   const [customerFilter, setCustomerFilter] = useState('all');
   const [customerSearch, setCustomerSearch] = useState('');
   const [showNewModal, setShowNewModal] = useState(false);
+  const [localCustomers, setLocalCustomers] = useState(MOCK_CUSTOMERS);
+  
+  // Handler to add new customer
+  const handleAddCustomer = useCallback((newCustomer) => {
+    setLocalCustomers(prev => [newCustomer, ...prev]);
+  }, []);
 
   useImperativeHandle(ref,()=>({ clearSelection:()=>{ let cleared=false; if(selectedOpportunity){ setSelectedOpportunity(null); cleared=true;} if(selectedInstall){ setSelectedInstall(null); cleared=true;} return cleared; } }));
   const handleScroll = useCallback(()=>{ if(scrollContainerRef.current) setIsScrolled(scrollContainerRef.current.scrollTop>10); },[]);
@@ -573,7 +695,7 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
   
   // Filter customers
   const filteredCustomers = useMemo(() => {
-    let result = MOCK_CUSTOMERS;
+    let result = localCustomers;
     
     // Apply search
     if (customerSearch.trim()) {
@@ -595,7 +717,7 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
     }
     
     return result;
-  }, [customerSearch, customerFilter]);
+  }, [customerSearch, customerFilter, localCustomers]);
   
   // Desktop: center content, account for sidebar
   const contentMaxWidth = isDesktop ? 'max-w-4xl mx-auto w-full lg:pl-20' : '';
@@ -767,7 +889,8 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
         onClose={() => setShowNewModal(false)}
         theme={theme}
         onNavigate={onNavigate}
-        customers={MOCK_CUSTOMERS}
+        customers={localCustomers}
+        onAddCustomer={handleAddCustomer}
       />
     </div>
   );

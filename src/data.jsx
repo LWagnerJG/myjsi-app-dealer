@@ -56,7 +56,7 @@ export const allApps = [
     { name: 'Contracts', route: 'resources/contracts', icon: FileText },
     { name: 'Loaner Pool', route: 'resources/loaner_pool', icon: Package },
     { name: 'Discontinued Finishes', route: 'resources/discontinued_finishes', icon: Palette },
-    { name: 'Sample Discounts', route: 'resources/sample_discounts', icon: Percent },
+    { name: 'Discounts', route: 'resources/sample_discounts', icon: Percent },
     { name: 'Social Media', route: 'resources/social_media', icon: Share2 },
     { name: 'Customer Ranking', route: 'customer-rank', icon: BarChart2 },
     { name: 'Commissions', route: 'commissions', icon: DollarSign },
@@ -91,7 +91,7 @@ export const QUICK_ACCESS_APPS = [
     { id: 'sales', name: 'Sales', route: 'sales', icon: PieChart, isDefault: false },
     { id: 'resources', name: 'Resources', route: 'resources', icon: Database, isDefault: false },
     { id: 'contracts', name: 'Contracts', route: 'resources/contracts', icon: FileText, isDefault: false },
-    { id: 'sample-discounts', name: 'Sample Discounts', route: 'resources/sample_discounts', icon: Percent, isDefault: false },
+    { id: 'discounts', name: 'Discounts', route: 'resources/sample_discounts', icon: Percent, isDefault: false },
     { id: 'loaner-pool', name: 'Loaner Pool', route: 'resources/loaner_pool', icon: Package, isDefault: false },
     { id: 'discontinued-finishes', name: 'Discontinued Finishes', route: 'resources/discontinued_finishes', icon: Palette, isDefault: false },
     { id: 'social-media', name: 'Social Media', route: 'resources/social_media', icon: Share2, isDefault: false },
@@ -99,8 +99,16 @@ export const QUICK_ACCESS_APPS = [
     { id: 'presentations', name: 'Presentations', route: 'resources/presentations', icon: MonitorPlay, isDefault: false },
     { id: 'install-instructions', name: 'Install Instructions', route: 'resources/install_instructions', icon: Wrench, isDefault: false },
     { id: 'customer-ranking', name: 'Customer Ranking', route: 'customer-rank', icon: BarChart2, isDefault: false },
-    { id: 'members', name: 'Members', route: 'members', icon: Users, isDefault: false },
-    { id: 'settings', name: 'Settings', route: 'settings', icon: Settings, isDefault: false },
+    { id: 'members', name: 'Members', route: 'members', icon: Users, isDefault: false, dealerHidden: true },
+    { id: 'settings', name: 'Settings', route: 'settings', icon: Settings, isDefault: false, dealerHidden: true },
+];
+
+// Dealer allowlist for Quick Access - apps dealers can add to their grid
+export const DEALER_QUICK_ACCESS_ALLOWLIST = [
+    'replacements', 'samples', 'orders', 'projects', 'products', 'community',
+    'lead-times', 'customer-directory', 'sales', 'resources', 'contracts',
+    'discounts', 'loaner-pool', 'discontinued-finishes', 'social-media',
+    'design-days', 'presentations', 'install-instructions', 'customer-ranking'
 ];
 
 // Get default Quick Access app IDs
@@ -121,7 +129,7 @@ export const RESOURCES_DATA = [
         items: [
             { label: "Dealer Directory", nav: "dealer-directory" },
             { label: "Commission Rates", nav: "commission-rates" },
-            { label: "Sample Discounts", nav: "sample-discounts" },
+            { label: "Discounts", nav: "sample-discounts" },
             { label: "Contracts", nav: "contracts" },
         ].sort((a, b) => a.label.localeCompare(b.label))
     },

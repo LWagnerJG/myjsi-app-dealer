@@ -1,85 +1,42 @@
-// Sample Discounts specific data
-export const SAMPLE_DISCOUNTS_DATA = [
+// Sample Discounts specific data - Dealer version
+// Renamed from "Sample Discounts" to "Discounts" for dealer view
+
+// Dealer-specific discount categories (3 cards only for dealers)
+export const DEALER_DISCOUNT_DATA = [
     {
-        id: 'SSD001',
-        Title: 'Arwyn Seating Collection',
-        category: 'Seating',
-        Discount: 25,
-        SSANumber: 'SSA-ARW-2024',
-        CommissionInfo: '4-6 weeks lead time • Min qty: 5',
-        description: 'Premium lounge and task seating for corporate environments'
+        id: 'DR-240101',
+        Title: 'Showroom Samples',
+        category: 'showroom',
+        Discount: 60,
+        SSANumber: 'SSA DR-240101',
+        description: 'Samples for your dealer showroom display. Standard finishes and popular configurations available at showroom pricing.'
     },
     {
-        id: 'SSD002',
-        Title: 'Vision Casegoods Line',
-        category: 'Casegoods',
-        Discount: 30,
-        SSANumber: 'SSA-VIS-2024',
-        CommissionInfo: '8-10 weeks lead time • Min qty: 3',
-        description: 'Modular storage and workspace solutions'
+        id: 'WE-240215',
+        Title: 'A&D Samples',
+        category: 'ad-samples',
+        Discount: 55,
+        SSANumber: 'SSA WE-240215',
+        description: 'Samples for architects and designers. Finish chips, fabric swatches, and small-scale models for specification support.'
     },
     {
-        id: 'SSD003',
-        Title: 'Wink Task Chairs',
-        category: 'Seating',
-        Discount: 20,
-        SSANumber: 'SSA-WNK-2024',
-        CommissionInfo: '3-4 weeks lead time • Min qty: 10',
-        description: 'Ergonomic task seating for educational environments'
-    },
-    {
-        id: 'SSD004',
-        Title: 'Finn Lounge Series',
-        category: 'Lounge',
-        Discount: 35,
-        SSANumber: 'SSA-FNN-2024',
-        CommissionInfo: '6-8 weeks lead time • Min qty: 2',
-        description: 'Healthcare and hospitality lounge furniture'
-    },
-    {
-        id: 'SSD005',
-        Title: 'Native Conference Tables',
-        category: 'Tables',
-        Discount: 28,
-        SSANumber: 'SSA-NAT-2024',
-        CommissionInfo: '8-12 weeks lead time • Min qty: 1',
-        description: 'Sustainable wood conference and meeting tables'
-    },
-    {
-        id: 'SSD006',
-        Title: 'Bryn Guest Seating',
-        category: 'Seating',
-        Discount: 22,
-        SSANumber: 'SSA-BRY-2024',
-        CommissionInfo: '5-7 weeks lead time • Min qty: 6',
-        description: 'Contemporary guest and visitor seating'
-    },
-    {
-        id: 'SSD007',
-        Title: 'Knox Counter Stools',
-        category: 'Seating',
-        Discount: 18,
-        SSANumber: 'SSA-KNX-2024',
-        CommissionInfo: '4-5 weeks lead time • Min qty: 8',
-        description: 'Adjustable height seating for collaboration spaces'
-    },
-    {
-        id: 'SSD008',
-        Title: 'Caav Lounge Collection',
-        category: 'Lounge',
-        Discount: 32,
-        SSANumber: 'SSA-CAV-2024',
-        CommissionInfo: '7-9 weeks lead time • Min qty: 3',
-        description: 'Premium lounge seating with optional technology integration'
+        id: 'DF-240320',
+        Title: 'Personal Use Samples',
+        category: 'personal-use',
+        Discount: 50,
+        SSANumber: 'SSA DF-240320',
+        description: 'Samples for dealer personal use. Limited to one per item per year.'
     }
 ];
 
+// Legacy data for backward compatibility
+export const SAMPLE_DISCOUNTS_DATA = DEALER_DISCOUNT_DATA;
+
 export const DISCOUNT_CATEGORIES = [
     'all',
-    'Seating',
-    'Casegoods', 
-    'Tables',
-    'Lounge'
+    'showroom',
+    'ad-samples',
+    'personal-use'
 ];
 
 export const SAMPLE_DISCOUNT_RANGES = [

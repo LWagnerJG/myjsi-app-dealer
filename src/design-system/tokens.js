@@ -147,18 +147,19 @@ export const DESIGN_TOKENS = {
     elegant: '350ms cubic-bezier(0.25, 0.1, 0.25, 1)',
   },
 
-  // Z-index scale
+  // Z-index scale - carefully layered for proper stacking
   zIndex: {
     base: 0,
     dropdown: 10,
     sticky: 20,
-    fixed: 30,
-    overlay: 35,
-    modalBackdrop: 40,
-    modal: 50,
-    popover: 60,
-    tooltip: 70,
-    toast: 80,
+    header: 30,           // App header - should stay visible above modals
+    navigation: 40,       // Bottom nav / side rail
+    overlay: 50,          // Modal backdrop - dims content but not header
+    modalBackdrop: 50,    // Alias for overlay
+    modal: 60,            // Modal content - above nav
+    popover: 70,          // Popovers/dropdowns in modals
+    tooltip: 80,
+    toast: 90,
   },
 
   // Max-width for responsive layouts

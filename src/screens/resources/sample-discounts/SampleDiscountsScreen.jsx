@@ -1,7 +1,32 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { GlassCard } from '../../../components/common/GlassCard.jsx';
-import { Percent, Copy, Hourglass } from 'lucide-react';
-import { SAMPLE_DISCOUNTS_DATA, DISCOUNT_CATEGORIES } from './data.js';
+import { Percent, Copy, Hourglass, Info } from 'lucide-react';
+import { DEALER_DISCOUNT_DATA, DISCOUNT_CATEGORIES } from './data.js';
+
+// User role - dealer by default
+const USER_ROLE = 'dealer'; // 'dealer' | 'internal'
+
+// Dealer discount summary card
+const DealerDiscountSummary = ({ theme }) => (
+    <GlassCard theme={theme} className="p-5 mb-4 rounded-[24px]" variant="elevated">
+        <div className="flex items-start gap-4">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${theme.colors.accent}15` }}>
+                <Percent className="w-7 h-7" style={{ color: theme.colors.accent }} />
+            </div>
+            <div className="flex-1">
+                <p className="text-xs font-semibold uppercase tracking-wide mb-1" style={{ color: theme.colors.textSecondary }}>Today's Dealer Discount</p>
+                <p className="text-3xl font-extrabold tracking-tight" style={{ color: theme.colors.accent }}>50/20</p>
+                <p className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>60% off list</p>
+                <div className="flex items-start gap-2 mt-3 p-2.5 rounded-xl" style={{ backgroundColor: theme.colors.subtle }}>
+                    <Info className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ color: theme.colors.textSecondary }} />
+                    <p className="text-xs leading-relaxed" style={{ color: theme.colors.textSecondary }}>
+                        50/20 means your net is 60% off list today. Contact your JSI rep for volume or project-specific pricing.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </GlassCard>
+);
 
 export const SampleDiscountsScreen = ({ theme, setSuccessMessage }) => {
     const [discounts, setDiscounts] = useState([]);
@@ -14,7 +39,7 @@ export const SampleDiscountsScreen = ({ theme, setSuccessMessage }) => {
         const fetchDiscounts = async () => {
             const powerAutomateURL = import.meta.env.VITE_SAMPLE_DISCOUNTS_URL;
             if (!powerAutomateURL) {
-                setDiscounts(SAMPLE_DISCOUNTS_DATA || []);
+                setDiscounts(DEALER_DISCOUNT_DATA || []);
                 setIsLoading(false);
                 return;
             }
@@ -33,9 +58,9 @@ export const SampleDiscountsScreen = ({ theme, setSuccessMessage }) => {
                 else if (data.body && Array.isArray(data.body)) setDiscounts(data.body);
                 else if (data.d && Array.isArray(data.d)) setDiscounts(data.d);
                 else if (data.results && Array.isArray(data.results)) setDiscounts(data.results);
-                else setDiscounts(SAMPLE_DISCOUNTS_DATA || []);
+                else setDiscounts(DEALER_DISCOUNT_DATA || []);
             } catch (e) {
-                setDiscounts(SAMPLE_DISCOUNTS_DATA || []);
+                setDiscounts(DEALER_DISCOUNT_DATA || []);
                 setError('Using local data');
             } finally { setIsLoading(false); }
         };
@@ -51,12 +76,26 @@ export const SampleDiscountsScreen = ({ theme, setSuccessMessage }) => {
         navigator.clipboard.writeText(textToCopy).then(() => doSet('SSA# Copied!')).catch(() => doSet('Copy failed'));
     }, [setSuccessMessage]);
 
-    const categories = useMemo(() => DISCOUNT_CATEGORIES, []); // placeholder retained if filters added later
-
+    // Filter discounts for dealer view - only show dealer-relevant categories
     const filteredDiscounts = useMemo(() => {
         let filtered = discounts;
-        if (selectedCategory !== 'all') filtered = filtered.filter(i => i.category === selectedCategory);
-        if (searchTerm) { const term = searchTerm.toLowerCase(); filtered = filtered.filter(i => (i.productLine || i.Title || '').toLowerCase().includes(term)); }
+        
+        // For dealers, only show the three dealer categories
+        if (USER_ROLE === 'dealer') {
+            filtered = filtered.filter(d => 
+                d.category === 'showroom' || 
+                d.category === 'ad-samples' || 
+                d.category === 'personal-use'
+            );
+        }
+        
+        if (selectedCategory !== 'all') {
+            filtered = filtered.filter(i => i.category === selectedCategory);
+        }
+        if (searchTerm) { 
+            const term = searchTerm.toLowerCase(); 
+            filtered = filtered.filter(i => (i.productLine || i.Title || '').toLowerCase().includes(term)); 
+        }
         return filtered;
     }, [discounts, selectedCategory, searchTerm]);
 
@@ -73,6 +112,7 @@ export const SampleDiscountsScreen = ({ theme, setSuccessMessage }) => {
     if (filteredDiscounts.length === 0) {
         return (
             <div className="flex flex-col h-full px-5 pt-4">
+                {USER_ROLE === 'dealer' && <DealerDiscountSummary theme={theme} />}
                 <GlassCard theme={theme} className="p-6 text-center">
                     <Percent className="w-12 h-12 mx-auto mb-4" style={{ color: theme.colors.accent }} />
                     <h3 className="font-bold text-lg mb-2" style={{ color: theme.colors.textPrimary }}>No Discounts Found</h3>
@@ -86,14 +126,16 @@ export const SampleDiscountsScreen = ({ theme, setSuccessMessage }) => {
     return (
         <div className="flex flex-col h-full">
             <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pt-3 pb-6">
-                <div className="space-y-3">{/* tighter spacing */}
+                {/* Dealer discount summary at top */}
+                {USER_ROLE === 'dealer' && <DealerDiscountSummary theme={theme} />}
+                
+                <div className="space-y-3">
                     {filteredDiscounts.map((discount) => {
                         const discountPercent = discount.Discount || discount.sampleDiscount;
                         const title = discount.Title || discount.productLine;
                         const ssaNumber = discount.SSANumber || discount.id;
-                        const commissionInfoRaw = discount.CommissionInfo || discount.commissionInfo || '';
-                        const isNoCommission = /no commission/i.test(commissionInfoRaw) || commissionInfoRaw === '';
-                        const commissionDisplay = isNoCommission ? 'No commission' : commissionInfoRaw;
+                        const description = discount.description || '';
+                        
                         return (
                             <GlassCard key={ssaNumber || discount.id} theme={theme} className="relative p-5 flex items-stretch gap-5 rounded-[24px]">
                                 {/* Copy button */}
@@ -118,10 +160,9 @@ export const SampleDiscountsScreen = ({ theme, setSuccessMessage }) => {
                                                 SSA {ssaNumber}
                                             </span>
                                         )}
-                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" style={{ background: theme.colors.accent + '14', color: theme.colors.textPrimary, border: `1px solid ${theme.colors.accent}33` }}>{commissionDisplay}</span>
                                     </div>
-                                    {discount.description && (
-                                        <p className="text-xs leading-snug" style={{ color: theme.colors.textSecondary }}>{discount.description}</p>
+                                    {description && (
+                                        <p className="text-xs leading-snug" style={{ color: theme.colors.textSecondary }}>{description}</p>
                                     )}
                                 </div>
                             </GlassCard>
