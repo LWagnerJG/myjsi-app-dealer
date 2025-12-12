@@ -17,6 +17,8 @@ import { SamplesScreen } from './screens/samples/index.js';
 import { CreateContentModal } from './screens/community/CreateContentModal.jsx';
 import { AnimatedScreenWrapper } from './components/common/AnimatedScreenWrapper.jsx';
 import { ProjectsScreen } from './screens/projects/ProjectsScreen.jsx';
+import { CustomerMicrositeScreen } from './screens/customers/CustomerMicrositeScreen.jsx';
+import { StandardsProgramDetailScreen } from './screens/customers/StandardsProgramDetailScreen.jsx';
 import { usePersistentState } from './hooks/usePersistentState.js';
 import { NavigationShell } from './components/navigation/NavigationShell.jsx';
 import { ToastHost } from './components/common/ToastHost.jsx';
@@ -77,15 +79,35 @@ const RESOURCE_FEATURE_SCREENS = {
 };
 
 const ScreenRouter = ({ screenKey, projectsScreenRef, SuspenseFallback, ...rest }) => {
-    if (!screenKey) return null;
-    const parts = screenKey.split('/');
-    const base = parts[0];
+if (!screenKey) return null;
+const parts = screenKey.split('/');
+const base = parts[0];
 
-    if (base === 'projects') return <ProjectsScreen ref={projectsScreenRef} {...rest} />;
+if (base === 'projects') return <ProjectsScreen ref={projectsScreenRef} {...rest} />;
+    
+// Customer microsite routes
+if (base === 'customers') {
+    const customerId = parts[1];
+    // Standards program detail: customers/:customerId/standards/:programId
+    if (parts[2] === 'standards' && parts[3]) {
+        return <StandardsProgramDetailScreen customerId={customerId} programId={parts[3]} {...rest} />;
+    }
+    // Customer microsite: customers/:customerId
+    if (customerId) {
+        return <CustomerMicrositeScreen customerId={customerId} {...rest} />;
+    }
+    // Redirect to projects/customers tab if just /customers
+    return <ProjectsScreen ref={projectsScreenRef} projectsInitialTab="customers" {...rest} />;
+}
+    
+// Alias: /installations redirects to /customers (for backward compatibility)
+if (base === 'installations') {
+    return <ProjectsScreen ref={projectsScreenRef} projectsInitialTab="customers" {...rest} />;
+}
 
-    // Samples routes (cart first)
-    if (screenKey === 'samples/cart') return <SamplesScreen {...rest} initialCartOpen />;
-    if (base === 'samples') return <SamplesScreen {...rest} />;
+// Samples routes (cart first)
+if (screenKey === 'samples/cart') return <SamplesScreen {...rest} initialCartOpen />;
+if (base === 'samples') return <SamplesScreen {...rest} />;
 
     // Feature screens (lazy) inside Suspense to isolate fallback flicker per screen
     const lazyWrap = (Comp) => (
