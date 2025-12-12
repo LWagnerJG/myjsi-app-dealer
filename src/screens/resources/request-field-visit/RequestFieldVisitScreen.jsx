@@ -4,8 +4,10 @@ import { GlassCard } from '../../../components/common/GlassCard.jsx';
 import { FormInput } from '../../../components/common/FormComponents.jsx';
 import { MapPin, Calendar, Camera, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { FIELD_VISIT_REQUIREMENTS } from './data.js';
+import { useIsDesktop } from '../../../hooks/useResponsive.js';
 
 export const RequestFieldVisitScreen = ({ theme, setSuccessMessage, onNavigate }) => {
+    const isDesktop = useIsDesktop();
     // Calendar state
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(null);
@@ -144,11 +146,10 @@ export const RequestFieldVisitScreen = ({ theme, setSuccessMessage, onNavigate }
     };
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full overflow-y-auto scrollbar-hide">
             <PageTitle title="Request Field Visit" theme={theme} />
 
-            <div className="flex-1 overflow-y-auto scrollbar-hide">
-                <div className="px-4 py-4 space-y-4">
+            <div className={`px-4 py-4 space-y-4 pb-32 lg:pb-8 ${isDesktop ? 'max-w-3xl mx-auto w-full' : ''}`}>
                     {/* Info Card */}
                     <GlassCard theme={theme} className="p-4">
                         <div className="flex items-start space-x-3">
@@ -273,7 +274,7 @@ export const RequestFieldVisitScreen = ({ theme, setSuccessMessage, onNavigate }
 
                                 <button
                                     onClick={handleSubmit}
-                                    className="w-full font-bold py-3 px-6 rounded-lg transition-colors"
+                                    className="w-full font-bold py-3.5 px-6 rounded-full transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
                                     style={{ backgroundColor: theme.colors.accent, color: '#FFFFFF' }}
                                 >
                                     Submit Field Visit Request
@@ -283,6 +284,5 @@ export const RequestFieldVisitScreen = ({ theme, setSuccessMessage, onNavigate }
                     )}
                 </div>
             </div>
-        </div>
     );
 };

@@ -146,29 +146,30 @@ const CustomizeHomeModal = ({ theme, isOpen, onClose, activeAppIds, onSave }) =>
         return () => window.removeEventListener('keydown', handleEscape);
     }, [isOpen, onClose, onSave, selectedIds]);
 
-    // Filter apps for dealer role - exclude settings and members
+    // Filter apps for dealer role - exclude settings, members, and resources (resources is always shown)
     const allAppsForSelection = useMemo(() => {
         if (USER_ROLE === 'dealer') {
             return QUICK_ACCESS_APPS.filter(app => 
-                DEALER_QUICK_ACCESS_ALLOWLIST.includes(app.id) && !app.dealerHidden
+                DEALER_QUICK_ACCESS_ALLOWLIST.includes(app.id) && 
+                !app.dealerHidden &&
+                app.id !== 'resources' // Resources is always included, don't show in selection
             );
         }
-        return QUICK_ACCESS_APPS;
+        return QUICK_ACCESS_APPS.filter(app => app.id !== 'resources');
     }, []);
     
     const selectedCount = selectedIds.length;
     const canAddMore = selectedCount < MAX_QUICK_ACCESS_APPS;
 
     const toggleApp = (appId) => {
-        // Resources cannot be removed
-        if (appId === 'resources') return;
-        
         setSelectedIds(prev => {
             const isSelected = prev.includes(appId);
             if (isSelected) {
-                if (prev.length <= 1) return prev;
+                // Account for resources always being included
+                if (prev.filter(id => id !== 'resources').length <= 1) return prev;
                 return prev.filter(id => id !== appId);
             } else {
+                // Account for resources always being included
                 if (prev.length >= MAX_QUICK_ACCESS_APPS) return prev;
                 return [...prev, appId];
             }
@@ -233,13 +234,11 @@ const CustomizeHomeModal = ({ theme, isOpen, onClose, activeAppIds, onSave }) =>
                             {allAppsForSelection.map(app => {
                                 const isActive = selectedIds.includes(app.id);
                                 const isDisabled = !isActive && !canAddMore;
-                                const isLocked = app.id === 'resources'; // Resources is always required
                                 return (
-                                    <button key={app.id} onClick={() => !isDisabled && !isLocked && toggleApp(app.id)} disabled={isDisabled || isLocked} className="flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all relative" style={{ backgroundColor: isActive ? `${theme.colors.accent}10` : theme.colors.surface, border: `1.5px solid ${isActive ? theme.colors.accent : theme.colors.border}`, opacity: isDisabled ? 0.4 : 1, cursor: isDisabled || isLocked ? 'not-allowed' : 'pointer' }}>
-                                        {isActive && <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: isLocked ? theme.colors.textSecondary : theme.colors.accent }}><Check className="w-2.5 h-2.5 text-white" /></div>}
+                                    <button key={app.id} onClick={() => !isDisabled && toggleApp(app.id)} disabled={isDisabled} className="flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all relative" style={{ backgroundColor: isActive ? `${theme.colors.accent}10` : theme.colors.surface, border: `1.5px solid ${isActive ? theme.colors.accent : theme.colors.border}`, opacity: isDisabled ? 0.4 : 1, cursor: isDisabled ? 'not-allowed' : 'pointer' }}>
+                                        {isActive && <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.colors.accent }}><Check className="w-2.5 h-2.5 text-white" /></div>}
                                         <app.icon className="w-5 h-5" style={{ color: isActive ? theme.colors.accent : theme.colors.textSecondary }} />
                                         <span className="text-[10px] font-medium text-center leading-tight line-clamp-2" style={{ color: isActive ? theme.colors.accent : theme.colors.textPrimary }}>{app.name}</span>
-                                        {isLocked && <span className="text-[8px] font-medium" style={{ color: theme.colors.textSecondary }}>Required</span>}
                                     </button>
                                 );
                             })}

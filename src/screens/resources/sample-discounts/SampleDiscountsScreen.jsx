@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { GlassCard } from '../../../components/common/GlassCard.jsx';
 import { Percent, Copy, Hourglass, Info } from 'lucide-react';
 import { DEALER_DISCOUNT_DATA, DISCOUNT_CATEGORIES } from './data.js';
+import { useIsDesktop } from '../../../hooks/useResponsive.js';
 
 // User role - dealer by default
 const USER_ROLE = 'dealer'; // 'dealer' | 'internal'
@@ -29,11 +30,12 @@ const DealerDiscountSummary = ({ theme }) => (
 );
 
 export const SampleDiscountsScreen = ({ theme, setSuccessMessage }) => {
-    const [discounts, setDiscounts] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('all');
+const [discounts, setDiscounts] = useState([]);
+const [isLoading, setIsLoading] = useState(true);
+const [error, setError] = useState(null);
+const [searchTerm, setSearchTerm] = useState('');
+const [selectedCategory, setSelectedCategory] = useState('all');
+const isDesktop = useIsDesktop();
 
     useEffect(() => {
         const fetchDiscounts = async () => {
@@ -124,8 +126,8 @@ export const SampleDiscountsScreen = ({ theme, setSuccessMessage }) => {
     }
 
     return (
-        <div className="flex flex-col h-full">
-            <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pt-3 pb-6">
+        <div className="flex flex-col h-full overflow-y-auto scrollbar-hide">
+            <div className={`px-5 pt-3 pb-32 lg:pb-8 ${isDesktop ? 'max-w-3xl mx-auto w-full' : ''}`}>
                 {/* Dealer discount summary at top */}
                 {USER_ROLE === 'dealer' && <DealerDiscountSummary theme={theme} />}
                 

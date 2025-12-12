@@ -2,10 +2,12 @@ import React, { useMemo, useState } from 'react';
 import { GlassCard } from '../../../components/common/GlassCard.jsx';
 import { ExternalLink, Percent, Copy, Share2 } from 'lucide-react';
 import { CONTRACTS_DATA } from './data.js';
+import { useIsDesktop } from '../../../hooks/useResponsive.js';
 
 export const ContractsScreen = ({ theme, setSuccessMessage }) => {
     const [active, setActive] = useState('omnia');
     const contracts = useMemo(() => CONTRACTS_DATA, []);
+    const isDesktop = useIsDesktop();
 
     const TABS = useMemo(
         () => [
@@ -18,12 +20,12 @@ export const ContractsScreen = ({ theme, setSuccessMessage }) => {
     );
 
     return (
-        <div className="flex h-full flex-col">
-            <div className="px-4 pt-4">
+        <div className="flex h-full flex-col overflow-y-auto scrollbar-hide">
+            <div className={`px-4 pt-4 ${isDesktop ? 'max-w-3xl mx-auto w-full' : ''}`}>
                 <TabBar tabs={TABS} value={active} onChange={setActive} theme={theme} />
             </div>
-            <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-hide">
-                <ContractCard contract={contracts[active]} theme={theme} setSuccessMessage={setSuccessMessage} />
+            <div className={`px-4 py-4 pb-32 lg:pb-8 ${isDesktop ? 'max-w-3xl mx-auto w-full' : ''}`}>
+                <ContractCard contract={contracts[active]} theme={theme} setSuccessMessage={setSuccessMessage} isDesktop={isDesktop} />
             </div>
         </div>
     );
@@ -53,7 +55,7 @@ const TabBar = ({ tabs, value, onChange, theme }) => (
     </div>
 );
 
-const ContractCard = ({ contract, theme, setSuccessMessage }) => {
+const ContractCard = ({ contract, theme, setSuccessMessage, isDesktop }) => {
     if (!contract) return null;
 
     const feedback = (msg) => { setSuccessMessage?.(msg); if (msg) setTimeout(()=>setSuccessMessage?.(''),1400); };
@@ -113,8 +115,8 @@ const ContractCard = ({ contract, theme, setSuccessMessage }) => {
                         href={contract.documentUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="w-full inline-flex items-center justify-center gap-2 font-semibold py-3 px-5 rounded-full
-                       transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                        className="w-full inline-flex items-center justify-center gap-2 font-bold py-3.5 px-5 rounded-full
+                       transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg"
                         style={{ backgroundColor: theme.colors.accent, color: '#fff' }}
                     >
                         View Contract PDF

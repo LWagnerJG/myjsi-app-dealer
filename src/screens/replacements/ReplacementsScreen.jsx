@@ -1,7 +1,7 @@
 ﻿import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 import { Modal } from '../../components/common/Modal.jsx';
-import { Camera, Image, AlertCircle, CheckCircle, Clock, XCircle, Plus } from 'lucide-react';
+import { Camera, Image, AlertCircle, CheckCircle, Clock, XCircle, Plus, MapPin, ChevronDown } from 'lucide-react';
 import { REPLACEMENT_REQUESTS_DATA } from './data.js';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
 import jsQR from 'jsqr';
@@ -47,8 +47,10 @@ function ReplacementForm({
     isDesktop,
     contentMaxWidth,
 }) {
+    const [showFieldVisitOptions, setShowFieldVisitOptions] = useState(false);
+    
     return (
-        <div className={`px-4 lg:px-6 pt-6 lg:pt-8 pb-32 ${contentMaxWidth || ''}`}>
+        <div className={`px-4 lg:px-6 pt-6 lg:pt-8 pb-32 lg:pb-8 ${contentMaxWidth || ''}`}>
             <h2 className="text-xl lg:text-2xl font-bold mb-6" style={{ color: theme.colors.textPrimary }}>New Replacement Request</h2>
             
             <div className={`${isDesktop ? 'grid grid-cols-2 gap-6' : 'space-y-4'}`}>
@@ -109,6 +111,91 @@ function ReplacementForm({
                             placeholder="Describe the issue or parts needed..."
                         />
                     </div>
+                    
+                    {/* Field Visit Request Section */}
+                    <div className="pt-2">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const newValue = !formData.requestFieldVisit;
+                                onChange('requestFieldVisit', newValue);
+                                if (newValue) setShowFieldVisitOptions(true);
+                                else {
+                                    setShowFieldVisitOptions(false);
+                                    onChange('fieldVisitType', '');
+                                    onChange('visitAddress', '');
+                                }
+                            }}
+                            className="w-full flex items-center gap-3 p-4 rounded-xl transition-all"
+                            style={{ 
+                                backgroundColor: formData.requestFieldVisit ? `${theme.colors.accent}10` : theme.colors.surface, 
+                                border: `1.5px solid ${formData.requestFieldVisit ? theme.colors.accent : theme.colors.border}` 
+                            }}
+                        >
+                            <div 
+                                className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 transition-all"
+                                style={{ 
+                                    backgroundColor: formData.requestFieldVisit ? theme.colors.accent : 'transparent',
+                                    border: `2px solid ${formData.requestFieldVisit ? theme.colors.accent : theme.colors.border}`
+                                }}
+                            >
+                                {formData.requestFieldVisit && <CheckCircle className="w-3.5 h-3.5 text-white" />}
+                            </div>
+                            <div className="flex-1 text-left">
+                                <div className="font-semibold text-sm" style={{ color: theme.colors.textPrimary }}>
+                                    Request Field Visit
+                                </div>
+                                <div className="text-xs mt-0.5" style={{ color: theme.colors.textSecondary }}>
+                                    Have a rep or technician visit the site
+                                </div>
+                            </div>
+                            <MapPin className="w-5 h-5" style={{ color: formData.requestFieldVisit ? theme.colors.accent : theme.colors.textSecondary }} />
+                        </button>
+                        
+                        {/* Field Visit Options - Animated expand */}
+                        <div className={`overflow-hidden transition-all duration-300 ${formData.requestFieldVisit ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'}`}>
+                            <div className="space-y-3 p-4 rounded-xl" style={{ backgroundColor: theme.colors.subtle }}>
+                                <div>
+                                    <label className="block text-xs font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>
+                                        Who should visit?
+                                    </label>
+                                    <div className="flex gap-2">
+                                        {[
+                                            { value: 'rep', label: 'Sales Rep' },
+                                            { value: 'technician', label: 'JSI Field Technician' }
+                                        ].map(option => (
+                                            <button
+                                                key={option.value}
+                                                type="button"
+                                                onClick={() => onChange('fieldVisitType', option.value)}
+                                                className="flex-1 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all"
+                                                style={{
+                                                    backgroundColor: formData.fieldVisitType === option.value ? theme.colors.accent : theme.colors.surface,
+                                                    color: formData.fieldVisitType === option.value ? '#fff' : theme.colors.textPrimary,
+                                                    border: `1.5px solid ${formData.fieldVisitType === option.value ? theme.colors.accent : theme.colors.border}`
+                                                }}
+                                            >
+                                                {option.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-xs font-semibold mb-2" style={{ color: theme.colors.textSecondary }}>
+                                        Visit Address
+                                    </label>
+                                    <input
+                                        value={formData.visitAddress || ''}
+                                        onChange={(e) => onChange('visitAddress', e.target.value)}
+                                        className="w-full px-3 py-2.5 rounded-lg text-sm outline-none font-medium"
+                                        style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
+                                        placeholder="Full address for the visit..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </GlassCard>
 
                 {/* Right Column - Photos */}
@@ -160,7 +247,7 @@ function ReplacementForm({
             <div className={`mt-6 ${isDesktop ? 'max-w-md' : ''}`}>
                 <button
                     onClick={onSubmit}
-                    className="w-full py-4 rounded-2xl font-bold text-white active:scale-95 transition-all duration-200 shadow-lg hover:shadow-xl"
+                    className="w-full py-4 rounded-full font-bold text-white active:scale-95 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.02]"
                     style={{ backgroundColor: theme.colors.accent }}
                 >
                     Submit Replacement Request
@@ -175,7 +262,7 @@ export const ReplacementsScreen = ({ theme }) => {
     const [isScanning, setIsScanning] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [cameraError, setCameraError] = useState(null);
-    const [formData, setFormData] = useState({ salesOrder: '', lineItem: '', dealer: '', notes: '', photos: [] });
+    const [formData, setFormData] = useState({ salesOrder: '', lineItem: '', dealer: '', notes: '', photos: [], requestFieldVisit: false, fieldVisitType: '', visitAddress: '' });
     const videoRef = useRef(null); const canvasRef = useRef(null); const intervalRef = useRef(null); const streamRef = useRef(null); const fileInputRef = useRef(null); const inFormRef = useRef(false);
     const [replacementRequests, setReplacementRequests] = useState((REPLACEMENT_REQUESTS_DATA || []).map(r => ({ name: r.name, dealer: r.dealer || '', date: r.date, status: r.status, photos: Array.isArray(r.photos)? r.photos: [] })));
     const isDesktop = useIsDesktop();
@@ -186,14 +273,14 @@ export const ReplacementsScreen = ({ theme }) => {
     useEffect(() => { const onPop = () => { if (inFormRef.current) { setView('list'); setIsScanning(false); inFormRef.current = false; } }; window.addEventListener('popstate', onPop); return () => window.removeEventListener('popstate', onPop); }, []);
     const goToForm = useCallback(() => { if (!inFormRef.current) { window.history.pushState({ jsiReplacements: 'form' }, ''); inFormRef.current = true; } setView('form'); }, []);
     const onChange = useCallback((k,v)=> setFormData(p => (p[k]===v? p : { ...p, [k]:v })), []);
-    const submit = useCallback(()=> { setReplacementRequests(p => [{ name: `${formData.salesOrder} - ${formData.lineItem}`, dealer: formData.dealer?.trim() || 'Unknown Dealer', date: new Date().toISOString().split('T')[0], status: 'Pending', photos: formData.photos.slice() }, ...p]); setFormData({ salesOrder: '', lineItem: '', dealer: '', notes: '', photos: [] }); setView('list'); inFormRef.current=false; }, [formData]);
+    const submit = useCallback(()=> { setReplacementRequests(p => [{ name: `${formData.salesOrder} - ${formData.lineItem}`, dealer: formData.dealer?.trim() || 'Unknown Dealer', date: new Date().toISOString().split('T')[0], status: 'Pending', photos: formData.photos.slice(), requestFieldVisit: formData.requestFieldVisit, fieldVisitType: formData.fieldVisitType, visitAddress: formData.visitAddress }, ...p]); setFormData({ salesOrder: '', lineItem: '', dealer: '', notes: '', photos: [], requestFieldVisit: false, fieldVisitType: '', visitAddress: '' }); setView('list'); inFormRef.current=false; }, [formData]);
 
     const getStatusColor = s => ({ Pending: theme.colors.accent + '22', Approved: '#22c55e22', Rejected: '#ef444422' }[s] || theme.colors.subtle);
     const getStatusText = s => ({ Pending: theme.colors.accent, Approved: '#16a34a', Rejected: '#dc2626' }[s] || theme.colors.textSecondary);
     const getIcon = s => s==='Pending'? <Clock className="w-4 h-4" /> : s==='Approved'? <CheckCircle className="w-4 h-4" /> : s==='Rejected'? <XCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />;
 
     const stopScanning = useCallback(()=> { setIsScanning(false); setCameraError(null); if(streamRef.current){ streamRef.current.getTracks().forEach(t=>t.stop()); streamRef.current=null; } if(videoRef.current) videoRef.current.srcObject=null; if(intervalRef.current){ clearInterval(intervalRef.current); intervalRef.current=null; } }, []);
-    const detectLoop = useCallback(()=> { intervalRef.current = setInterval(()=> { if(videoRef.current && canvasRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA){ const v=videoRef.current; const c=canvasRef.current; const ctx=c.getContext('2d'); c.width=v.videoWidth; c.height=v.videoHeight; ctx.drawImage(v,0,0,c.width,c.height); const img=ctx.getImageData(0,0,c.width,c.height); const code=jsQR(img.data,c.width,c.height); if(code){ stopScanning(); setFormData({ salesOrder:'SO-450080', lineItem:'001', dealer:'', notes:`Scanned QR Code: ${code.data}`, photos:[] }); goToForm(); } } }, 320); }, [stopScanning, goToForm]);
+    const detectLoop = useCallback(()=> { intervalRef.current = setInterval(()=> { if(videoRef.current && canvasRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA){ const v=videoRef.current; const c=canvasRef.current; const ctx=c.getContext('2d'); c.width=v.videoWidth; c.height=v.videoHeight; ctx.drawImage(v,0,0,c.width,c.height); const img=ctx.getImageData(0,0,c.width,c.height); const code=jsQR(img.data,c.width,c.height); if(code){ stopScanning(); setFormData({ salesOrder:'SO-450080', lineItem:'001', dealer:'', notes:`Scanned QR Code: ${code.data}`, photos:[], requestFieldVisit: false, fieldVisitType: '', visitAddress: '' }); goToForm(); } } }, 320); }, [stopScanning, goToForm]);
     const startScanning = useCallback(async()=> { setCameraError(null); try { if(!navigator.mediaDevices?.getUserMedia) throw new Error('Camera not supported on this device'); const stream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode:{ ideal:'environment' }, width:{ ideal:1280 }, height:{ ideal:720 } }, audio:false }); streamRef.current=stream; if(videoRef.current){ const v=videoRef.current; v.srcObject=stream; v.muted=true; v.playsInline=true; v.onloadedmetadata=()=>{ v.play().then(()=>{ setIsScanning(true); detectLoop(); }); }; } } catch(e){ setCameraError((e && e.message) || 'Unable to access camera.'); setIsScanning(false); } }, [detectLoop]);
     useEffect(()=> () => stopScanning(), [stopScanning]);
 
@@ -214,7 +301,7 @@ export const ReplacementsScreen = ({ theme }) => {
                                 <p className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>Request replacement parts</p>
                             </div>
                             <button 
-                                onClick={() => { setFormData({ salesOrder: '', lineItem: '', dealer: '', notes: '', photos: [] }); goToForm(); }}
+                                onClick={() => { setFormData({ salesOrder: '', lineItem: '', dealer: '', notes: '', photos: [], requestFieldVisit: false, fieldVisitType: '', visitAddress: '' }); goToForm(); }}
                                 className="h-10 px-5 rounded-full text-sm font-bold transition-all duration-200 hover:scale-105 active:scale-95 shadow-md flex items-center gap-2"
                                 style={{ backgroundColor: theme.colors.accent, color: '#fff' }}
                             >
@@ -263,7 +350,7 @@ export const ReplacementsScreen = ({ theme }) => {
                                 theme={theme} 
                                 className={`${isDesktop ? 'h-[280px]' : 'min-h-[160px]'} flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all duration-200 p-6`}
                                 variant="elevated"
-                                onClick={() => { setFormData({ salesOrder: '', lineItem: '', dealer: '', notes: '', photos: [] }); goToForm(); }}
+                                onClick={() => { setFormData({ salesOrder: '', lineItem: '', dealer: '', notes: '', photos: [], requestFieldVisit: false, fieldVisitType: '', visitAddress: '' }); goToForm(); }}
                             >
                                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3" style={{ backgroundColor: `${theme.colors.accent}15` }}>
                                     <Image className="w-7 h-7" style={{ color: theme.colors.accent }} />
