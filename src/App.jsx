@@ -333,8 +333,28 @@ function App() {
         </div>
     );
 
+    // Tap-to-scroll-top functionality for status bar area
+    const handleStatusBarClick = useCallback(() => {
+        const scrollContainer = document.querySelector('.flex-1.overflow-y-auto');
+        if (scrollContainer) {
+            scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, []);
+
     return (
         <ToastHost theme={currentTheme}>
+            {/* Status bar tap area for scroll-to-top */}
+            <div 
+                onClick={handleStatusBarClick}
+                className="fixed top-0 left-0 right-0 z-[10000]"
+                style={{ 
+                    height: 'env(safe-area-inset-top, 0px)',
+                    backgroundColor: currentTheme.colors.background,
+                    cursor: 'pointer',
+                    WebkitTapHighlightColor: 'transparent',
+                }}
+                aria-label="Tap to scroll to top"
+            />
             <div className="h-screen-safe w-screen font-sans flex flex-col relative" style={{ backgroundColor: currentTheme.colors.background }}>
                 <AppHeader
                     theme={currentTheme}

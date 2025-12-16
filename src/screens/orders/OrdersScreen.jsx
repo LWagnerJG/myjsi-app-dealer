@@ -174,16 +174,18 @@ export const OrdersScreen = ({ theme, onNavigate }) => {
             <SearchInput value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} placeholder="Search Orders" theme={theme} variant="header" />
           </div>
           <div className="flex items-center gap-3">
-            {/* JSI Unified Toggle */}
-            <div className="flex-grow max-w-xs">
+            {/* JSI Unified Toggle - Wider with better spacing */}
+            <div className="flex-grow">
               <TabToggle
                 options={dateOptions}
                 value={dateType}
                 onChange={setDateType}
                 theme={theme}
                 size="md"
+                className="w-full"
               />
             </div>
+            {/* Calendar button - Better aligned */}
             <button onClick={()=> setViewMode(v=> v==='list'? 'calendar':'list')} className="h-11 w-11 rounded-full flex items-center justify-center active:scale-90 transition flex-shrink-0" style={{ backgroundColor: theme.colors.surface, boxShadow:'0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }} title={viewMode==='list'? 'Calendar View':'List View'}>
               {viewMode==='list'? <Calendar className="w-5 h-5" style={{ color: theme.colors.textPrimary }} /> : <List className="w-5 h-5" style={{ color: theme.colors.textPrimary }} />}
             </button>

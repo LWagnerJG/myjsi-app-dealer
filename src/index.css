@@ -81,7 +81,8 @@ html, body {
         right: 0;
         height: env(safe-area-inset-top);
         background-color: var(--jsi-warm-beige);
-        z-index: 9999;
+        z-index: 9998;
+        pointer-events: none;
     }
 }
 
@@ -223,7 +224,16 @@ div[class*="z-[10000]"] > div[class*="rounded-2xl"], div[class*="z-[9999]"] > di
 /* JSI Input Focus States */
 input:focus, textarea:focus, select:focus {
     border-color: var(--jsi-charcoal) !important;
-    outline: none;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Remove all outlines and borders from search inputs when focused */
+input[type="search"]:focus,
+input[type="text"]:focus {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 /* JSI Card Hover Overlay */

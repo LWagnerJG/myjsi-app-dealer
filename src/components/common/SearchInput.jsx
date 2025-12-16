@@ -233,7 +233,16 @@ export const SearchInput = React.memo(function SearchInput({
                 onChange={handleChange}
                 placeholder={placeholder}
                 className={`flex-1 h-full bg-transparent outline-none text-[15px] placeholder:opacity-70 ${inputClassName}`}
-                style={{ color: textColor }}
+                style={{ 
+                    color: textColor,
+                    border: 'none',
+                    boxShadow: 'none',
+                }}
+                onFocus={(e) => {
+                    e.target.style.outline = 'none';
+                    e.target.style.border = 'none';
+                    e.target.style.boxShadow = 'none';
+                }}
                 aria-label={placeholder}
             />
         </div>

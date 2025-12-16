@@ -271,7 +271,7 @@ export const TabToggle = ({
     
     return (
         <div
-            className={`inline-flex rounded-full p-1 shadow-inner ${className}`}
+            className={`inline-flex rounded-full p-1 shadow-inner w-full ${className}`}
             style={{
                 backgroundColor: stoneColor,
             }}
@@ -283,7 +283,7 @@ export const TabToggle = ({
                     <button
                         key={opt.key}
                         onClick={() => onChange?.(opt.key)}
-                        className={`flex-1 px-5 flex items-center justify-center transition-all duration-300 rounded-full ${isActive ? 'shadow-md' : ''}`}
+                        className={`flex-1 px-6 flex items-center justify-center transition-all duration-300 rounded-full ${isActive ? 'shadow-md' : ''}`}
                         style={{
                             height: s.height - 8,
                             fontSize: s.text,
@@ -291,6 +291,9 @@ export const TabToggle = ({
                             fontWeight: 600,
                             backgroundColor: isActive ? '#ffffff' : 'transparent',
                             color: isActive ? accentColor : theme?.colors?.textSecondary || '#666666',
+                            lineHeight: '1.2',
+                            paddingLeft: '1.5rem',
+                            paddingRight: '1.5rem',
                         }}
                     >
                         {opt.label}
