@@ -20,6 +20,7 @@ import { ProjectsScreen } from './screens/projects/ProjectsScreen.jsx';
 import { CustomerMicrositeScreen } from './screens/customers/CustomerMicrositeScreen.jsx';
 import { StandardsProgramDetailScreen } from './screens/customers/StandardsProgramDetailScreen.jsx';
 import { usePersistentState } from './hooks/usePersistentState.js';
+import { useModalState } from './hooks/useModalState.js';
 import { NavigationShell } from './components/navigation/NavigationShell.jsx';
 import { ToastHost } from './components/common/ToastHost.jsx';
 
@@ -335,9 +336,16 @@ function App() {
 
     // Tap-to-scroll-top functionality for status bar area
     const handleStatusBarClick = useCallback(() => {
-        const scrollContainer = document.querySelector('.flex-1.overflow-y-auto');
-        if (scrollContainer) {
-            scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+        // Find the active scroll container (the one that's currently visible)
+        const scrollContainers = document.querySelectorAll('.flex-1.overflow-y-auto, .overflow-y-auto.scrollbar-hide');
+        scrollContainers.forEach(container => {
+            if (container.scrollTop > 0) {
+                container.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+        // Also try window scroll as fallback
+        if (window.scrollY > 0) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }, []);
 

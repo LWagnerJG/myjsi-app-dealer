@@ -8,6 +8,7 @@ import { DropdownPortal } from '../../DropdownPortal.jsx';
 import { Briefcase, Package, ArrowRight, SlidersHorizontal, X, Check, TrendingUp, TrendingDown } from 'lucide-react';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
 import { DESIGN_TOKENS } from '../../design-system/tokens.js';
+import { useModalState } from '../../hooks/useModalState.js';
 import { 
     Button, 
     SectionHeader, 
@@ -154,7 +155,21 @@ QuickAccessGrid.displayName = 'QuickAccessGrid';
 
 // Customize Home Modal Component
 const CustomizeHomeModal = ({ theme, isOpen, onClose, activeAppIds, onSave }) => {
+    const { openModal, closeModal } = useModalState();
     const [selectedIds, setSelectedIds] = useState(activeAppIds);
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
+    const mobileNavHeight = 80;
+    const safeAreaBottom = typeof window !== 'undefined' ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom') || '0', 10) : 0;
+    const bottomPadding = isMobile ? mobileNavHeight + safeAreaBottom + 24 : 0;
+    
+    useEffect(() => {
+        if (isOpen) {
+            openModal();
+        } else {
+            closeModal();
+        }
+        return () => closeModal();
+    }, [isOpen, openModal, closeModal]);
 
     useEffect(() => {
         if (isOpen) setSelectedIds(activeAppIds);
@@ -241,16 +256,23 @@ const CustomizeHomeModal = ({ theme, isOpen, onClose, activeAppIds, onSave }) =>
                 onClick={handleBackdropClick}
             />
             
-            {/* Modal Container */}
+            {/* Modal Container - positioned above bottom nav on mobile */}
             <div 
-                className="fixed inset-x-0 bottom-0 flex items-end justify-center lg:pl-24"
+                className="fixed inset-x-0 flex items-end justify-center lg:pl-24"
                 style={{ 
                     top: 76,
+                    bottom: isMobile ? `${bottomPadding}px` : 0,
+                    padding: isMobile ? '1rem' : '1.5rem',
                     zIndex: DESIGN_TOKENS.zIndex.modal 
                 }}
                 onClick={handleBackdropClick}
             >
-                <div 
+                <div
+                    style={{
+                        maxHeight: isMobile 
+                            ? `calc(100vh - ${76 + bottomPadding}px)` 
+                            : '85vh',
+                    }} 
                     className="w-full max-w-lg rounded-t-3xl max-h-[70vh] overflow-hidden flex flex-col shadow-2xl"
                     style={{ backgroundColor: theme.colors.background }}
                     onClick={e => e.stopPropagation()}

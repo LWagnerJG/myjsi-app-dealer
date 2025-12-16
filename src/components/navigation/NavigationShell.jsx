@@ -1,8 +1,10 @@
 import React from 'react';
 import { Home, Briefcase, Package, Users, PieChart, Settings } from 'lucide-react';
 import { DESIGN_TOKENS } from '../../design-system/tokens.js';
+import { useModalState } from '../../hooks/useModalState.js';
 
-export const NavigationShell = ({ currentScreen, onNavigate, theme, isModalOpen = false }) => {
+export const NavigationShell = ({ currentScreen, onNavigate, theme }) => {
+    const { isModalOpen } = useModalState();
     const navItems = [
         { id: 'home', icon: Home, label: 'Home' },
         { id: 'projects', icon: Briefcase, label: 'Projects' },

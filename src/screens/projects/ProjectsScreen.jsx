@@ -11,6 +11,7 @@ import { useIsDesktop } from '../../hooks/useResponsive.js';
 import { MOCK_CUSTOMERS, STATUS_COLORS, CUSTOMER_FILTER_OPTIONS } from '../../data/mockCustomers.js';
 import { DESIGN_TOKENS } from '../../design-system/tokens.js';
 import StandardSearchBar from '../../components/common/StandardSearchBar.jsx';
+import { useModalState } from '../../hooks/useModalState.js';
 
 // currency util
 const fmtCurrency = (v) => typeof v === 'string' ? (v.startsWith('$')? v : '$'+v) : (v ?? 0).toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
@@ -274,6 +275,21 @@ const CustomerCard = ({ customer, theme, onClick }) => {
 
 // New Project/Customer Modal Component
 const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCustomer }) => {
+  const { openModal, closeModal } = useModalState();
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
+  const mobileNavHeight = 80;
+  const safeAreaBottom = typeof window !== 'undefined' ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom') || '0', 10) : 0;
+  const bottomPadding = isMobile ? mobileNavHeight + safeAreaBottom + 24 : 0;
+  
+  useEffect(() => {
+    if (isOpen) {
+      openModal();
+    } else {
+      closeModal();
+    }
+    return () => closeModal();
+  }, [isOpen, openModal, closeModal]);
+  
   const [mode, setMode] = useState(null); // null, 'project', 'customer'
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerSearch, setCustomerSearch] = useState('');
@@ -388,18 +404,25 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCu
         onClick={() => { onClose(); resetModal(); }}
       />
       
-      {/* Modal Container */}
+      {/* Modal Container - positioned above bottom nav on mobile */}
       <div 
-        className="fixed inset-x-0 bottom-0 sm:inset-0 sm:flex sm:items-center sm:justify-center lg:pl-24"
+        className="fixed inset-x-0 sm:inset-0 sm:flex sm:items-center sm:justify-center lg:pl-24"
         style={{ 
           top: 76, // Below the header
+          bottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom, 0px) + 24px)' : 0, // Above bottom nav on mobile
+          padding: isMobile ? '1rem' : '1.5rem',
           zIndex: DESIGN_TOKENS.zIndex.modal 
         }}
         onClick={() => { onClose(); resetModal(); }}
       >
         <div 
-          className="w-full sm:max-w-lg sm:mx-4 rounded-t-3xl sm:rounded-3xl max-h-[calc(100%-env(safe-area-inset-bottom))] sm:max-h-[85vh] overflow-hidden flex flex-col shadow-2xl"
-          style={{ backgroundColor: theme.colors.background }}
+          className="w-full sm:max-w-lg sm:mx-4 rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col shadow-2xl"
+          style={{ 
+            backgroundColor: theme.colors.background,
+            maxHeight: isMobile 
+              ? `calc(100vh - ${76 + 80 + 24}px - env(safe-area-inset-bottom, 0px))` 
+              : '85vh',
+          }}
           onClick={e => e.stopPropagation()}
         >
           {/* Header */}

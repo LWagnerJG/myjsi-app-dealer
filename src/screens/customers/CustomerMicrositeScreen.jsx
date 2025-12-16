@@ -1,6 +1,7 @@
 // CustomerMicrositeScreen - Main microsite view for a single customer
 // Displays Standards Programs, Approved Materials, Orders, Install Gallery, Documents, Contacts
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 import { 
   FileText, Package, Image, Users, ChevronRight, Download, Plus, 
@@ -8,6 +9,8 @@ import {
   Calendar, Shield, ExternalLink
 } from 'lucide-react';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
+import { useModalState } from '../../hooks/useModalState.js';
+import { DESIGN_TOKENS } from '../../design-system/tokens.js';
 import { 
   getCustomerById, 
   STATUS_COLORS, 
@@ -143,6 +146,20 @@ const OrderItem = ({ order, theme, onClick }) => (
 const RequestUpdateModal = ({ isOpen, onClose, theme, customerName }) => {
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const { openModal, closeModal } = useModalState();
+
+  useEffect(() => {
+    if (isOpen) {
+      openModal();
+      document.body.style.overflow = 'hidden';
+      return () => {
+        closeModal();
+        document.body.style.overflow = '';
+      };
+    } else {
+      closeModal();
+    }
+  }, [isOpen, openModal, closeModal]);
 
   const handleSubmit = () => {
     setSubmitted(true);
@@ -155,20 +172,60 @@ const RequestUpdateModal = ({ isOpen, onClose, theme, customerName }) => {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={onClose}>
+  // Calculate safe area padding for mobile bottom nav
+  const mobileNavHeight = 80;
+  const safeAreaBottom = typeof window !== 'undefined' ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom') || '0', 10) : 0;
+  const bottomPadding = typeof window !== 'undefined' && window.innerWidth < 1024 
+        ? mobileNavHeight + safeAreaBottom + 16 
+        : 0;
+
+  return createPortal(
+    <>
+      {/* Backdrop */}
       <div 
-        className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden"
-        style={{ backgroundColor: theme.colors.background }}
-        onClick={e => e.stopPropagation()}
+        className="fixed inset-0 transition-opacity duration-300 pointer-events-auto"
+        style={{ 
+          top: 76,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          zIndex: DESIGN_TOKENS.zIndex.overlay 
+        }}
+        onClick={onClose}
+      />
+      {/* Modal Container - positioned above bottom nav on mobile */}
+      <div 
+        className="fixed inset-x-0 flex items-end sm:items-center justify-center transition-transform duration-300 pointer-events-none"
+        style={{ 
+          top: 76,
+          bottom: typeof window !== 'undefined' && window.innerWidth < 1024 ? `${bottomPadding}px` : 0,
+          padding: typeof window !== 'undefined' && window.innerWidth < 1024 ? '1rem' : '1.5rem',
+          zIndex: DESIGN_TOKENS.zIndex.modal 
+        }}
+        onClick={onClose}
       >
+        <div 
+          className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden pointer-events-auto flex flex-col shadow-2xl"
+          style={{ 
+            backgroundColor: theme.colors.background,
+            maxHeight: typeof window !== 'undefined' && window.innerWidth < 1024
+              ? `calc(100vh - ${76 + bottomPadding}px)`
+              : '85vh',
+          }}
+          onClick={e => e.stopPropagation()}
+        >
         <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: theme.colors.border }}>
           <h2 className="font-bold text-lg" style={{ color: theme.colors.textPrimary }}>Request Update</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.colors.subtle }}>
             <X className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
           </button>
         </div>
-        <div className="p-4 space-y-4">
+        <div 
+          className="p-4 space-y-4 overflow-y-auto scrollbar-hide"
+          style={{
+            paddingBottom: typeof window !== 'undefined' && window.innerWidth < 1024 
+              ? `calc(1rem + env(safe-area-inset-bottom, 0px))` 
+              : '1rem'
+          }}
+        >
           {submitted ? (
             <div className="py-8 text-center">
               <CheckCircle className="w-12 h-12 mx-auto mb-3" style={{ color: '#059669' }} />
@@ -202,6 +259,8 @@ const RequestUpdateModal = ({ isOpen, onClose, theme, customerName }) => {
         </div>
       </div>
     </div>
+    </>,
+    document.body
   );
 };
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowLeft, User } from 'lucide-react';
 import { logoLight } from '../../data.jsx';
 import { DESIGN_TOKENS } from '../../design-system/tokens.js';
+import { useModalState } from '../../hooks/useModalState.js';
 
 export const AppHeader = React.memo(({
     onHomeClick,
@@ -12,15 +13,20 @@ export const AppHeader = React.memo(({
     showBack,
     userName
 }) => {
+    const { isModalOpen } = useModalState();
     const filterStyle = isDarkMode ? 'brightness(0) invert(1)' : 'none';
     const isHome = !showBack;
 
+    // Reduce shadow when modal is open to prevent "lit up" appearance
     const PILL = {
         backgroundColor: theme.colors.surface,
         border: 'none',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)',
+        boxShadow: isModalOpen 
+            ? '0 1px 3px rgba(0,0,0,0.04)' 
+            : '0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)',
         borderRadius: 9999,
-        height: 56
+        height: 56,
+        transition: 'box-shadow 0.3s ease',
     };
 
     return (
