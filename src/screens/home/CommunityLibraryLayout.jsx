@@ -76,7 +76,7 @@ export const CommunityLibraryLayout = ({
           />
         </div>
       </div>
-      <div ref={containerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-4 pb-10 pt-3 space-y-4 scrollbar-hide">
+      <div ref={containerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-4 pb-mobile-nav-safe pt-3 space-y-4 scrollbar-hide">
         <div className="mx-auto w-full" style={{ maxWidth: '100%', position:'relative' }}>
           {/* Active pane remains in normal flow so container height = active content height. Inactive pane is absolutely positioned overlay to allow animation without cutting off scroll height. */}
           <div style={{ position:'relative' }}>

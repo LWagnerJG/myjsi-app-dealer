@@ -593,7 +593,7 @@ export const NewLeadScreen = ({
                     </div>
                 </FormSection>
                 {/* Submit Button - Inline at bottom of form */}
-                <div className="pt-4 pb-32 lg:pb-8">
+                <div className="pt-4 pb-mobile-nav-safe lg:pb-8">
                     <button
                         type="submit"
                         className="w-full text-white font-bold py-3.5 rounded-full shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98]"

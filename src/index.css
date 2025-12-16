@@ -122,9 +122,11 @@ button {
 /* Apply nav-safe bottom padding on mobile screens only */
 @media (max-width: 1023px) {
     .pb-mobile-nav { padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); }
+    .pb-mobile-nav-safe { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px) + 24px); }
 }
 @media (min-width: 1024px) {
     .pb-mobile-nav { padding-bottom: 2rem; } /* Desktop doesn't need as much since sidebar is on the side */
+    .pb-mobile-nav-safe { padding-bottom: 2rem; }
 }
 
 @supports (-webkit-appearance:none) {

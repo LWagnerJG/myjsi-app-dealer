@@ -62,7 +62,7 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
 
   return (
     <div className="flex flex-col h-full" style={{ background: theme.colors.background }}>
-      <div className="px-4 pt-5 pb-40 overflow-y-auto scrollbar-hide">
+      <div className="px-4 pt-5 pb-mobile-nav-safe overflow-y-auto scrollbar-hide">
         <GlassCard theme={theme} className="p-6 rounded-3xl space-y-8" variant="elevated">
           <div className="space-y-1">
             <InlineTextInput value={draft.project||draft.name} onChange={v=>update('project',v)} theme={theme} className="text-[20px] leading-tight" />
@@ -213,7 +213,7 @@ const InstallationDetail = ({ project, theme, onAddPhotoFiles }) => {
   const fileRef = useRef(null);
   return (
     <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
-      <div className="px-4 pt-6 pb-32 space-y-4 overflow-y-auto scrollbar-hide">
+      <div className="px-4 pt-6 pb-mobile-nav-safe space-y-4 overflow-y-auto scrollbar-hide">
         <GlassCard theme={theme} className="p-5 space-y-4" variant="elevated">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -837,7 +837,7 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
       
       {/* Content Area */}
       <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className={`px-4 lg:px-6 pt-4 space-y-3 ${projectsTab === 'pipeline' ? 'pb-24' : 'pb-mobile-nav'} ${contentMaxWidth}`}>
+        <div className={`px-4 lg:px-6 pt-4 space-y-3 pb-mobile-nav-safe ${contentMaxWidth}`}>
           {projectsTab==='pipeline' && (
             filteredOpportunities.length ? (
               <div className={isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-3'}>

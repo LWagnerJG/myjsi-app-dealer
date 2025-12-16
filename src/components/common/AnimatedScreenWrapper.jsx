@@ -44,7 +44,7 @@ export const AnimatedScreenWrapper = ({
             setAnimating(false);
         };
 
-        const t = setTimeout(done, 250);
+        const t = setTimeout(done, 200); // Match animation duration
         return () => clearTimeout(t);
     }, [animating, direction]);
 

@@ -168,7 +168,7 @@ export const SalesScreen = ({ theme, onNavigate }) => {
       </div>
 
       <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className="px-4 space-y-4 pt-0 pb-mobile-nav max-w-6xl mx-auto">
+        <div className="px-4 space-y-4 pt-0 pb-mobile-nav-safe max-w-6xl mx-auto">
           <GlassCard theme={theme} className="p-6 mt-5" variant="elevated">
             <div className="flex justify-between items-start mb-3">
               <h3 className="font-bold text-xl" style={{ color:theme.colors.textPrimary }}>Progress to Goal</h3>

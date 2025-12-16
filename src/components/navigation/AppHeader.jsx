@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, User } from 'lucide-react';
 import { logoLight } from '../../data.jsx';
 import { DESIGN_TOKENS } from '../../design-system/tokens.js';
@@ -16,6 +16,19 @@ export const AppHeader = React.memo(({
     const { isModalOpen } = useModalState();
     const filterStyle = isDarkMode ? 'brightness(0) invert(1)' : 'none';
     const isHome = !showBack;
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [prevShowBack, setPrevShowBack] = useState(showBack);
+
+    // Animate back arrow slide-out when going back
+    useEffect(() => {
+        if (prevShowBack && !showBack) {
+            // Going back - animate arrow out
+            setIsAnimating(true);
+            const timer = setTimeout(() => setIsAnimating(false), 250);
+            return () => clearTimeout(timer);
+        }
+        setPrevShowBack(showBack);
+    }, [showBack, prevShowBack]);
 
     // Reduce shadow when modal is open to prevent "lit up" appearance
     const PILL = {
@@ -36,20 +49,29 @@ export const AppHeader = React.memo(({
         >
             <div className="w-full flex items-center justify-between px-5" style={PILL}>
                 <div className="flex items-center">
-                    {showBack && (
+                    <div 
+                        className={`transition-all duration-250 ease-out overflow-hidden ${
+                            showBack 
+                                ? 'w-9 -ml-2 mr-1.5 opacity-100 translate-x-0' 
+                                : isAnimating 
+                                    ? 'w-9 -ml-2 mr-1.5 opacity-0 -translate-x-8' 
+                                    : 'w-0 ml-0 mr-0 opacity-0 translate-x-0'
+                        }`}
+                    >
                         <button
                             aria-label="Go back"
                             onClick={handleBack}
-                            className="transition-all duration-300 overflow-hidden p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 w-9 -ml-2 mr-1.5 opacity-100"
+                            disabled={!showBack}
+                            className="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
                         >
                             <ArrowLeft className="w-5 h-5 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
                         </button>
-                    )}
+                    </div>
 
                     <button
                         aria-label="Go to homepage"
                         onClick={onHomeClick}
-                        className={`hover:opacity-90 transition-opacity ${!showBack ? 'ml-0' : ''}`}
+                        className="hover:opacity-90 transition-opacity"
                     >
                         {/* 15% larger logo */}
                         <img src={logoLight} alt="MyJSI Logo" className="h-8 w-auto" style={{ filter: filterStyle }} />

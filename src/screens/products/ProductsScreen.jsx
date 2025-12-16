@@ -245,7 +245,7 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
             <div
                 ref={scrollContainerRef}
                 onScroll={handleScroll}
-                className="flex-1 overflow-y-auto px-4 pb-mobile-nav scrollbar-hide"
+                className="flex-1 overflow-y-auto px-4 pb-mobile-nav-safe scrollbar-hide"
             >
                 <div className={contentMaxWidth}>
                     {/* Page header for desktop */}

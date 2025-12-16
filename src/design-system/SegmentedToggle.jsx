@@ -127,8 +127,9 @@ export const SegmentedToggle = ({
                     }}
                     transition={{
                         type: 'spring',
-                        stiffness: 300,
-                        damping: 30,
+                        stiffness: 450,
+                        damping: 35,
+                        mass: 0.5,
                     }}
                     layout
                 />
@@ -208,8 +209,9 @@ export const SegmentedToggle = ({
                 }}
                 transition={{
                     type: 'spring',
-                    stiffness: 400,
-                    damping: 35,
+                    stiffness: 500,
+                    damping: 40,
+                    mass: 0.5,
                 }}
                 layout
             />
