@@ -30,20 +30,20 @@ export const AppHeader = React.memo(({
         >
             <div className="w-full flex items-center justify-between px-5" style={PILL}>
                 <div className="flex items-center">
-                    <button
-                        aria-label="Go back"
-                        onClick={handleBack}
-                        className={`transition-all duration-300 overflow-hidden p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 ${showBack ? 'w-9 -ml-2 mr-1.5 opacity-100' : 'w-0 ml-0 mr-0 opacity-0'
-                            }`}
-                        disabled={!showBack}
-                    >
-                        <ArrowLeft className="w-5 h-5 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
-                    </button>
+                    {showBack && (
+                        <button
+                            aria-label="Go back"
+                            onClick={handleBack}
+                            className="transition-all duration-300 overflow-hidden p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 w-9 -ml-2 mr-1.5 opacity-100"
+                        >
+                            <ArrowLeft className="w-5 h-5 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
+                        </button>
+                    )}
 
                     <button
                         aria-label="Go to homepage"
                         onClick={onHomeClick}
-                        className="hover:opacity-90 transition-opacity"
+                        className={`hover:opacity-90 transition-opacity ${!showBack ? 'ml-0' : ''}`}
                     >
                         {/* 15% larger logo */}
                         <img src={logoLight} alt="MyJSI Logo" className="h-8 w-auto" style={{ filter: filterStyle }} />

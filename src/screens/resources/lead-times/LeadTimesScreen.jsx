@@ -150,7 +150,7 @@ export const LeadTimesScreen = ({ theme = {} }) => {
                         {showFilterMenu && (
                             <div 
                                 ref={filterMenuRef}
-                                className="absolute right-0 top-full mt-2 w-56 rounded-2xl shadow-lg z-50 overflow-hidden"
+                                className="absolute right-0 top-full mt-2 w-56 rounded-2xl shadow-lg z-[10000] overflow-hidden"
                                 style={{ backgroundColor: safeTheme.colors.surface, border: `1px solid ${safeTheme.colors.border}` }}
                             >
                                 <div className="p-3 border-b" style={{ borderColor: safeTheme.colors.border }}>

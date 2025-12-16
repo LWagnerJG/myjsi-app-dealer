@@ -10,6 +10,7 @@ import { JSI_SERIES } from '../products/data.js';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
 import { MOCK_CUSTOMERS, STATUS_COLORS, CUSTOMER_FILTER_OPTIONS } from '../../data/mockCustomers.js';
 import { DESIGN_TOKENS } from '../../design-system/tokens.js';
+import StandardSearchBar from '../../components/common/StandardSearchBar.jsx';
 
 // currency util
 const fmtCurrency = (v) => typeof v === 'string' ? (v.startsWith('$')? v : '$'+v) : (v ?? 0).toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
@@ -129,7 +130,7 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
               <div>
                 <SoftLabel theme={theme}>Products</SoftLabel>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {(draft.products||[]).map(p=> <button key={p.series} onClick={()=>removeProductSeries(p.series)} className="px-3 h-8 rounded-full text-[11px] font-medium flex items-center gap-1 border" style={{ background: theme.colors.subtle, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{p.series}<span className="opacity-60">×</span></button>)}
+                  {(draft.products||[]).map(p=> <button key={p.series} onClick={()=>removeProductSeries(p.series)} className="px-3 h-8 rounded-full text-[11px] font-medium flex items-center gap-1 border" style={{ background: theme.colors.subtle, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{p.series}<span className="opacity-60">ï¿½</span></button>)}
                   <SuggestInputPill placeholder="Add series" suggestions={JSI_SERIES} onAdd={addProductSeries} theme={theme} />
                 </div>
               </div>
@@ -137,7 +138,7 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
                 <div>
                   <SoftLabel theme={theme}>Design Firms</SoftLabel>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {(draft.designFirms||[]).map(f=> <button key={f} onClick={()=>removeFrom('designFirms',f)} className="px-3 h-8 rounded-full text-[11px] font-medium flex items-center gap-1 border" style={{ background: theme.colors.subtle, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{f}<span className="opacity-60">×</span></button>)}
+                    {(draft.designFirms||[]).map(f=> <button key={f} onClick={()=>removeFrom('designFirms',f)} className="px-3 h-8 rounded-full text-[11px] font-medium flex items-center gap-1 border" style={{ background: theme.colors.subtle, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{f}<span className="opacity-60">ï¿½</span></button>)}
                     <SuggestInputPill placeholder="Add firm" suggestions={INITIAL_DESIGN_FIRMS} onAdd={v=>addUnique('designFirms',v)} theme={theme} />
                   </div>
                 </div>
@@ -737,8 +738,8 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
       {/* Premium Header */}
       <div className={`sticky top-0 z-10 transition-all duration-300 ${isScrolled ? 'shadow-lg' : ''}`} style={{ backgroundColor: isScrolled ? `${theme.colors.background}f5` : theme.colors.background, backdropFilter: isScrolled ? 'blur(16px)' : 'none', WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'none' }}>
         <div className={`px-4 lg:px-6 pt-4 lg:pt-6 pb-3 ${contentMaxWidth}`}>
-          {/* Top row: Toggle + New Button */}
-          <div className="flex items-center gap-3">
+          {/* Top row: Toggle + New Button - Improved layout */}
+          <div className="flex items-center justify-between gap-3 mb-4">
             {/* Premium Pill Tab Toggle - Inset style */}
             <div className="flex-1 max-w-md">
               <div className="inline-flex rounded-full p-1 shadow-inner" style={{ backgroundColor: theme.colors.stone || '#E3E0D8' }}>
@@ -761,7 +762,7 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
               </div>
             </div>
             
-            {/* Premium + New Button - Opens modal for Customers, direct nav for Projects */}
+            {/* Premium + New Button - Better positioned */}
             <button 
               onClick={() => {
                 if (projectsTab === 'customers') {
@@ -770,14 +771,16 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
                   onNavigate('new-lead');
                 }
               }} 
-              className="h-11 px-6 rounded-full text-sm font-bold transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg flex items-center gap-2"
+              className="h-11 px-5 rounded-full text-sm font-bold transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 flex-shrink-0"
               style={{ 
                 backgroundColor: theme.colors.accent, 
                 color: '#fff',
+                minWidth: '44px',
               }}
+              aria-label={projectsTab === 'customers' ? 'Add new customer' : 'Create new project'}
             >
               <span className="text-lg leading-none">+</span>
-              <span className="hidden sm:inline">New</span>
+              <span className="hidden sm:inline text-sm">New</span>
             </button>
           </div>
           
@@ -794,25 +797,15 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
             </div>
           )}
           
-          {/* Search and Filters for Customers */}
+          {/* Search for Customers - Using StandardSearchBar, filters removed */}
           {projectsTab === 'customers' && (
-            <div className="mt-4 space-y-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: theme.colors.textSecondary }} />
-                <input
-                  value={customerSearch}
-                  onChange={e => setCustomerSearch(e.target.value)}
-                  placeholder="Search customers..."
-                  className="w-full pl-10 pr-4 py-2.5 rounded-full text-sm outline-none"
-                  style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
-                />
-              </div>
-              <FilterChips
-                options={CUSTOMER_FILTER_OPTIONS}
-                value={customerFilter}
-                onChange={setCustomerFilter}
+            <div className="mt-4">
+              <StandardSearchBar
+                value={customerSearch}
+                onChange={setCustomerSearch}
+                placeholder="Search customers..."
                 theme={theme}
-                showArrows={false}
+                className="w-full"
               />
             </div>
           )}
@@ -821,7 +814,7 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
       
       {/* Content Area */}
       <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className={`px-4 lg:px-6 pt-4 space-y-3 pb-mobile-nav ${contentMaxWidth}`}>
+        <div className={`px-4 lg:px-6 pt-4 space-y-3 ${projectsTab === 'pipeline' ? 'pb-24' : 'pb-mobile-nav'} ${contentMaxWidth}`}>
           {projectsTab==='pipeline' && (
             filteredOpportunities.length ? (
               <div className={isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-3'}>
@@ -858,25 +851,24 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
         </div>
       </div>
       
-      {/* Total Footer - Only for pipeline tab */}
+      {/* Total Footer - Only for pipeline tab - Improved layout */}
       {projectsTab==='pipeline' && (
         <div 
-          className={`${isDesktop ? 'absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full shadow-2xl max-w-md w-[calc(100%-3rem)]' : 'fixed bottom-20 left-4 right-4 rounded-full shadow-2xl'}`}
+          className={`${isDesktop ? 'sticky bottom-0 mt-6 rounded-full shadow-2xl max-w-md mx-auto' : 'sticky bottom-20 left-0 right-0 rounded-full shadow-2xl mx-4'}`}
           style={{ 
             background: 'linear-gradient(135deg, rgba(53,53,53,0.95) 0%, rgba(74,69,67,0.95) 100%)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
             border: '1px solid rgba(255,255,255,0.1)',
             zIndex: 25,
+            marginBottom: isDesktop ? '1.5rem' : '0.5rem',
           }}
         >
-          <div className="px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-white/70">
-                {selectedPipelineStage} Total
-              </span>
-            </div>
-            <div className="text-2xl lg:text-3xl font-extrabold tracking-tight text-white">
+          <div className="px-5 py-3 flex items-center justify-between">
+            <span className="text-xs lg:text-sm font-semibold text-white/80">
+              {selectedPipelineStage} Total
+            </span>
+            <div className="text-xl lg:text-2xl font-extrabold tracking-tight text-white">
               {fmtCurrency(stageTotals.totalValue)}
             </div>
           </div>
