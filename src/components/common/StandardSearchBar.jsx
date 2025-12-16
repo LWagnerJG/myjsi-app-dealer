@@ -4,10 +4,18 @@ import { SearchInput } from './SearchInput.jsx';
 // Standardized 56px pill search used across feature screens (matches Orders / AppHeader styling)
 // Props: value, onChange (event or value), placeholder, theme, className, onVoiceClick, id
 export const StandardSearchBar = ({ value, onChange, placeholder='Search...', theme, className='', onVoiceClick, id }) => {
-  const handleChange = (e) => {
-    // Accept both synthetic event and raw value handlers
-    const val = e?.target ? e.target.value : e;
-    if (onChange) onChange(val);
+  const handleChange = (val) => {
+    // SearchInput passes the value directly (not an event)
+    // Accept both value and event handlers for flexibility
+    if (onChange) {
+      if (typeof val === 'string') {
+        onChange(val);
+      } else if (val?.target) {
+        onChange(val.target.value);
+      } else {
+        onChange(val);
+      }
+    }
   };
   return (
     <SearchInput

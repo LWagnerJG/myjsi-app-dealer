@@ -171,7 +171,7 @@ export const OrdersScreen = ({ theme, onNavigate }) => {
       <div className={`sticky top-0 z-10 transition-all duration-300 ${isScrolled?'shadow-md':''}`} style={{ backgroundColor: isScrolled? `${theme.colors.background}e0`:'transparent', backdropFilter: isScrolled? 'blur(12px)':'none', WebkitBackdropFilter: isScrolled? 'blur(12px)':'none', borderBottom:`1px solid ${isScrolled? theme.colors.border+'40':'transparent'}` }}>
         <div className={`px-4 pt-3 pb-2 flex flex-col gap-3 ${contentMaxWidth}`}>
           <div style={{ height:56 }} className="flex-grow">
-            <SearchInput value={searchTerm} onChange={(e)=>setSearchTerm(e.target.value)} placeholder="Search Orders" theme={theme} variant="header" />
+            <SearchInput value={searchTerm} onChange={setSearchTerm} placeholder="Search Orders" theme={theme} variant="header" />
           </div>
           <div className="flex items-center gap-3">
             {/* JSI Unified Toggle - Wider with better spacing */}

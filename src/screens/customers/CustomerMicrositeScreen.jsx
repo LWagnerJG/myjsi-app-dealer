@@ -238,12 +238,18 @@ const RequestUpdateModal = ({ isOpen, onClose, theme, customerName }) => {
                 Request changes or updates for <strong>{customerName}</strong>. Your JSI rep team will review and respond.
               </p>
               <textarea
+                autoFocus
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 placeholder="Describe the update you need..."
                 rows={4}
-                className="w-full px-4 py-3 rounded-xl text-sm resize-none outline-none"
-                style={{ backgroundColor: theme.colors.surface, border: `1.5px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
+                className="w-full px-4 py-3 rounded-xl text-sm resize-none outline-none focus:ring-2 focus:ring-offset-2"
+                style={{ 
+                  backgroundColor: theme.colors.surface, 
+                  border: `1.5px solid ${theme.colors.border}`, 
+                  color: theme.colors.textPrimary,
+                  focusRingColor: theme.colors.accent
+                }}
               />
               <button 
                 onClick={handleSubmit}
