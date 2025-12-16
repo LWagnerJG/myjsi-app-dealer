@@ -337,7 +337,7 @@ export const CustomerMicrositeScreen = ({ customerId, theme, onNavigate, onBack 
 
       {/* Content */}
       <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className={`px-4 lg:px-6 pb-32 ${isDesktop ? 'flex gap-6 max-w-6xl mx-auto' : ''}`}>
+        <div className={`px-4 lg:px-6 pb-mobile-nav ${isDesktop ? 'flex gap-6 max-w-6xl mx-auto' : ''}`}>
           {/* Main Content Column */}
           <div className={`space-y-4 ${isDesktop ? 'flex-1' : ''}`}>
             

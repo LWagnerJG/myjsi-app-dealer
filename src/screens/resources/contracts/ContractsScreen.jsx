@@ -24,7 +24,7 @@ export const ContractsScreen = ({ theme, setSuccessMessage }) => {
             <div className={`px-4 pt-4 ${isDesktop ? 'max-w-3xl mx-auto w-full' : ''}`}>
                 <TabBar tabs={TABS} value={active} onChange={setActive} theme={theme} />
             </div>
-            <div className={`px-4 py-4 pb-32 lg:pb-8 ${isDesktop ? 'max-w-3xl mx-auto w-full' : ''}`}>
+            <div className={`px-4 py-4 pb-mobile-nav ${isDesktop ? 'max-w-3xl mx-auto w-full' : ''}`}>
                 <ContractCard contract={contracts[active]} theme={theme} setSuccessMessage={setSuccessMessage} isDesktop={isDesktop} />
             </div>
         </div>

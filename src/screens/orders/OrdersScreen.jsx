@@ -191,7 +191,7 @@ export const OrdersScreen = ({ theme, onNavigate }) => {
         </div>
       </div>
       <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className={`px-4 pt-4 pb-24 space-y-4 ${contentMaxWidth}`}>
+        <div className={`px-4 pt-4 pb-mobile-nav space-y-4 ${contentMaxWidth}`}>
           {viewMode==='list'? (
             groupKeys.length? <div className="space-y-4">{groupKeys.map(k=> <GroupTile key={k} theme={theme} dateKey={k} group={grouped[k]} onNavigate={onNavigate} />)}</div> : <p className="text-sm" style={{ color: theme.colors.textSecondary }}>No orders found.</p>
           ) : (

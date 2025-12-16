@@ -127,7 +127,7 @@ const isDesktop = useIsDesktop();
 
     return (
         <div className="flex flex-col h-full overflow-y-auto scrollbar-hide">
-            <div className={`px-5 pt-3 pb-32 lg:pb-8 ${isDesktop ? 'max-w-3xl mx-auto w-full' : ''}`}>
+            <div className={`px-5 pt-3 pb-mobile-nav ${isDesktop ? 'max-w-3xl mx-auto w-full' : ''}`}>
                 {/* Dealer discount summary at top */}
                 {USER_ROLE === 'dealer' && <DealerDiscountSummary theme={theme} />}
                 

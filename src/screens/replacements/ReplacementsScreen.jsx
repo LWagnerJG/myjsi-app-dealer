@@ -293,7 +293,7 @@ export const ReplacementsScreen = ({ theme }) => {
         <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
             <div className="flex-1 overflow-y-auto scrollbar-hide">
                 {view === 'list' ? (
-                    <div className={`px-4 lg:px-6 pt-4 lg:pt-6 pb-32 ${contentMaxWidth}`} style={{ paddingBottom: '140px' }}>
+                    <div className={`px-4 lg:px-6 pt-4 lg:pt-6 pb-mobile-nav ${contentMaxWidth}`}>
                         {/* Header */}
                         <div className="flex items-center justify-between mb-6">
                             <div>

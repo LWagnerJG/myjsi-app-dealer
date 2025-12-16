@@ -184,7 +184,7 @@ export const StandardsProgramDetailScreen = ({ customerId, programId, theme, onN
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className={`px-4 lg:px-6 py-4 pb-32 ${isDesktop ? 'max-w-4xl mx-auto' : ''}`}>
+        <div className={`px-4 lg:px-6 py-4 pb-mobile-nav ${isDesktop ? 'max-w-4xl mx-auto' : ''}`}>
           <div className="space-y-4">
             
             {/* PO Requirements - Highlighted */}

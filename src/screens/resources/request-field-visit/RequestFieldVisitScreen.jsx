@@ -149,7 +149,7 @@ export const RequestFieldVisitScreen = ({ theme, setSuccessMessage, onNavigate }
         <div className="flex flex-col h-full overflow-y-auto scrollbar-hide">
             <PageTitle title="Request Field Visit" theme={theme} />
 
-            <div className={`px-4 py-4 space-y-4 pb-32 lg:pb-8 ${isDesktop ? 'max-w-3xl mx-auto w-full' : ''}`}>
+            <div className={`px-4 py-4 space-y-4 pb-mobile-nav ${isDesktop ? 'max-w-3xl mx-auto w-full' : ''}`}>
                     {/* Info Card */}
                     <GlassCard theme={theme} className="p-4">
                         <div className="flex items-start space-x-3">

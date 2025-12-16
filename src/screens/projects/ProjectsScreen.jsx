@@ -821,7 +821,7 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
       
       {/* Content Area */}
       <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className={`px-4 lg:px-6 pt-4 space-y-3 ${contentMaxWidth}`} style={{ paddingBottom: projectsTab === 'pipeline' ? '180px' : '120px' }}>
+        <div className={`px-4 lg:px-6 pt-4 space-y-3 pb-mobile-nav ${contentMaxWidth}`}>
           {projectsTab==='pipeline' && (
             filteredOpportunities.length ? (
               <div className={isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-3'}>

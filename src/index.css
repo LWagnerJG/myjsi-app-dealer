@@ -113,7 +113,18 @@ button {
 
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* Mobile navigation safe padding - ensures content scrolls above bottom nav */
 .pb-safe { padding-bottom: calc(6rem + var(--safe-area-inset-bottom)); }
+.pb-nav-safe { padding-bottom: calc(100px + var(--safe-area-inset-bottom)); } /* 80px nav + 16px offset + 4px buffer */
+
+/* Apply nav-safe bottom padding on mobile screens only */
+@media (max-width: 1023px) {
+    .pb-mobile-nav { padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (min-width: 1024px) {
+    .pb-mobile-nav { padding-bottom: 2rem; } /* Desktop doesn't need as much since sidebar is on the side */
+}
 
 @supports (-webkit-appearance:none) {
     .h-screen-safe { height: var(--app-height) !important; min-height: var(--app-height) !important; }

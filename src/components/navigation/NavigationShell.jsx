@@ -45,22 +45,31 @@ export const NavigationShell = ({ currentScreen, onNavigate, theme, isModalOpen 
                 </div>
             </div>
 
-            {/* Mobile Bottom Tab Bar - Floating Glass Pill */}
+            {/* Mobile Bottom Tab Bar - Floating Pill Style */}
             <div 
-                className={`lg:hidden fixed bottom-0 left-0 right-0 pb-[env(safe-area-inset-bottom)] px-4 pt-2 pb-4 transition-all duration-200 ${isModalOpen ? 'opacity-0 pointer-events-none translate-y-full' : ''}`}
+                className={`lg:hidden fixed left-4 right-4 transition-all duration-300 ${isModalOpen ? 'opacity-0 pointer-events-none translate-y-8' : ''}`}
                 style={{ 
-                    background: 'linear-gradient(to top, rgba(250,249,246,0.95) 70%, rgba(250,249,246,0))',
+                    bottom: 'max(16px, env(safe-area-inset-bottom))',
                     zIndex: DESIGN_TOKENS.zIndex.navigation 
                 }}
             >
-                <div className="bg-white/95 backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] border border-black/5 p-1.5 rounded-2xl flex justify-around items-center">
+                <div 
+                    className="flex justify-around items-center px-2 py-2 rounded-full"
+                    style={{
+                        backgroundColor: 'rgba(255,255,255,0.92)',
+                        backdropFilter: 'blur(20px)',
+                        WebkitBackdropFilter: 'blur(20px)',
+                        boxShadow: '0 4px 24px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08)',
+                        border: '1px solid rgba(0,0,0,0.04)'
+                    }}
+                >
                     {navItems.slice(0, 4).map((item) => (
                         <button
                             key={item.id}
                             onClick={() => onNavigate(item.id)}
-                            className={`p-3 rounded-xl transition-all duration-200 ${isActive(item.id)
-                                    ? 'bg-black text-white shadow-md scale-105'
-                                    : 'text-gray-400 hover:text-gray-700 hover:bg-gray-100'
+                            className={`p-3 rounded-full transition-all duration-200 ${isActive(item.id)
+                                    ? 'bg-black text-white shadow-lg'
+                                    : 'text-gray-400 active:bg-gray-100 active:text-gray-700'
                                 }`}
                         >
                             <item.icon className="w-5 h-5" />
@@ -68,7 +77,7 @@ export const NavigationShell = ({ currentScreen, onNavigate, theme, isModalOpen 
                     ))}
                     <button
                         onClick={() => onNavigate('settings')}
-                        className={`p-3 rounded-xl transition-all duration-200 text-gray-400 hover:text-gray-700 hover:bg-gray-100`}
+                        className="p-3 rounded-full transition-all duration-200 text-gray-400 active:bg-gray-100 active:text-gray-700"
                     >
                         <Settings className="w-5 h-5" />
                     </button>

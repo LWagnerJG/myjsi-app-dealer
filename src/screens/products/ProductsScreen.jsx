@@ -32,42 +32,52 @@ const CategoryCard = React.memo(({
         onClick(category);
     }, [category, onClick]);
 
-    const isBenches = category.name === 'Benches';
-
     if (viewMode === 'grid') {
         return (
             <GlassCard
                 theme={theme}
-                className={`p-4 overflow-hidden cursor-pointer transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${className}`}
+                className={`overflow-hidden cursor-pointer transform transition-all duration-200 hover:scale-[1.01] active:scale-[0.98] ${className}`}
                 onClick={handleClick}
+                style={{ padding: 0 }}
             >
-                <h2 
-                    className="font-bold mb-2" 
+                {/* Image strip at top - no dividers */}
+                <div 
+                    className="flex w-full overflow-hidden gap-0.5"
                     style={{ 
-                        color: theme.colors.textPrimary,
-                        fontSize: isDesktop ? '1.5rem' : '1.25rem',
+                        height: isDesktop ? '120px' : '100px',
+                        backgroundColor: '#f0f0ee'
                     }}
                 >
-                    {category.name}
-                </h2>
-                <div className={`flex space-x-3 -mb-2 justify-end pr-2`}>
-                    {category.images?.slice(0, isDesktop ? 4 : 3).map((img, index) => (
-                        <div 
-                            key={index} 
-                            className="overflow-hidden rounded-lg flex-shrink-0 bg-neutral-100"
-                            style={{
-                                width: isDesktop ? '7rem' : '6rem',
-                                height: isDesktop ? '5.5rem' : '5rem',
-                            }}
-                        >
+                    {category.images?.slice(0, isDesktop ? 3 : 2).map((img, index) => (
+                        <div key={index} className="flex-1 overflow-hidden">
                             <img
                                 src={img}
                                 alt={`${category.name} example ${index + 1}`}
-                                className="w-full h-full object-cover object-center scale-[1.25] hover:scale-[1.35] transition-transform duration-500"
+                                className="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-500"
                                 loading="lazy"
                             />
                         </div>
                     ))}
+                </div>
+                {/* Text content below */}
+                <div className="p-4">
+                    <h2 
+                        className="font-bold" 
+                        style={{ 
+                            color: theme.colors.textPrimary,
+                            fontSize: isDesktop ? '1rem' : '0.9375rem',
+                        }}
+                    >
+                        {category.name}
+                    </h2>
+                    {category.description && (
+                        <p 
+                            className="text-xs mt-1" 
+                            style={{ color: theme.colors.textSecondary }}
+                        >
+                            {category.description}
+                        </p>
+                    )}
                 </div>
             </GlassCard>
         );
@@ -86,9 +96,16 @@ const CategoryCard = React.memo(({
                         className="w-12 h-12 rounded-md object-cover"
                         loading="lazy"
                     />
-                    <h3 className="font-semibold text-lg" style={{ color: theme.colors.textPrimary }}>
-                        {category.name}
-                    </h3>
+                    <div>
+                        <h3 className="font-semibold" style={{ color: theme.colors.textPrimary, fontSize: isDesktop ? '1rem' : '0.9375rem' }}>
+                            {category.name}
+                        </h3>
+                        {category.description && isDesktop && (
+                            <p className="text-xs mt-0.5" style={{ color: theme.colors.textSecondary }}>
+                                {category.description}
+                            </p>
+                        )}
+                    </div>
                 </div>
                 <ArrowRight className="w-5 h-5" style={{ color: theme.colors.secondary }} />
             </div>
@@ -140,7 +157,7 @@ const StickyHeader = React.memo(({
         <div 
             className="flex items-center space-x-3"
             style={{
-                maxWidth: isDesktop ? '56rem' : '100%',
+                maxWidth: isDesktop ? '72rem' : '100%',
                 margin: isDesktop ? '0 auto' : '0',
             }}
         >
@@ -212,7 +229,7 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
     }, []);
 
     // Responsive content max-width
-    const contentMaxWidth = isDesktop ? 'max-w-4xl mx-auto w-full' : '';
+    const contentMaxWidth = isDesktop ? 'max-w-5xl mx-auto w-full' : '';
 
     return (
         <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
@@ -228,19 +245,29 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
             <div
                 ref={scrollContainerRef}
                 onScroll={handleScroll}
-                className="flex-1 overflow-y-auto px-4 pb-4 scrollbar-hide"
+                className="flex-1 overflow-y-auto px-4 pb-mobile-nav scrollbar-hide"
             >
                 <div className={contentMaxWidth}>
+                    {/* Page header for desktop */}
+                    {isDesktop && (
+                        <div className="mb-6 pt-2">
+                            <h1 className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>Products</h1>
+                            <p className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>
+                                Browse our furniture collections by category
+                            </p>
+                        </div>
+                    )}
+                    
                     {filteredCategories.length === 0 ? (
                         <EmptyState searchTerm={searchTerm} theme={theme} />
                     ) : (
                         <div 
                             className={
                                 viewMode === 'grid' 
-                                    ? (isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-4')
+                                    ? (isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-5' : 'grid grid-cols-1 gap-4')
                                     : (isDesktop ? 'grid grid-cols-2 gap-3' : 'space-y-2')
                             } 
-                            style={{ paddingTop: '8px' }}
+                            style={{ paddingTop: isDesktop ? '0' : '8px' }}
                         >
                             {filteredCategories.map(category => (
                                 <CategoryCard
@@ -250,7 +277,6 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
                                     viewMode={viewMode}
                                     onClick={handleCategoryClick}
                                     isDesktop={isDesktop}
-                                    className={category.name === 'Benches' ? 'mt-4' : ''}
                                 />
                             ))}
                         </div>

@@ -262,7 +262,7 @@ export const CommunityScreen = ({
             </div>
           </div>
         )}
-        <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto no-scrollbar pb-10 pt-1 -mt-1">
+        <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto no-scrollbar pb-mobile-nav pt-1 -mt-1">
           <div className={`px-4 space-y-4 ${contentMaxWidth}`}>
             {effectiveViewMode==='feed' && !filteredContent.length && (
               <div className="text-center text-sm pt-20" style={{ color: theme.colors.textSecondary }}>No content found.</div>

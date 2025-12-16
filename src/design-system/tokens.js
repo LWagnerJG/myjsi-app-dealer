@@ -172,6 +172,14 @@ export const DESIGN_TOKENS = {
     '3xl': '1152px',
     '4xl': '1280px',
   },
+
+  // Navigation heights for layout calculations
+  layout: {
+    headerHeight: '76px',
+    mobileNavHeight: '80px',        // Mobile bottom nav bar height
+    mobileNavBottomOffset: '16px',  // Bottom offset of mobile nav
+    desktopSidebarWidth: '96px',    // lg:pl-24 = 6rem = 96px
+  },
   
   // Blur effects for overlays (JSI brand)
   blur: {
