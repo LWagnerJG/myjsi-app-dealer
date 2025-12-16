@@ -245,3 +245,156 @@ input:focus, textarea:focus, select:focus {
     opacity: 1;
     pointer-events: auto;
 }
+
+/* ============================================
+   CONSISTENT SPACING UTILITIES
+   Use these classes instead of arbitrary values
+   ============================================ */
+
+/* Screen Content Padding - Standardized */
+.screen-content {
+    padding-left: 1rem; /* 16px */
+    padding-right: 1rem;
+    padding-top: 1rem;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 1024px) {
+    .screen-content {
+        padding-left: 1.5rem; /* 24px */
+        padding-right: 1.5rem;
+        padding-top: 1.5rem;
+        padding-bottom: 2rem;
+    }
+}
+
+/* Consistent Section Spacing */
+.section-spacing {
+    margin-bottom: 1.5rem; /* 24px */
+}
+
+@media (min-width: 1024px) {
+    .section-spacing {
+        margin-bottom: 2rem; /* 32px */
+    }
+}
+
+/* Consistent Item Spacing */
+.item-spacing {
+    margin-bottom: 1rem; /* 16px */
+}
+
+@media (min-width: 1024px) {
+    .item-spacing {
+        margin-bottom: 1.5rem; /* 24px */
+    }
+}
+
+/* Consistent Gap Spacing */
+.gap-standard {
+    gap: 1rem; /* 16px */
+}
+
+@media (min-width: 1024px) {
+    .gap-standard {
+        gap: 1.5rem; /* 24px */
+    }
+}
+
+/* ============================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================ */
+
+/* Reduce layout shifts with will-change hints */
+.animated-screen-container,
+.animated-screen-container * {
+    will-change: transform, opacity;
+}
+
+/* Optimize font rendering */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/* Prevent layout shifts from images */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Optimize scroll performance */
+.scrollbar-hide {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* Reduce repaints with transform */
+.gpu-accelerated {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+}
+
+/* ============================================
+   CONSISTENT INPUT STYLING
+   ============================================ */
+
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="search"],
+textarea,
+select {
+    font-family: var(--jsi-font-family);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--jsi-charcoal);
+    box-shadow: 0 0 0 3px rgba(53, 53, 53, 0.1);
+}
+
+/* ============================================
+   CONSISTENT CARD STYLING
+   ============================================ */
+
+.card-standard {
+    border-radius: var(--jsi-radius-card);
+    padding: 1rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (min-width: 1024px) {
+    .card-standard {
+        padding: 1.5rem;
+    }
+}
+
+/* ============================================
+   CONSISTENT BUTTON STYLING
+   ============================================ */
+
+button {
+    font-family: var(--jsi-font-family);
+    -webkit-font-smoothing: antialiased;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+button:active {
+    transform: scale(0.98);
+    transition-duration: 0.1s;
+}
+
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}

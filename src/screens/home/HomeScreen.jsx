@@ -23,8 +23,8 @@ const USER_ROLE = 'dealer'; // 'dealer' | 'internal'
 // Constants
 const MAX_QUICK_ACCESS_APPS = 9;
 
-// Quick Access Grid Component with integrated stats for desktop
-const QuickAccessGrid = ({ theme, onNavigate, activeAppIds, onCustomize, stats, isDesktop }) => {
+// Quick Access Grid Component with integrated stats for desktop - Memoized for performance
+const QuickAccessGrid = React.memo(({ theme, onNavigate, activeAppIds, onCustomize, stats, isDesktop }) => {
     const activeApps = useMemo(() => {
         return QUICK_ACCESS_APPS.filter(app => activeAppIds.includes(app.id)).slice(0, MAX_QUICK_ACCESS_APPS);
     }, [activeAppIds]);
@@ -42,7 +42,7 @@ const QuickAccessGrid = ({ theme, onNavigate, activeAppIds, onCustomize, stats, 
             case 'replacements':
                 return { value: '0' }; // Pending replacements
             case 'samples':
-                return { value: '–' }; // No count needed, dash indicates available
+                return { value: 'ï¿½' }; // No count needed, dash indicates available
             case 'community':
                 return { value: 'New' }; // Indicates new content
             case 'products':
@@ -72,22 +72,22 @@ const QuickAccessGrid = ({ theme, onNavigate, activeAppIds, onCustomize, stats, 
             case 'customer-ranking':
                 return { value: '#' }; // Ranking indicator
             default:
-                return { value: '•' }; // Default dot
+                return { value: 'ï¿½' }; // Default dot
         }
     };
 
     return (
-        <div className="mb-4">
-            <div className="flex items-center justify-between mb-3 px-1">
+        <div className="mb-6">
+            <div className="flex items-center justify-between mb-4 px-1">
                 <div>
-                    <h3 className="font-semibold text-sm" style={{ color: theme.colors.textSecondary }}>Quick Access</h3>
+                    <h3 className="font-semibold text-sm lg:text-base" style={{ color: theme.colors.textSecondary }}>Quick Access</h3>
                 </div>
                 <button onClick={onCustomize} className="flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all hover:bg-black/5 dark:hover:bg-white/5" style={{ color: theme.colors.textSecondary }} title="Reconfigure Quick Access">
                     <SlidersHorizontal className="w-4 h-4" />
                     <span className={`text-xs font-medium ${isDesktop ? 'inline' : 'hidden sm:inline'}`}>Reconfigure</span>
                 </button>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-3 lg:gap-4">
                 {activeApps.map(app => {
                     const appStats = getAppStats(app.id);
                     
@@ -142,7 +142,15 @@ const QuickAccessGrid = ({ theme, onNavigate, activeAppIds, onCustomize, stats, 
             </div>
         </div>
     );
-};
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.activeAppIds === nextProps.activeAppIds &&
+        prevProps.theme === nextProps.theme &&
+        prevProps.isDesktop === nextProps.isDesktop &&
+        prevProps.stats === nextProps.stats
+    );
+});
+QuickAccessGrid.displayName = 'QuickAccessGrid';
 
 // Customize Home Modal Component
 const CustomizeHomeModal = ({ theme, isOpen, onClose, activeAppIds, onSave }) => {
@@ -312,8 +320,8 @@ const StatusChip = ({ status }) => {
     );
 };
 
-// Recent Activity Feed Component
-const RecentActivityFeed = ({ theme, opportunities = [], orders = [], onNavigate }) => {
+// Recent Activity Feed Component - Memoized for performance
+const RecentActivityFeed = React.memo(({ theme, opportunities = [], orders = [], onNavigate }) => {
     const activities = useMemo(() => {
         const items = [];
         opportunities.slice(0, 3).forEach(opp => {
@@ -350,12 +358,12 @@ const RecentActivityFeed = ({ theme, opportunities = [], orders = [], onNavigate
     if (activities.length === 0) return null;
 
     return (
-        <GlassCard theme={theme} className="p-4 mb-4" variant="elevated">
-            <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-sm" style={{ color: theme.colors.textSecondary }}>Recent Activity</h3>
+        <GlassCard theme={theme} className="p-4 lg:p-6 mb-6" variant="elevated">
+            <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-sm lg:text-base" style={{ color: theme.colors.textSecondary }}>Recent Activity</h3>
                 <button onClick={() => onNavigate('projects')} className="text-xs font-medium flex items-center gap-1" style={{ color: theme.colors.accent }}>View All<ArrowRight className="w-3 h-3" /></button>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
                 {activities.map((activity, i) => (
                     <button key={i} onClick={activity.action} className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left">
                         <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${activity.color}15` }}><activity.icon className="w-4 h-4" style={{ color: activity.color }} /></div>
@@ -372,10 +380,17 @@ const RecentActivityFeed = ({ theme, opportunities = [], orders = [], onNavigate
             </div>
         </GlassCard>
     );
-};
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.opportunities === nextProps.opportunities &&
+        prevProps.orders === nextProps.orders &&
+        prevProps.theme === nextProps.theme
+    );
+});
+RecentActivityFeed.displayName = 'RecentActivityFeed';
 
-// Smart Search Component
-const SmartSearch = ({ theme, onNavigate, onAskAI, onVoiceActivate }) => {
+// Smart Search Component - Optimized with useCallback
+const SmartSearch = React.memo(({ theme, onNavigate, onAskAI, onVoiceActivate }) => {
     const [query, setQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const anchorRef = useRef(null);
@@ -387,13 +402,26 @@ const SmartSearch = ({ theme, onNavigate, onAskAI, onVoiceActivate }) => {
         return allApps.filter(app => app.name.toLowerCase().includes(q) || (app.keywords || []).some(k => k.toLowerCase().includes(q))).slice(0, 6);
     }, [query]);
 
-    const submit = useCallback((q) => { if (q.trim()) { onAskAI(q); setQuery(''); } }, [onAskAI]);
+    const submit = useCallback((q) => { 
+        if (q.trim()) { 
+            onAskAI(q); 
+            setQuery(''); 
+        } 
+    }, [onAskAI]);
 
     const updatePos = useCallback(() => {
         if (!anchorRef.current) return;
         const rect = anchorRef.current.getBoundingClientRect();
         setPos({ top: rect.bottom + 8, left: rect.left, width: rect.width });
     }, []);
+
+    const handleFocus = useCallback(() => setIsFocused(true), []);
+    const handleBlur = useCallback(() => setIsFocused(false), []);
+    const handleNavigate = useCallback((route) => {
+        onNavigate(route);
+        setQuery('');
+        setIsFocused(false);
+    }, [onNavigate]);
 
     useEffect(() => {
         if (!isFocused) return;
@@ -405,7 +433,7 @@ const SmartSearch = ({ theme, onNavigate, onAskAI, onVoiceActivate }) => {
     return (
         <div ref={anchorRef} className="relative mb-4">
             <GlassCard theme={theme} variant="elevated" className="w-full px-4" style={{ borderRadius: 9999, paddingTop: 0, paddingBottom: 0 }}>
-                <HomeSearchInput onSubmit={submit} value={query} onChange={setQuery} onFocus={() => setIsFocused(true)} onBlur={() => setIsFocused(false)} onVoiceClick={() => onVoiceActivate('Voice Activated')} theme={theme} className="w-full" />
+                <HomeSearchInput onSubmit={submit} value={query} onChange={setQuery} onFocus={handleFocus} onBlur={handleBlur} onVoiceClick={() => onVoiceActivate('Voice Activated')} theme={theme} className="w-full" />
             </GlassCard>
             {isFocused && filtered.length > 0 && (
                 <DropdownPortal>
@@ -413,7 +441,7 @@ const SmartSearch = ({ theme, onNavigate, onAskAI, onVoiceActivate }) => {
                         <GlassCard theme={theme} className="p-1" variant="elevated">
                             <ul className="max-h-64 overflow-y-auto scrollbar-hide">
                                 {filtered.map((app) => (
-                                    <li key={app.route} onMouseDown={() => { onNavigate(app.route); setQuery(''); setIsFocused(false); }} className="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-all active:scale-[0.99]" style={{ color: theme.colors.textPrimary }}>
+                                    <li key={app.route} onMouseDown={() => handleNavigate(app.route)} className="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-all active:scale-[0.99]" style={{ color: theme.colors.textPrimary }}>
                                         <app.icon className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
                                         <span className="text-sm">{app.name}</span>
                                     </li>
@@ -425,7 +453,10 @@ const SmartSearch = ({ theme, onNavigate, onAskAI, onVoiceActivate }) => {
             )}
         </div>
     );
-};
+}, (prevProps, nextProps) => {
+    return prevProps.theme === nextProps.theme;
+});
+SmartSearch.displayName = 'SmartSearch';
 
 // Helper to filter out disallowed apps for dealer role
 const filterAllowedAppIds = (appIds) => {
@@ -507,11 +538,11 @@ export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opport
 
     return (
         <div className="flex flex-col h-full overflow-y-auto scrollbar-hide" style={{ backgroundColor: theme.colors.background }}>
-            <div className="px-4 pt-4 pb-mobile-nav">
+            <div className="px-4 lg:px-6 pt-4 lg:pt-6 pb-mobile-nav">
                 {isDesktop && (
-                    <div className="mb-4">
-                        <h1 className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>Dashboard</h1>
-                        <p className="text-xs" style={{ color: theme.colors.textSecondary }}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+                    <div className="mb-6">
+                        <h1 className="text-2xl lg:text-3xl font-bold mb-1" style={{ color: theme.colors.textPrimary }}>Dashboard</h1>
+                        <p className="text-xs lg:text-sm" style={{ color: theme.colors.textSecondary }}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
                     </div>
                 )}
 
