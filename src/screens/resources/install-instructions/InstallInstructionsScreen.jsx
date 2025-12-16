@@ -38,27 +38,26 @@ export const InstallInstructionsScreen = ({ theme }) => {
   const handlePdfDownload = (instruction) => window.open(instruction.pdfUrl, '_blank');
 
   const FilterBar = () => (
-    <div className="flex w-full items-center justify-between gap-2 overflow-x-auto scrollbar-hide">
-      {types.map(type => {
-        const active = selectedType === type;
-        return (
-          <button
-            key={type}
-            onClick={()=>setSelectedType(type)}
-            className="px-4 h-9 rounded-full text-sm font-medium whitespace-nowrap focus:outline-none focus:ring transition-all duration-150"
-            style={{
-              backgroundColor: active ? theme.colors.accent : '#ffffff',
-              color: active ? '#ffffff' : theme.colors.textSecondary,
-              border: `1px solid ${active ? theme.colors.accent : 'rgba(0,0,0,0.06)'}`,
-              boxShadow: active ? BUTTON_SHADOW_ACTIVE : BUTTON_SHADOW
-            }}
-            onMouseEnter={e=>{ if(!active) e.currentTarget.style.boxShadow = BUTTON_SHADOW_HOVER; }}
-            onMouseLeave={e=>{ if(!active) e.currentTarget.style.boxShadow = BUTTON_SHADOW; }}
-          >
-            {type === 'all' ? 'All Types' : type}
-          </button>
-        );
-      })}
+    <div className="flex w-full items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
+      <div className="flex items-center gap-2 px-1 py-1 rounded-2xl" style={{ backgroundColor: theme.colors.subtle }}>
+        {types.map(type => {
+          const active = selectedType === type;
+          return (
+            <button
+              key={type}
+              onClick={()=>setSelectedType(type)}
+              className="px-3 h-8 rounded-xl text-xs font-semibold whitespace-nowrap focus:outline-none transition-all duration-200"
+              style={{
+                backgroundColor: active ? theme.colors.accent : 'transparent',
+                color: active ? '#ffffff' : theme.colors.textSecondary,
+                boxShadow: active ? BUTTON_SHADOW_ACTIVE : 'none'
+              }}
+            >
+              {type === 'all' ? 'All' : type}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 
@@ -123,7 +122,7 @@ export const InstallInstructionsScreen = ({ theme }) => {
         <FilterBar />
       </div>
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-6 space-y-3">
+      <div className="flex-1 overflow-y-auto scrollbar-hide px-4 pb-mobile-nav-safe space-y-3">
         {filteredInstructions.length ? (
           filteredInstructions.map(item => <InstructionCard key={item.id} instruction={item} />)
         ) : (

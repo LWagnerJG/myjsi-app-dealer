@@ -874,26 +874,26 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
         </div>
       </div>
       
-      {/* Total Footer - Only for pipeline tab - Improved layout */}
-      {projectsTab==='pipeline' && (
+      {/* Total Footer - Only for pipeline tab - Subtle inline display */}
+      {projectsTab==='pipeline' && filteredOpportunities.length > 0 && (
         <div 
-          className={`${isDesktop ? 'sticky bottom-0 mt-6 rounded-full shadow-2xl max-w-md mx-auto' : 'sticky bottom-20 left-0 right-0 rounded-full shadow-2xl mx-4'}`}
-          style={{ 
-            background: 'linear-gradient(135deg, rgba(53,53,53,0.95) 0%, rgba(74,69,67,0.95) 100%)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            zIndex: 25,
-            marginBottom: isDesktop ? '1.5rem' : '0.5rem',
-          }}
+          className="sticky bottom-0 mt-4 mb-2"
+          style={{ zIndex: 10 }}
         >
-          <div className="px-5 py-3 flex items-center justify-between">
-            <span className="text-xs lg:text-sm font-semibold text-white/80">
+          <div 
+            className={`${isDesktop ? 'max-w-md mx-auto' : 'mx-4'} px-4 py-2.5 rounded-2xl flex items-center justify-between`}
+            style={{ 
+              backgroundColor: theme.colors.surface,
+              border: `1px solid ${theme.colors.border}`,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+            }}
+          >
+            <span className="text-xs font-medium" style={{ color: theme.colors.textSecondary }}>
               {selectedPipelineStage} Total
             </span>
-            <div className="text-xl lg:text-2xl font-extrabold tracking-tight text-white">
+            <span className="text-lg font-bold" style={{ color: theme.colors.textPrimary }}>
               {fmtCurrency(stageTotals.totalValue)}
-            </div>
+            </span>
           </div>
         </div>
       )}

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { GlassCard } from '../../../components/common/GlassCard.jsx';
 import { Timer, ListOrdered, Filter, Check } from 'lucide-react';
 import { LEAD_TIMES_DATA } from './data.js';
@@ -31,8 +32,29 @@ export const LeadTimesScreen = ({ theme = {} }) => {
     const [sortFastest, setSortFastest] = useState(false);
     const [selectedCats, setSelectedCats] = useState(() => new Set());
     const [showFilterMenu, setShowFilterMenu] = useState(false);
+    const [filterMenuPos, setFilterMenuPos] = useState({ top: 0, right: 0 });
     const filterButtonRef = useRef(null);
     const filterMenuRef = useRef(null);
+
+    // Update filter menu position when opened
+    useEffect(() => {
+        if (showFilterMenu && filterButtonRef.current) {
+            const updatePosition = () => {
+                const rect = filterButtonRef.current.getBoundingClientRect();
+                setFilterMenuPos({
+                    top: rect.bottom + 8,
+                    right: window.innerWidth - rect.right
+                });
+            };
+            updatePosition();
+            window.addEventListener('resize', updatePosition);
+            window.addEventListener('scroll', updatePosition, true);
+            return () => {
+                window.removeEventListener('resize', updatePosition);
+                window.removeEventListener('scroll', updatePosition, true);
+            };
+        }
+    }, [showFilterMenu]);
 
     // Close filter menu when clicking outside
     useEffect(() => {
@@ -146,12 +168,19 @@ export const LeadTimesScreen = ({ theme = {} }) => {
                             )}
                         </button>
 
-                        {/* Filter dropdown menu */}
-                        {showFilterMenu && (
+                        {/* Filter dropdown menu - Use portal to ensure it's above all content */}
+                        {showFilterMenu && createPortal(
                             <div 
                                 ref={filterMenuRef}
-                                className="absolute right-0 top-full mt-2 w-56 rounded-2xl shadow-lg z-[10000] overflow-hidden"
-                                style={{ backgroundColor: safeTheme.colors.surface, border: `1px solid ${safeTheme.colors.border}` }}
+                                className="fixed rounded-2xl shadow-lg overflow-hidden"
+                                style={{ 
+                                    backgroundColor: safeTheme.colors.surface, 
+                                    border: `1px solid ${safeTheme.colors.border}`,
+                                    zIndex: 100000,
+                                    top: `${filterMenuPos.top}px`,
+                                    right: `${filterMenuPos.right}px`,
+                                    width: '224px',
+                                }}
                             >
                                 <div className="p-3 border-b" style={{ borderColor: safeTheme.colors.border }}>
                                     <div className="flex items-center justify-between">
@@ -225,7 +254,8 @@ export const LeadTimesScreen = ({ theme = {} }) => {
                                         {sortFastest && <Check className="w-4 h-4" style={{ color: safeTheme.colors.accent }} />}
                                     </button>
                                 </div>
-                            </div>
+                            </div>,
+                            document.body
                         )}
                     </div>
                 </div>
