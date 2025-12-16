@@ -388,20 +388,23 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCu
   // Use portal to render at document body level for proper stacking
   return createPortal(
     <>
-      {/* Full-screen dimming backdrop - covers header and nav */}
+      {/* Full-screen dimming backdrop - covers entire screen including header */}
       <div 
-        className="fixed inset-0 bg-black/40 pointer-events-none"
-        style={{ zIndex: DESIGN_TOKENS.zIndex.overlay - 1 }}
+        className="fixed inset-0 bg-black/40"
+        style={{ 
+          zIndex: DESIGN_TOKENS.zIndex.overlay - 1,
+          top: 0, // Start from very top to cover header
+        }}
+        onClick={() => { onClose(); resetModal(); }}
       />
       
-      {/* Interactive Backdrop - positioned below header (top: 76px on mobile, adjusts for desktop) */}
+      {/* Interactive Backdrop - positioned below header for click handling */}
       <div 
-        className="fixed inset-0 lg:left-24"
+        className="fixed inset-0 lg:left-24 pointer-events-none"
         style={{ 
           top: 76, // Below the header
           zIndex: DESIGN_TOKENS.zIndex.overlay 
         }}
-        onClick={() => { onClose(); resetModal(); }}
       />
       
       {/* Modal Container - positioned above bottom nav on mobile */}
@@ -809,7 +812,7 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
           
           {/* Stage Pipeline Filter for Projects */}
           {projectsTab === 'pipeline' && (
-            <div className="mt-4">
+            <div className="mt-4 space-y-2">
               <FilterChips
                 options={stageOptions}
                 value={selectedPipelineStage}
@@ -817,6 +820,19 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
                 theme={theme}
                 showArrows={true}
               />
+              {/* Total display - discrete, underneath filter */}
+              {filteredOpportunities.length > 0 && (
+                <div className="flex items-center justify-end px-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium" style={{ color: theme.colors.textSecondary }}>
+                      {selectedPipelineStage} Total:
+                    </span>
+                    <span className="text-sm font-semibold" style={{ color: theme.colors.textPrimary }}>
+                      {fmtCurrency(stageTotals.totalValue)}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           )}
           
@@ -874,29 +890,6 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
         </div>
       </div>
       
-      {/* Total Footer - Only for pipeline tab - Subtle inline display */}
-      {projectsTab==='pipeline' && filteredOpportunities.length > 0 && (
-        <div 
-          className="sticky bottom-0 mt-4 mb-2"
-          style={{ zIndex: 10 }}
-        >
-          <div 
-            className={`${isDesktop ? 'max-w-md mx-auto' : 'mx-4'} px-4 py-2.5 rounded-2xl flex items-center justify-between`}
-            style={{ 
-              backgroundColor: theme.colors.surface,
-              border: `1px solid ${theme.colors.border}`,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-            }}
-          >
-            <span className="text-xs font-medium" style={{ color: theme.colors.textSecondary }}>
-              {selectedPipelineStage} Total
-            </span>
-            <span className="text-lg font-bold" style={{ color: theme.colors.textPrimary }}>
-              {fmtCurrency(stageTotals.totalValue)}
-            </span>
-          </div>
-        </div>
-      )}
       
       {/* New Action Modal for Customers tab */}
       <NewActionModal
