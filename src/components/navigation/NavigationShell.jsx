@@ -32,9 +32,9 @@ export const NavigationShell = ({ currentScreen, onNavigate, theme, customNavIte
 
     return (
         <>
-            {/* Desktop Sidebar - Floating Glass Pill */}
+            {/* Desktop Sidebar - Removed on Desktop as per request, kept for tablet if needed */}
             <div 
-                className={`hidden lg:flex fixed left-6 top-1/2 -translate-y-1/2 flex-col gap-2 transition-opacity duration-200 ${isModalOpen ? 'opacity-50 pointer-events-none' : ''}`}
+                className={`hidden md:flex lg:hidden fixed left-6 top-1/2 -translate-y-1/2 flex-col gap-2 transition-opacity duration-200 ${isModalOpen ? 'opacity-50 pointer-events-none' : ''}`}
                 style={{ zIndex: DESIGN_TOKENS.zIndex.navigation }}
             >
                 <div className="bg-white/90 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-white/20 p-2 rounded-[2rem] flex flex-col gap-2">

@@ -99,8 +99,8 @@ export const ScreenLayout = ({
                 <div 
                     style={{
                         ...contentWrapperStyle,
-                        paddingLeft: padding ? '1rem' : 0,
-                        paddingRight: padding ? '1rem' : 0,
+                        paddingLeft: padding ? (isDesktop ? '1.5rem' : '1rem') : 0,
+                        paddingRight: padding ? (isDesktop ? '1.5rem' : '1rem') : 0,
                         paddingTop: padding ? '1rem' : 0,
                         paddingBottom: paddingBottom,
                     }}

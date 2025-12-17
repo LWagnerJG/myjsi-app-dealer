@@ -24,10 +24,10 @@ export const AppHeader = React.memo(({
 
     return (
         <div
-            className="pt-4 pb-1 fixed top-0 left-0 right-0 pointer-events-none px-4"
+            className="pt-4 pb-1 fixed top-0 left-0 right-0 pointer-events-none"
             style={{ zIndex: DESIGN_TOKENS.zIndex.header }}
         >
-            <div className="mx-auto w-full" style={{ maxWidth: DESIGN_TOKENS.maxWidth.content }}>
+            <div className="mx-auto w-full px-4 lg:px-6" style={{ maxWidth: DESIGN_TOKENS.maxWidth.content }}>
                 <motion.div
                     className="w-full flex items-center justify-between px-5 pointer-events-auto bg-white dark:bg-[#353535]"
                     initial={false}

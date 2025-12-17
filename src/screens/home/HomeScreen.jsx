@@ -79,7 +79,7 @@ const QuickAccessGrid = React.memo(({ theme, onNavigate, activeAppIds, onCustomi
 
     return (
         <div className="mb-6">
-                    <div className="flex items-center justify-between mb-4 px-1">
+            <div className="flex items-center justify-between mb-4 px-5">
                 <div>
                     <h3 
                         className="font-semibold text-sm lg:text-base" 
@@ -389,8 +389,8 @@ const RecentActivityFeed = React.memo(({ theme, opportunities = [], orders = [],
     if (activities.length === 0) return null;
 
     return (
-        <GlassCard theme={theme} className="p-4 lg:p-6 mb-6" variant="elevated">
-            <div className="flex items-center justify-between mb-4">
+        <GlassCard theme={theme} className="p-0 mb-6 overflow-hidden" variant="elevated">
+            <div className="flex items-center justify-between px-5 pt-6 mb-4">
                 <h3 
                     className="font-semibold text-sm lg:text-base" 
                     style={{ 
@@ -412,9 +412,9 @@ const RecentActivityFeed = React.memo(({ theme, opportunities = [], orders = [],
                     View All<ArrowRight className="w-3 h-3" />
                 </button>
             </div>
-            <div className="space-y-2.5">
+            <div className="space-y-1 pb-4">
                 {activities.map((activity, i) => (
-                    <button key={i} onClick={activity.action} className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left">
+                    <button key={i} onClick={activity.action} className="w-full flex items-center gap-3 px-5 py-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left border-b last:border-b-0 border-black/[0.03] dark:border-white/[0.03]">
                         <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${activity.color}15` }}><activity.icon className="w-4 h-4" style={{ color: activity.color }} /></div>
                         <div className="flex-1 min-w-0">
                             <p className="font-medium text-sm truncate" style={{ color: theme.colors.textPrimary }}>{activity.title}</p>
@@ -438,7 +438,7 @@ const RecentActivityFeed = React.memo(({ theme, opportunities = [], orders = [],
 });
 RecentActivityFeed.displayName = 'RecentActivityFeed';
 
-// Smart Search Component - Optimized with useCallback
+// Smart Search Component - Optimized with match header banner design
 const SmartSearch = React.memo(({ theme, onNavigate, onAskAI, onVoiceActivate }) => {
     const [query, setQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
@@ -480,8 +480,21 @@ const SmartSearch = React.memo(({ theme, onNavigate, onAskAI, onVoiceActivate })
     }, [isFocused, updatePos]);
 
     return (
-        <div ref={anchorRef} className="relative mb-4">
-            <GlassCard theme={theme} variant="elevated" className="w-full px-4" style={{ borderRadius: 9999, paddingTop: 0, paddingBottom: 0 }}>
+        <div ref={anchorRef} className="relative mb-6">
+            <GlassCard 
+                theme={theme} 
+                variant="elevated" 
+                className="w-full px-5" 
+                style={{ 
+                    borderRadius: 9999, 
+                    paddingTop: 0, 
+                    paddingBottom: 0,
+                    height: 56,
+                    backgroundColor: theme.colors.surface,
+                    boxShadow: DESIGN_TOKENS.shadows.md,
+                    border: `1px solid ${theme.colors.border}`
+                }}
+            >
                 <HomeSearchInput onSubmit={submit} value={query} onChange={setQuery} onFocus={handleFocus} onBlur={handleBlur} onVoiceClick={() => onVoiceActivate('Voice Activated')} theme={theme} className="w-full" />
             </GlassCard>
             {isFocused && filtered.length > 0 && (
@@ -586,7 +599,7 @@ export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opport
     }, [activeAppIds]);
 
     const header = useMemo(() => (
-        <div className="pt-6 pb-2 px-1">
+        <div className="pt-6 pb-2 px-5">
             <h1 
                 className="mb-1" 
                 style={{ 

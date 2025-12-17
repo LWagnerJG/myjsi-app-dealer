@@ -1,11 +1,12 @@
 import React from 'react';
-import { Settings, User, HelpCircle, LogOut } from 'lucide-react';
+import { Settings, User, HelpCircle, LogOut, Home } from 'lucide-react';
 import { GlassCard } from '../common/GlassCard.jsx';
 
 export const ProfileMenu = ({ show, onClose, onNavigate, theme }) => {
     if (!show) return null;
     
     const menuItems = [
+        { label: 'Home', action: () => { onNavigate('home'); onClose(); }, icon: Home },
         { label: 'Settings', action: () => { onNavigate('settings'); onClose(); }, icon: Settings },
         { label: 'App Users', action: () => { onNavigate('members'); onClose(); }, icon: User },
         { label: 'Help', action: () => { onNavigate('help'); onClose(); }, icon: HelpCircle },
