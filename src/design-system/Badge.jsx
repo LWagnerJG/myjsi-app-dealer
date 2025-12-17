@@ -15,6 +15,23 @@ import { Clock, ShoppingCart, Sparkles, Tag } from 'lucide-react';
  * - quickship: Quickship product indicator
  */
 
+// Helper to render icon correctly whether it's a component or an element
+const renderIconHelper = (Icon, size, color) => {
+    if (!Icon) return null;
+    if (React.isValidElement(Icon)) {
+        return React.cloneElement(Icon, {
+            style: { 
+                width: size, 
+                height: size,
+                color,
+                ...Icon.props.style 
+            }
+        });
+    }
+    const IconComponent = Icon;
+    return <IconComponent style={{ width: size, height: size, color }} />;
+};
+
 export const Badge = React.memo(({
     children,
     variant = 'soft',
@@ -160,9 +177,7 @@ export const Badge = React.memo(({
     
     return (
         <span className={className} style={badgeStyles}>
-            {ResolvedIcon && (
-                <ResolvedIcon style={{ width: s.iconSize, height: s.iconSize, color: colors.iconColor }} />
-            )}
+            {renderIconHelper(ResolvedIcon, s.iconSize, colors.iconColor)}
             {children}
             {removable && (
                 <button

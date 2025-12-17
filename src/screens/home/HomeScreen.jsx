@@ -7,15 +7,15 @@ import { HomeSearchInput } from '../../components/common/SearchInput.jsx';
 import { DropdownPortal } from '../../DropdownPortal.jsx';
 import { Briefcase, Package, ArrowRight, SlidersHorizontal, X, Check, TrendingUp, TrendingDown } from 'lucide-react';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
-import { DESIGN_TOKENS } from '../../design-system/tokens.js';
+import { DESIGN_TOKENS, JSI_TYPOGRAPHY } from '../../design-system/tokens.js';
 import { useModalState } from '../../hooks/useModalState.js';
-import { 
-    Button, 
-    SectionHeader, 
-    SkeletonQuickAccess, 
-    SkeletonStat, 
+import {
+    Button,
+    SectionHeader,
+    SkeletonQuickAccess,
+    SkeletonStat,
     SkeletonList,
-    DESIGN_TOKENS as DESIGN_SYSTEM_TOKENS
+    ScreenLayout
 } from '../../design-system/index.js';
 
 // User role - dealer by default for this app
@@ -79,9 +79,18 @@ const QuickAccessGrid = React.memo(({ theme, onNavigate, activeAppIds, onCustomi
 
     return (
         <div className="mb-6">
-            <div className="flex items-center justify-between mb-4 px-1">
+                    <div className="flex items-center justify-between mb-4 px-1">
                 <div>
-                    <h3 className="font-semibold text-sm lg:text-base" style={{ color: theme.colors.textSecondary }}>Quick Access</h3>
+                    <h3 
+                        className="font-semibold text-sm lg:text-base" 
+                        style={{ 
+                            color: theme.colors.textSecondary,
+                            fontFamily: JSI_TYPOGRAPHY.fontFamily,
+                            fontWeight: JSI_TYPOGRAPHY.weights.semibold
+                        }}
+                    >
+                        Quick Access
+                    </h3>
                 </div>
                 <button onClick={onCustomize} className="flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all hover:bg-black/5 dark:hover:bg-white/5" style={{ color: theme.colors.textSecondary }} title="Reconfigure Quick Access">
                     <SlidersHorizontal className="w-4 h-4" />
@@ -91,27 +100,27 @@ const QuickAccessGrid = React.memo(({ theme, onNavigate, activeAppIds, onCustomi
             <div className="grid grid-cols-3 gap-3 lg:gap-4">
                 {activeApps.map(app => {
                     const appStats = getAppStats(app.id);
-                    
+
                     return (
-                        <button 
-                            key={app.id} 
-                            onClick={() => onNavigate(app.route)} 
+                        <button
+                            key={app.id}
+                            onClick={() => onNavigate(app.route)}
                             className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] relative group"
-                            style={{ 
-                                backgroundColor: theme.colors.surface, 
-                                boxShadow: `0 2px 8px ${theme.colors.shadow}`, 
+                            style={{
+                                backgroundColor: theme.colors.surface,
+                                boxShadow: `0 2px 8px ${theme.colors.shadow}`,
                                 border: `1px solid ${theme.colors.border}`,
                                 minHeight: isDesktop ? '110px' : '88px'
                             }}
                         >
                             {/* Stat badge in top-right corner on desktop */}
                             {appStats && isDesktop && (
-                                <div 
+                                <div
                                     className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-md"
                                     style={{ backgroundColor: appStats.accent ? `${theme.colors.accent}15` : theme.colors.subtle }}
                                 >
-                                    <span 
-                                        className="text-[10px] font-bold" 
+                                    <span
+                                        className="text-[10px] font-bold"
                                         style={{ color: appStats.accent ? theme.colors.accent : theme.colors.textSecondary }}
                                     >
                                         {appStats.value}
@@ -127,12 +136,12 @@ const QuickAccessGrid = React.memo(({ theme, onNavigate, activeAppIds, onCustomi
                                     )}
                                 </div>
                             )}
-                            
+
                             {/* Centered icon - always consistent */}
                             <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${theme.colors.accent}12` }}>
                                 <app.icon className="w-5 h-5" style={{ color: theme.colors.accent }} />
                             </div>
-                            
+
                             {/* App name */}
                             <span className="text-xs font-medium text-center leading-tight line-clamp-1" style={{ color: theme.colors.textPrimary }}>
                                 {app.name}
@@ -161,7 +170,7 @@ const CustomizeHomeModal = ({ theme, isOpen, onClose, activeAppIds, onSave }) =>
     const mobileNavHeight = 80;
     const safeAreaBottom = typeof window !== 'undefined' ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom') || '0', 10) : 0;
     const bottomPadding = isMobile ? mobileNavHeight + safeAreaBottom + 24 : 0;
-    
+
     useEffect(() => {
         if (isOpen) {
             openModal();
@@ -199,15 +208,15 @@ const CustomizeHomeModal = ({ theme, isOpen, onClose, activeAppIds, onSave }) =>
     // Filter apps for dealer role - exclude settings, members, and resources (resources is always shown)
     const allAppsForSelection = useMemo(() => {
         if (USER_ROLE === 'dealer') {
-            return QUICK_ACCESS_APPS.filter(app => 
-                DEALER_QUICK_ACCESS_ALLOWLIST.includes(app.id) && 
+            return QUICK_ACCESS_APPS.filter(app =>
+                DEALER_QUICK_ACCESS_ALLOWLIST.includes(app.id) &&
                 !app.dealerHidden &&
                 app.id !== 'resources' // Resources is always included, don't show in selection
             );
         }
         return QUICK_ACCESS_APPS.filter(app => app.id !== 'resources');
     }, []);
-    
+
     const selectedCount = selectedIds.length;
     const canAddMore = selectedCount < MAX_QUICK_ACCESS_APPS;
 
@@ -228,12 +237,12 @@ const CustomizeHomeModal = ({ theme, isOpen, onClose, activeAppIds, onSave }) =>
 
     // Auto-save and close when clicking backdrop
     const handleBackdropClick = () => { onSave(ensureResourcesIncluded(selectedIds)); onClose(); };
-    const handleReset = () => { 
+    const handleReset = () => {
         // Reset to defaults, filtering out any dealer-hidden apps
-        const validDefaults = DEFAULT_QUICK_ACCESS_IDS.filter(id => 
+        const validDefaults = DEFAULT_QUICK_ACCESS_IDS.filter(id =>
             USER_ROLE !== 'dealer' || DEALER_QUICK_ACCESS_ALLOWLIST.includes(id)
         );
-        setSelectedIds(ensureResourcesIncluded(validDefaults)); 
+        setSelectedIds(ensureResourcesIncluded(validDefaults));
     };
 
     if (!isOpen) return null;
@@ -241,40 +250,40 @@ const CustomizeHomeModal = ({ theme, isOpen, onClose, activeAppIds, onSave }) =>
     return createPortal(
         <>
             {/* Full-screen dimming backdrop - covers header and nav */}
-            <div 
+            <div
                 className="fixed inset-0 bg-black/40 pointer-events-none"
                 style={{ zIndex: DESIGN_TOKENS.zIndex.overlay - 1 }}
             />
-            
+
             {/* Interactive Backdrop - positioned below header */}
-            <div 
+            <div
                 className="fixed inset-0 lg:left-24"
-                style={{ 
+                style={{
                     top: 76,
-                    zIndex: DESIGN_TOKENS.zIndex.overlay 
+                    zIndex: DESIGN_TOKENS.zIndex.overlay
                 }}
                 onClick={handleBackdropClick}
             />
-            
+
             {/* Modal Container - positioned above bottom nav on mobile */}
-            <div 
+            <div
                 className="fixed inset-x-0 flex items-end justify-center lg:pl-24"
-                style={{ 
+                style={{
                     top: 76,
                     bottom: isMobile ? `${bottomPadding}px` : 0,
                     padding: isMobile ? '1rem' : '1.5rem',
-                    zIndex: DESIGN_TOKENS.zIndex.modal 
+                    zIndex: DESIGN_TOKENS.zIndex.modal
                 }}
                 onClick={handleBackdropClick}
             >
                 <div
                     style={{
-                        maxHeight: isMobile 
-                            ? `calc(100vh - ${76 + bottomPadding}px)` 
+                        maxHeight: isMobile
+                            ? `calc(100vh - ${76 + bottomPadding}px)`
                             : '85vh',
-                    }} 
+                        backgroundColor: theme.colors.background
+                    }}
                     className="w-full max-w-lg rounded-t-3xl max-h-[70vh] overflow-hidden flex flex-col shadow-2xl"
-                    style={{ backgroundColor: theme.colors.background }}
                     onClick={e => e.stopPropagation()}
                 >
                     <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: theme.colors.border }}>
@@ -333,7 +342,7 @@ const STATUS_CHIP_COLORS = {
 const StatusChip = ({ status }) => {
     const colors = STATUS_CHIP_COLORS[status] || STATUS_CHIP_COLORS['Active'];
     return (
-        <span 
+        <span
             className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0"
             style={{ backgroundColor: colors.bg, color: colors.text }}
         >
@@ -349,29 +358,29 @@ const RecentActivityFeed = React.memo(({ theme, opportunities = [], orders = [],
         opportunities.slice(0, 3).forEach(opp => {
             const status = opp.stage || 'Active';
             const customerName = opp.customer || opp.company || 'Unknown';
-            items.push({ 
-                type: 'project', 
-                title: opp.name || opp.project || 'Untitled Project', 
+            items.push({
+                type: 'project',
+                title: opp.name || opp.project || 'Untitled Project',
                 subtitle: customerName,
                 status: status,
-                value: opp.value || '$0', 
-                action: () => onNavigate('projects'), 
-                icon: Briefcase, 
-                color: theme.colors.accent 
+                value: opp.value || '$0',
+                action: () => onNavigate('projects'),
+                icon: Briefcase,
+                color: theme.colors.accent
             });
         });
         const sortedOrders = [...orders].filter(o => o.date && o.net).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 2);
         sortedOrders.forEach(order => {
             const orderStatus = order.status || 'Order';
-            items.push({ 
-                type: 'order', 
-                title: `PO #${order.po || order.orderNumber}`, 
+            items.push({
+                type: 'order',
+                title: `PO #${order.po || order.orderNumber}`,
                 subtitle: order.company || 'Order',
                 status: orderStatus,
-                value: `$${(order.net || 0).toLocaleString()}`, 
-                action: () => onNavigate(`orders/${order.orderNumber || order.po}`), 
-                icon: Package, 
-                color: '#10B981' 
+                value: `$${(order.net || 0).toLocaleString()}`,
+                action: () => onNavigate(`orders/${order.orderNumber || order.po}`),
+                icon: Package,
+                color: '#10B981'
             });
         });
         return items.slice(0, 5);
@@ -382,8 +391,26 @@ const RecentActivityFeed = React.memo(({ theme, opportunities = [], orders = [],
     return (
         <GlassCard theme={theme} className="p-4 lg:p-6 mb-6" variant="elevated">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-sm lg:text-base" style={{ color: theme.colors.textSecondary }}>Recent Activity</h3>
-                <button onClick={() => onNavigate('projects')} className="text-xs font-medium flex items-center gap-1" style={{ color: theme.colors.accent }}>View All<ArrowRight className="w-3 h-3" /></button>
+                <h3 
+                    className="font-semibold text-sm lg:text-base" 
+                    style={{ 
+                        color: theme.colors.textSecondary,
+                        fontFamily: JSI_TYPOGRAPHY.fontFamily,
+                        fontWeight: JSI_TYPOGRAPHY.weights.semibold
+                    }}
+                >
+                    Recent Activity
+                </h3>
+                <button 
+                    onClick={() => onNavigate('projects')} 
+                    className="text-xs font-medium flex items-center gap-1 transition-all hover:opacity-80 active:scale-95" 
+                    style={{ 
+                        color: theme.colors.accent,
+                        fontFamily: JSI_TYPOGRAPHY.fontFamily
+                    }}
+                >
+                    View All<ArrowRight className="w-3 h-3" />
+                </button>
             </div>
             <div className="space-y-2.5">
                 {activities.map((activity, i) => (
@@ -424,11 +451,11 @@ const SmartSearch = React.memo(({ theme, onNavigate, onAskAI, onVoiceActivate })
         return allApps.filter(app => app.name.toLowerCase().includes(q) || (app.keywords || []).some(k => k.toLowerCase().includes(q))).slice(0, 6);
     }, [query]);
 
-    const submit = useCallback((q) => { 
-        if (q.trim()) { 
-            onAskAI(q); 
-            setQuery(''); 
-        } 
+    const submit = useCallback((q) => {
+        if (q.trim()) {
+            onAskAI(q);
+            setQuery('');
+        }
     }, [onAskAI]);
 
     const updatePos = useCallback(() => {
@@ -501,12 +528,12 @@ const ensureResourcesIncluded = (appIds) => {
 // Main HomeScreen Component
 export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opportunities = [], orders = [], customerDirectory = [] }) => {
     const isDesktop = useIsDesktop();
-    
+
     // Calculate stats at parent level for use in QuickAccessGrid
     const stats = useMemo(() => {
         const now = new Date();
         const yearStart = new Date(now.getFullYear(), 0, 1);
-        
+
         const ytdSales = orders
             .filter(o => {
                 const status = (o.status || '').toLowerCase();
@@ -530,7 +557,7 @@ export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opport
 
         return { ytdSales, activeProjects, wonProjects, recentOrders, ytdTrend };
     }, [opportunities, orders]);
-    
+
     const [activeAppIds, setActiveAppIds] = useState(() => {
         try {
             const saved = localStorage.getItem('quickAccessApps');
@@ -551,38 +578,62 @@ export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opport
             return ensureResourcesIncluded(filterAllowedAppIds(DEFAULT_QUICK_ACCESS_IDS));
         }
     });
-    
+
     const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
 
     useEffect(() => {
         localStorage.setItem('quickAccessApps', JSON.stringify(activeAppIds));
     }, [activeAppIds]);
 
+    const header = useMemo(() => (
+        <div className="pt-6 pb-2 px-1">
+            <h1 
+                className="mb-1" 
+                style={{ 
+                    color: theme.colors.textPrimary,
+                    fontFamily: DESIGN_TOKENS.typography.fontFamily,
+                    fontSize: DESIGN_TOKENS.typography.h3.size,
+                    fontWeight: DESIGN_TOKENS.typography.h3.weight,
+                    lineHeight: DESIGN_TOKENS.typography.h3.lineHeight,
+                    letterSpacing: DESIGN_TOKENS.typography.h3.letterSpacing
+                }}
+            >
+                Dashboard
+            </h1>
+            <p 
+                className="text-xs lg:text-sm" 
+                style={{ 
+                    color: theme.colors.textSecondary,
+                    fontFamily: DESIGN_TOKENS.typography.fontFamily
+                }}
+            >
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            </p>
+        </div>
+    ), [theme, theme.colors.textPrimary, theme.colors.textSecondary]);
+
     return (
-        <div className="flex flex-col h-full overflow-y-auto scrollbar-hide" style={{ backgroundColor: theme.colors.background }}>
-            <div className="px-4 lg:px-6 pt-4 lg:pt-6 pb-mobile-nav">
-                {isDesktop && (
-                    <div className="mb-6">
-                        <h1 className="text-2xl lg:text-3xl font-bold mb-1" style={{ color: theme.colors.textPrimary }}>Dashboard</h1>
-                        <p className="text-xs lg:text-sm" style={{ color: theme.colors.textSecondary }}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
-                    </div>
-                )}
+        <ScreenLayout
+            theme={theme}
+            header={isDesktop ? header : null}
+            maxWidth="content"
+            padding={true}
+            paddingBottom="8rem"
+        >
+            <SmartSearch theme={theme} onNavigate={onNavigate} onAskAI={onAskAI} onVoiceActivate={onVoiceActivate} />
 
-                <SmartSearch theme={theme} onNavigate={onNavigate} onAskAI={onAskAI} onVoiceActivate={onVoiceActivate} />
+            <QuickAccessGrid
+                theme={theme}
+                onNavigate={onNavigate}
+                activeAppIds={activeAppIds}
+                onCustomize={() => setIsCustomizeOpen(true)}
+                stats={stats}
+                isDesktop={isDesktop}
+            />
 
-                <QuickAccessGrid 
-                    theme={theme} 
-                    onNavigate={onNavigate} 
-                    activeAppIds={activeAppIds} 
-                    onCustomize={() => setIsCustomizeOpen(true)} 
-                    stats={stats}
-                    isDesktop={isDesktop}
-                />
-
-                <RecentActivityFeed theme={theme} opportunities={opportunities} orders={orders} onNavigate={onNavigate} />
-            </div>
+            <RecentActivityFeed theme={theme} opportunities={opportunities} orders={orders} onNavigate={onNavigate} />
 
             <CustomizeHomeModal theme={theme} isOpen={isCustomizeOpen} onClose={() => setIsCustomizeOpen(false)} activeAppIds={activeAppIds} onSave={setActiveAppIds} />
-        </div>
+        </ScreenLayout>
     );
 };

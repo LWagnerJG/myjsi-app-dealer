@@ -18,20 +18,20 @@ import { ArrowRight, ArrowLeft, ArrowUp, ArrowDown } from 'lucide-react';
  */
 
 // Arrow icon in circular container (JSI signature element)
-const ArrowCircle = ({ direction = 'right', size = 16, color = '#FFFFFF', bgColor = 'transparent' }) => {
+const ArrowCircle = ({ direction = 'right', size = 16, color = JSI_COLORS.white, bgColor = 'transparent' }) => {
     const ArrowIcon = {
         right: ArrowRight,
         left: ArrowLeft,
         up: ArrowUp,
         down: ArrowDown,
     }[direction] || ArrowRight;
-    
+
     return (
-        <span 
+        <span
             className="inline-flex items-center justify-center rounded-full flex-shrink-0"
-            style={{ 
-                width: size + 8, 
-                height: size + 8, 
+            style={{
+                width: size + 8,
+                height: size + 8,
                 backgroundColor: bgColor,
                 border: bgColor === 'transparent' ? `1.5px solid ${color}` : 'none',
             }}
@@ -39,6 +39,22 @@ const ArrowCircle = ({ direction = 'right', size = 16, color = '#FFFFFF', bgColo
             <ArrowIcon style={{ width: size * 0.7, height: size * 0.7, color }} />
         </span>
     );
+};
+
+// Helper to render icon correctly whether it's a component or an element
+const renderIconHelper = (Icon, size, color) => {
+    if (!Icon) return null;
+    if (React.isValidElement(Icon)) {
+        return React.cloneElement(Icon, {
+            style: { 
+                width: size, 
+                height: size,
+                ...Icon.props.style 
+            }
+        });
+    }
+    const IconComponent = Icon;
+    return <IconComponent style={{ width: size, height: size, color }} />;
 };
 
 export const Button = React.memo(React.forwardRef(({
@@ -60,7 +76,7 @@ export const Button = React.memo(React.forwardRef(({
     ...props
 }, ref) => {
     const isDark = isDarkTheme(theme);
-    
+
     // Size configurations - adjusted for JSI proportions
     const sizes = {
         sm: { height: 36, px: 16, text: 13, iconSize: 14, gap: 8, arrowSize: 14 },
@@ -68,9 +84,9 @@ export const Button = React.memo(React.forwardRef(({
         lg: { height: 52, px: 24, text: 15, iconSize: 18, gap: 12, arrowSize: 18 },
         xl: { height: 60, px: 28, text: 16, iconSize: 20, gap: 14, arrowSize: 20 },
     };
-    
+
     const s = sizes[size] || sizes.md;
-    
+
     // JSI Variant styles
     const getVariantStyles = () => {
         const charcoal = JSI_COLORS.charcoal;
@@ -78,7 +94,7 @@ export const Button = React.memo(React.forwardRef(({
         const stone = JSI_COLORS.stone;
         const error = JSI_COLORS.error;
         const surface = theme?.colors?.surface || white;
-        
+
         switch (variant) {
             case 'primary':
                 return {
@@ -154,9 +170,9 @@ export const Button = React.memo(React.forwardRef(({
                 };
         }
     };
-    
+
     const variantStyles = getVariantStyles();
-    
+
     const baseStyles = {
         height: s.height,
         paddingLeft: variant === 'icon' || variant === 'icon-filled' ? 0 : s.px,
@@ -180,33 +196,33 @@ export const Button = React.memo(React.forwardRef(({
         ...variantStyles,
         ...style,
     };
-    
+
     // Loading spinner
     const Spinner = () => (
-        <svg 
-            className="animate-spin" 
-            width={s.iconSize} 
-            height={s.iconSize} 
+        <svg
+            className="animate-spin"
+            width={s.iconSize}
+            height={s.iconSize}
             viewBox="0 0 24 24"
             fill="none"
             style={{ marginRight: children ? s.gap : 0 }}
         >
-            <circle 
-                cx="12" cy="12" r="10" 
-                stroke="currentColor" 
-                strokeWidth="2.5" 
+            <circle
+                cx="12" cy="12" r="10"
+                stroke="currentColor"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 opacity="0.25"
             />
-            <path 
-                d="M12 2a10 10 0 0 1 10 10" 
-                stroke="currentColor" 
-                strokeWidth="2.5" 
+            <path
+                d="M12 2a10 10 0 0 1 10 10"
+                stroke="currentColor"
+                strokeWidth="2.5"
                 strokeLinecap="round"
             />
         </svg>
     );
-    
+
     return (
         <button
             ref={ref}
@@ -232,16 +248,16 @@ export const Button = React.memo(React.forwardRef(({
             {loading ? (
                 <Spinner />
             ) : Icon && iconPosition === 'left' ? (
-                <Icon style={{ width: s.iconSize, height: s.iconSize }} />
+                renderIconHelper(Icon, s.iconSize, variantStyles.color)
             ) : null}
             {children}
             {!loading && Icon && iconPosition === 'right' && !arrow ? (
-                <Icon style={{ width: s.iconSize, height: s.iconSize }} />
+                renderIconHelper(Icon, s.iconSize, variantStyles.color)
             ) : null}
             {!loading && arrow && (
-                <ArrowCircle 
-                    direction={arrowDirection} 
-                    size={s.arrowSize} 
+                <ArrowCircle
+                    direction={arrowDirection}
+                    size={s.arrowSize}
                     color={variantStyles.arrowColor}
                     bgColor={variantStyles.arrowBg}
                 />
@@ -259,17 +275,19 @@ export const IconButton = React.memo(React.forwardRef(({
     theme,
     filled = false,
     ...props
-}, ref) => (
-    <Button
-        ref={ref}
-        variant={filled ? 'icon-filled' : 'icon'}
-        size={size}
-        theme={theme}
-        {...props}
-    >
-        {Icon && <Icon />}
-    </Button>
-)));
+}, ref) => {
+    return (
+        <Button
+            ref={ref}
+            variant={filled ? 'icon-filled' : 'icon'}
+            size={size}
+            theme={theme}
+            {...props}
+        >
+            {renderIconHelper(Icon, (size === 'sm' ? 14 : size === 'md' ? 16 : 18))}
+        </Button>
+    );
+}));
 
 IconButton.displayName = 'IconButton';
 

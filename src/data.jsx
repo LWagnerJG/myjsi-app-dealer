@@ -23,18 +23,18 @@ export const lightTheme = {
 
 export const darkTheme = {
     colors: {
-        background: '#1E1E1E',
-        surface: 'rgba(40,40,40,0.85)',
-        primary: '#BBBBBB',
-        accent: '#BBBBBB',
-        secondary: '#999999',
-        textPrimary: '#F5F5F5',
-        textSecondary: '#CCCCCC',
-        border: 'rgba(255,255,255,0.08)',
-        shadow: 'rgba(0,0,0,0.25)',
-        subtle: 'rgba(255,255,255,0.05)'
+        background: '#353535', // JSI Brand Charcoal (No pure black)
+        surface: 'rgba(255,255,255,0.08)', // Lighten mix for elevation
+        primary: '#F0EDE8',
+        accent: '#FFFFFF', // High contrast brand white
+        secondary: '#E3E0D8', // Stone
+        textPrimary: '#FFFFFF',
+        textSecondary: '#E3E0D8',
+        border: 'rgba(255,255,255,0.12)',
+        shadow: 'rgba(0,0,0,0.4)', // Deeper shadow for depth in dark mode
+        subtle: 'rgba(255,255,255,0.1)'
     },
-    backdropFilter: 'blur(8px)'
+    backdropFilter: 'blur(20px)'
 };
 
 export const logoLight = 'https://i.imgur.com/qskYhB0.png';
@@ -74,7 +74,7 @@ export const allApps = [
 ];
 
 // Default 8 home screen apps (expanded from 6)
-export const DEFAULT_HOME_APPS = ['orders','sales','products','resources','projects','community','samples','replacements'];
+export const DEFAULT_HOME_APPS = ['orders', 'sales', 'products', 'resources', 'projects', 'community', 'samples', 'replacements'];
 
 // Quick Access configuration for customizable home screen grid
 export const QUICK_ACCESS_APPS = [

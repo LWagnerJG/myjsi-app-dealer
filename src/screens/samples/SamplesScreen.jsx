@@ -1,26 +1,29 @@
+/* eslint-disable */
+// @ts-nocheck
 // src/screens/samples/SamplesScreen.jsx
-import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { GlassCard } from '../../components/common/GlassCard.jsx';
-import { FilterChips } from '../../design-system/SegmentedToggle.jsx';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
-    Package, Plus, ShoppingCart, Trash2, Minus, CheckCircle, Home,
-    ChevronUp, ChevronDown, Users, X, Search
+    Plus, Minus, ChevronDown, X, Search, ChevronRight, Trash2, Check, ShoppingCart, Package
 } from 'lucide-react';
 import { SAMPLE_PRODUCTS, SAMPLE_CATEGORIES, FINISH_CATEGORIES, FINISH_SAMPLES } from './data.js';
 import { getSampleProduct } from './sampleIndex.js';
-import { useIsDesktop } from '../../hooks/useResponsive.js';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+    FilterChips, 
+    Button, 
+    DESIGN_TOKENS, 
+    getCardShadow, 
+    getDrawerShadow,
+    STATUS_STYLES,
+    ScreenLayout
+} from '../../design-system/index.js';
+import { GlassCard } from '../../components/common/GlassCard.jsx';
 
 const idOf = (x) => String(x);
-const COLLAPSED_HEIGHT = 96; // slightly taller collapsed drawer
 
-/* ====================== Directory Modal (animated) ====================== */
+/* ====================== Directory Modal ====================== */
 const DirectoryModal = ({ show, onClose, onSelect, theme, dealers = [], designFirms = [] }) => {
     const [q, setQ] = useState('');
-    const [mounted, setMounted] = useState(show);
-    const [visible, setVisible] = useState(false);
-    const prefersReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    // Compute items EVERY render (cheap) so hook order stable
     const items = useMemo(() => {
         const normalize = (x, idx) => ({
             key: `${x?.id ?? x?.name ?? 'item'}-${idx}`,
@@ -32,349 +35,399 @@ const DirectoryModal = ({ show, onClose, onSelect, theme, dealers = [], designFi
         return k ? list.filter((i) => i.name.toLowerCase().includes(k)) : list;
     }, [q, dealers, designFirms]);
 
-    useEffect(() => {
-        if (show) {
-            setMounted(true);
-            requestAnimationFrame(() => setVisible(true));
-        } else {
-            setVisible(false);
-            const t = setTimeout(() => setMounted(false), prefersReduced ? 0 : 220);
-            return () => clearTimeout(t);
-        }
-    }, [show, prefersReduced]);
-
-    useEffect(() => { if (!show) setQ(''); }, [show]);
-
-    if (!mounted) return null; // safe: all hooks above have executed consistently
-
-    const HEADER_OFFSET = 80; // keep global header crisp (no film over it)
-
-    const backdropStyle = {
-        position: 'fixed',
-        left: 0,
-        right: 0,
-        bottom: 0,
-        top: HEADER_OFFSET, // start dim under header
-        background: 'transparent', // removed grey scrim
-        pointerEvents: 'auto'
-    };
-
-    const sheetStyle = {
-        transform: visible ? 'translateY(0) scale(1)' : 'translateY(16px) scale(.97)',
-        opacity: visible ? 1 : 0,
-        transition: prefersReduced ? 'none' : 'transform 300ms cubic-bezier(.3,1,.3,1), opacity 260ms ease',
-        background: theme.colors.surface,
-        boxShadow: '0 18px 48px -8px rgba(0,0,0,0.25)',
-        borderTopLeftRadius: 24,
-        borderTopRightRadius: 24,
-        maxWidth: 560,
-        width: '100%',
-    };
+    if (!show) return null;
 
     return (
-        <div className="fixed inset-0 z-[1100] flex flex-col justify-end sm:justify-center items-center pointer-events-none">
-            {/* Backdrop only under header */}
-            <div style={backdropStyle} onClick={onClose} />
-            <div className="w-full sm:mx-auto pointer-events-auto" style={sheetStyle}>
-                <div className="p-5 space-y-4" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+        <div className="fixed inset-0 z-[5000] flex flex-col justify-end sm:justify-center items-center">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="w-full sm:w-[500px] bg-white rounded-t-3xl sm:rounded-3xl relative z-10 overflow-hidden shadow-2xl" style={{ maxHeight: '80vh' }}>
+                <div className="p-5 space-y-4">
                     <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-base tracking-tight" style={{ color: theme.colors.textPrimary }}>Select Company</h3>
-                        <button onClick={onClose} aria-label="Close" className="p-2 rounded-full hover:bg-black/5 active:scale-95 transition"><X className="w-5 h-5" style={{ color: theme.colors.textSecondary }} /></button>
+                        <h3 className="font-bold text-lg text-black">Select Address</h3>
+                        <div onClick={onClose} className="p-2 cursor-pointer bg-black/5 rounded-full hover:bg-black/10 transition"><X className="w-5 h-5" /></div>
                     </div>
                     <div className="relative">
-                        <input
-                            value={q}
-                            onChange={(e) => setQ(e.target.value)}
-                            placeholder="Search companies..."
-                            className="w-full rounded-2xl pl-10 pr-4 py-3 text-sm outline-none border transition focus:ring-2"
-                            style={{ background: '#fff', border: `1px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
-                        />
-                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2" style={{ color: theme.colors.textSecondary }} />
+                        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search..." className="w-full rounded-xl pl-10 pr-4 py-3 text-sm outline-none border focus:ring-2 focus:ring-black/10 bg-gray-50 text-black border-gray-200" />
+                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-50 text-black" />
                     </div>
-                    <div className="max-h-72 overflow-y-auto space-y-2 pr-1 scrollbar-hide">
+                    <div className="overflow-y-auto" style={{ maxHeight: '40vh' }}>
                         {items.map((it) => (
-                            <button
-                                key={it.key}
-                                onClick={() => { onSelect({ name: it.name, address1: it.address || '' }); onClose(); }}
-                                className="w-full text-left px-4 py-3 rounded-xl group border transition-all hover:shadow-sm active:scale-[0.99]"
-                                style={{ background: theme.colors.surface, borderColor: theme.colors.border }}
-                            >
-                                <div className="font-medium text-sm mb-0.5" style={{ color: theme.colors.textPrimary }}>{it.name}</div>
-                                {it.address && <div className="text-xs leading-snug" style={{ color: theme.colors.textSecondary }}>{it.address}</div>}
+                            <button key={it.key} onClick={() => { onSelect({ name: it.name, address1: it.address || '' }); onClose(); }} className="w-full text-left px-4 py-3 rounded-xl hover:bg-black/5 transition-colors border-b last:border-0 border-dashed border-gray-100">
+                                <div className="font-bold text-sm text-black">{it.name}</div>
+                                {it.address && <div className="text-xs opacity-70 text-gray-600">{it.address}</div>}
                             </button>
                         ))}
-                        {items.length === 0 && (
-                            <div className="text-sm text-center py-6" style={{ color: theme.colors.textSecondary }}>No companies found.</div>
-                        )}
                     </div>
                 </div>
-            </div>
+            </motion.div>
         </div>
     );
 };
 
-/* ====================== Reusable Buttons ====================== */
-// Update buttons for unified elevated style
-const OrderFullSetButton = ({ onClick, theme, inCart }) => (
-    <button
-        onClick={onClick}
-        className={`flex-1 px-3 py-2 rounded-full text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 ${inCart ? 'scale-[1.02]' : ''}`}
-        style={{
-            background: theme.colors.surface,
-            border: 'none',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)',
-            color: inCart ? theme.colors.accent : theme.colors.textPrimary
-        }}
-    >
-        {inCart && <CheckCircle className="w-3.5 h-3.5" style={{ color: theme.colors.accent }} />}
-        <span>Full JSI Set</span>
-    </button>
-);
-
-const AddCompleteSetButton = ({ onClick, theme, inCart, categoryName }) => (
-    <button
-        onClick={onClick}
-        className={`flex-1 px-3 py-2 rounded-full text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 ${inCart ? 'scale-[1.02]' : ''}`}
-        style={{
-            background: theme.colors.surface,
-            border: 'none',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)',
-            color: inCart ? theme.colors.accent : theme.colors.textPrimary
-        }}
-    >
-        {inCart && <CheckCircle className="w-3.5 h-3.5" style={{ color: theme.colors.accent }} />}
-        <span>Complete {categoryName} Set</span>
-    </button>
-);
-
-/* ====================== Drawer Line Item ====================== */
-const DrawerItem = React.memo(({ item, onUpdateCart, theme, isLast = false }) => {
-    const dec = useCallback((e) => { e.stopPropagation(); onUpdateCart(item, -1); }, [item, onUpdateCart]);
-    const inc = useCallback((e) => { e.stopPropagation(); onUpdateCart(item, 1); }, [item, onUpdateCart]);
+/* ====================== Success Modal ====================== */
+const SuccessModal = ({ isOpen }) => {
+    if (!isOpen) return null;
     return (
-        <>
-            {!isLast && <div className="border-t mx-2" style={{ borderColor: theme.colors.border }} />}
-            <div className="flex items-center gap-3 py-2 px-1">
-                <div className="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center" style={{ backgroundColor: item.isSet ? theme.colors.subtle : item.color, border: `1px solid ${theme.colors.border}` }}>
-                    {item.isSet ? <Package className="w-5 h-5" style={{ color: theme.colors.secondary }} /> : item.image ? <img loading="lazy" width="300" height="300" src={item.image} alt={item.name} className="w-full h-full object-cover rounded-md" /> : null}
+        <div className="absolute inset-0 z-[6000] flex items-center justify-center pointer-events-none">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+                className="bg-white/95 backdrop-blur-xl p-8 rounded-3xl shadow-2xl flex flex-col items-center justify-center gap-4 border border-black/5"
+            >
+                <div className="w-16 h-16 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
+                    <Check className="w-8 h-8" strokeWidth={3} />
                 </div>
-                <div className="flex-1 min-w-0">
-                    <p className="font-semibold truncate text-xs" style={{ color: theme.colors.textPrimary }}>{item.name}</p>
-                    {item.code && <p className="text-xs opacity-70" style={{ color: theme.colors.textSecondary }}>{item.code}</p>}
+                <div className="text-center">
+                    <h3 className="text-xl font-bold text-black">Request Sent!</h3>
+                    <p className="text-gray-500 text-sm">Your samples are on the way.</p>
                 </div>
-                <div className="flex items-center gap-1">
-                    <button onClick={dec} className="w-6 h-6 flex items-center justify-center rounded-full active:scale-90">{item.quantity === 1 ? <Trash2 className="w-3 h-3 text-red-500" /> : <Minus className="w-3 h-3" style={{ color: theme.colors.textSecondary }} />}</button>
-                    <span className="font-bold w-4 text-center text-xs">{item.quantity}</span>
-                    <button onClick={inc} className="w-6 h-6 flex items-center justify-center rounded-full active:scale-90"><Plus className="w-3 h-3" style={{ color: theme.colors.secondary }} /></button>
-                </div>
-            </div>
-        </>
+            </motion.div>
+        </div>
     );
-});
-DrawerItem.displayName = 'DrawerItem';
+};
 
-/* ====================== Cart Drawer ====================== */
+/* ====================== Cart Logic & Components ====================== */
+
 const CartDrawer = ({ cart, onUpdateCart, theme, userSettings, dealers, designFirms, initialOpen = false, onNavigate }) => {
     const [isExpanded, setIsExpanded] = useState(initialOpen);
     const [showDir, setShowDir] = useState(false);
     const [shipToName, setShipToName] = useState('');
     const [address1, setAddress1] = useState(userSettings?.homeAddress || '');
-    const [address2, setAddress2] = useState('');
-    const [justSubmitted, setJustSubmitted] = useState(false);
-    const [overlayPhase, setOverlayPhase] = useState('idle');
-    const prefersReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    const safeSetShipTo = (v) => setShipToName(v ?? '');
-    const safeSetAddress1 = (v) => setAddress1(v ?? '');
-    const safeSetAddress2 = (v) => setAddress2(v ?? '');
+    const [isSuccess, setIsSuccess] = useState(false);
 
     const cartItems = useMemo(() => Object.entries(cart).map(([rawId, quantity]) => {
         const id = idOf(rawId);
         if (id === 'full-jsi-set') return { id, name: 'Full JSI Sample Set', quantity, isSet: true };
-        if (id.startsWith('set-')) { const categoryId = id.replace('set-', ''); const categoryName = FINISH_CATEGORIES.find((c) => c.id === categoryId)?.name || SAMPLE_CATEGORIES.find((c) => c.id === categoryId)?.name || categoryId; return { id, name: `Complete ${categoryName} Set`, quantity, isSet: true }; }
-        const product = getSampleProduct(id); return product ? { ...product, id, quantity, isSet: false } : null;
+        if (id.startsWith('set-')) { 
+            const categoryId = id.replace('set-', ''); 
+            const categoryName = FINISH_CATEGORIES.find((c) => c.id === categoryId)?.name || SAMPLE_CATEGORIES.find((c) => c.id === categoryId)?.name || categoryId; 
+            return { id, name: `Complete ${categoryName} Set`, quantity, isSet: true }; 
+        }
+        const product = getSampleProduct(id); 
+        return product ? { ...product, id, quantity, isSet: false } : null;
     }).filter(Boolean), [cart]);
 
     const totalCartItems = useMemo(() => Object.values(cart).reduce((s, q) => s + q, 0), [cart]);
-
-    const submit = useCallback(() => {
-        if (!shipToName.trim() || !address1.trim() || cartItems.length === 0) return;
-        setJustSubmitted(true); setOverlayPhase('enter');
-        Object.entries(cart).forEach(([id, qty]) => { if (qty > 0) onUpdateCart({ id }, -qty); });
-        setTimeout(() => { onNavigate && onNavigate('home'); setOverlayPhase('exit'); }, prefersReduced ? 600 : 900);
-    }, [shipToName, address1, cartItems.length, cart, onUpdateCart, onNavigate, prefersReduced]);
-
     const canSubmit = totalCartItems > 0 && shipToName.trim() && address1.trim();
-    if (totalCartItems === 0 && !justSubmitted) return null;
 
-    const collapsedShadow = '0 -6px 14px -2px rgba(0,0,0,0.18), 0 -1px 0 rgba(0,0,0,0.08)';
+    const handleSubmit = () => {
+        setIsSuccess(true);
+        setTimeout(() => {
+            setIsSuccess(false);
+            setIsExpanded(false);
+            Object.keys(cart).forEach(k => onUpdateCart({ id: idOf(k) }, -999));
+            if (onNavigate) onNavigate('home');
+        }, 2000);
+    };
 
     return (
         <>
-            <div className={`fixed bottom-0 left-0 right-0 transition-all duration-300 ${isExpanded ? 'z-30' : 'z-10'}`}
-                 style={{ backgroundColor: '#FFFFFF', borderTopLeftRadius: '16px', borderTopRightRadius: '16px', boxShadow: isExpanded ? '0 -6px 22px -4px rgba(0,0,0,0.25)' : collapsedShadow, maxHeight: isExpanded ? '65vh' : `${COLLAPSED_HEIGHT}px`, transform: isExpanded ? 'translateY(0)' : `translateY(calc(100% - ${COLLAPSED_HEIGHT}px))`, overflow:'hidden' }}>
-                {/* Filler to extend white to very bottom when collapsed (covers underlying page bg) */}
-                {!isExpanded && <div style={{ position:'absolute', left:0, right:0, bottom:-40, height:40, background:'#FFFFFF' }} />}
-                <div className="flex items-center justify-between p-4 cursor-pointer relative z-10" onClick={() => setIsExpanded(!isExpanded)} style={{ backgroundColor:'#FFFFFF', borderTopLeftRadius:'16px', borderTopRightRadius:'16px' }}>
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.colors.accent }}>
-                            <ShoppingCart className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                            <p className="font-bold text-sm" style={{ color: theme.colors.textPrimary }}>Cart ({totalCartItems})</p>
-                            <p className="text-xs" style={{ color: theme.colors.textSecondary }}>{cartItems.length} item{cartItems.length !== 1 ? 's' : ''}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">{isExpanded ? <ChevronDown className="w-5 h-5" style={{ color: theme.colors.textSecondary }} /> : <ChevronUp className="w-5 h-5" style={{ color: theme.colors.textSecondary }} />}</div>
-                </div>
-                {isExpanded && (
-                    <div className="px-4 pb-6 pt-2 max-h-[60vh] overflow-y-auto scrollbar-hide flex flex-col">
-                        <div className="mb-4">{cartItems.map((item, idx) => (<DrawerItem key={item.id} item={item} onUpdateCart={onUpdateCart} theme={theme} isLast={idx === 0} />))}</div>
-                        <div className="mb-5">
-                            <div className="flex items-center justify-between mb-3">
-                                <h3 className="font-bold text-[13px] tracking-wide" style={{ color: theme.colors.textPrimary, letterSpacing: '.5px' }}>Ship To</h3>
-                                <div className="flex items-center gap-2">
-                                    <button onClick={() => setShowDir(true)} className="flex items-center gap-1.5 text-xs font-semibold px-4 py-1.5 rounded-full active:scale-95 border transition-all" style={{ background:'#FFFFFF', borderColor: theme.colors.border, color: theme.colors.textPrimary }}><Users className="w-3.5 h-3.5" style={{ color: theme.colors.secondary }} />Directory</button>
-                                    <button onClick={() => { safeSetShipTo('Home'); safeSetAddress1(userSettings?.homeAddress || ''); safeSetAddress2(''); }} className="flex items-center gap-1.5 text-xs font-semibold px-4 py-1.5 rounded-full active:scale-95 border transition-all" style={{ background:'#FFFFFF', borderColor: theme.colors.border, color: theme.colors.textPrimary }}><Home className="w-3.5 h-3.5" style={{ color: theme.colors.secondary }} />Use Home</button>
-                                </div>
+            <AnimatePresence mode="wait">
+                {totalCartItems > 0 && (
+                    <React.Fragment key="cart-container">
+                        {!isExpanded && (
+                            <motion.button
+                                key="collapsed-btn"
+                                layout
+                                initial={{ scale: 0.9, y: 20, opacity: 0 }}
+                                animate={{ scale: 1, y: 0, opacity: 1 }}
+                                exit={{ scale: 0.9, y: 20, opacity: 0 }}
+                                transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                                onClick={() => setIsExpanded(true)}
+                                className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[2000] h-14 pl-6 pr-2 rounded-full shadow-2xl flex items-center gap-4 active:scale-95 transition-all border border-black/5"
+                                style={{ 
+                                    backgroundColor: theme.colors.accent,
+                                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                                    color: '#FFF'
+                                }}
+                            >
+                                <span className="font-bold text-sm tracking-tight uppercase">View Sample Cart</span>
+                                <div className="bg-white/20 backdrop-blur-md text-white w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold shadow-sm border border-white/20">{totalCartItems}</div>
+                            </motion.button>
+                        )}
+
+                        {isExpanded && (
+                            <div key="expanded-sheet" className="fixed inset-0 z-[4000] flex flex-col justify-end">
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsExpanded(false)} />
+                                <motion.div
+                                    initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+                                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                                    className="bg-white rounded-t-[32px] relative z-20 overflow-hidden flex flex-col shadow-2xl h-auto max-h-[90vh]"
+                                    style={{ boxShadow: getDrawerShadow(true) }}
+                                >
+                                    <div onClick={() => setIsExpanded(false)} className="flex items-center justify-between p-6 border-b border-gray-100 bg-white cursor-pointer hover:bg-gray-50 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${theme.colors.accent}10` }}>
+                                                <ShoppingCart className="w-6 h-6" style={{ color: theme.colors.accent }} />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-lg tracking-tight text-black">Sample Cart</h3>
+                                                <p className="text-xs text-gray-500 font-medium">{totalCartItems} items selected</p>
+                                            </div>
+                                        </div>
+                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center active:scale-90 transition">
+                                            <ChevronDown className="w-5 h-5 text-gray-600" />
+                                        </div>
+                                    </div>
+
+                                    {isSuccess ? (
+                                        <div className="h-80 flex items-center justify-center relative">
+                                            <SuccessModal isOpen={true} />
+                                        </div>
+                                    ) : (
+                                        <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-32 bg-white scrollbar-hide">
+                                            <div className="space-y-4">
+                                                {cartItems.map((item) => (
+                                                    <div key={item.id} className="flex items-center gap-4 group">
+                                                        <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0 border border-black/5 shadow-sm">
+                                                            {item.isSet ? (
+                                                                <Package className="w-8 h-8 opacity-20" />
+                                                            ) : item.image ? (
+                                                                <img src={item.image} className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                <div className="w-full h-full" style={{ background: item.color }} />
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <div className="font-bold text-[15px] text-black leading-tight">{item.name}</div>
+                                                            {item.code && <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mt-1">{item.code}</div>}
+                                                        </div>
+                                                        <div className="flex items-center bg-gray-50 rounded-full p-1.5 gap-3 border border-gray-100 shadow-inner">
+                                                            <button onClick={() => onUpdateCart(item, -1)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-black transition-all hover:scale-105 active:scale-90 border border-gray-100">
+                                                                {item.quantity === 1 ? <Trash2 className="w-4 h-4 text-red-500" /> : <Minus className="w-4 h-4" />}
+                                                            </button>
+                                                            <span className="font-bold text-sm w-5 text-center text-black">{item.quantity}</span>
+                                                            <button onClick={() => onUpdateCart(item, 1)} className="w-8 h-8 flex items-center justify-center rounded-full bg-black text-white shadow-sm transition-all hover:scale-105 active:scale-90 border border-black/5"><Plus className="w-4 h-4" /></button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="space-y-4 bg-[#F8F9FA] p-5 rounded-[24px] border border-gray-100">
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="text-[11px] font-black uppercase tracking-[0.08em] text-gray-400">Ship To</h4>
+                                                    <div className="flex gap-2">
+                                                        <button 
+                                                            onClick={() => { setShipToName('Luke Wagner'); setAddress1(userSettings?.homeAddress); }} 
+                                                            className="text-[10px] font-bold text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-all hover:bg-gray-50"
+                                                        >
+                                                            Use My Address
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => setShowDir(true)} 
+                                                            className="text-[10px] font-bold text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-all hover:bg-gray-50 flex items-center gap-1.5"
+                                                        >
+                                                            <Search className="w-3 h-3" /> Directory
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <input value={shipToName} onChange={e => setShipToName(e.target.value)} placeholder="Full Name / Company" className="w-full bg-white rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all focus:ring-2 ring-black/5 text-black border border-gray-200 shadow-sm placeholder:text-gray-300" />
+                                                    <input value={address1} onChange={e => setAddress1(e.target.value)} placeholder="Street Address" className="w-full bg-white rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all focus:ring-2 ring-black/5 text-black border border-gray-200 shadow-sm placeholder:text-gray-300" />
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                disabled={!canSubmit}
+                                                onClick={handleSubmit}
+                                                className="w-full py-4 rounded-2xl font-bold text-white shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-[15px] disabled:opacity-50 disabled:grayscale"
+                                                style={{ 
+                                                    backgroundColor: canSubmit ? theme.colors.accent : '#e5e7eb',
+                                                    boxShadow: canSubmit ? `0 8px 32px ${theme.colors.accent}40` : 'none'
+                                                }}
+                                            >
+                                                <span>Submit Sample Request</span>
+                                                {canSubmit && <ChevronRight className="w-5 h-5" />}
+                                            </button>
+                                        </div>
+                                    )}
+                                </motion.div>
                             </div>
-                            <div className="space-y-2">
-                                <div><input value={shipToName || ''} onChange={(e) => safeSetShipTo(e.target.value)} placeholder="Recipient / Company" className="w-full rounded-2xl px-4 py-3 text-sm outline-none border" style={{ background: '#FFFFFF', borderColor: theme.colors.border, color: theme.colors.textPrimary }} /></div>
-                                <div><input value={address1 || ''} onChange={(e) => safeSetAddress1(e.target.value)} placeholder="Address line 1" className="w-full rounded-2xl px-4 py-3 text-sm outline-none border" style={{ background: '#FFFFFF', borderColor: theme.colors.border, color: theme.colors.textPrimary }} /></div>
-                                <div><input value={address2 || ''} onChange={(e) => safeSetAddress2(e.target.value)} placeholder="Address line 2 (optional)" className="w-full rounded-2xl px-4 py-3 text-sm outline-none border" style={{ background: '#FFFFFF', borderColor: theme.colors.border, color: theme.colors.textPrimary }} /></div>
-                            </div>
-                        </div>
-                        <div className="mt-auto">
-                            <button disabled={!canSubmit} onClick={submit} className="w-full px-5 py-4 rounded-full text-sm font-bold transition-all duration-200 flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed" style={{ backgroundColor: canSubmit ? theme.colors.accent : theme.colors.border, color: canSubmit ? '#fff' : theme.colors.textSecondary }}>Submit Sample Request</button>
-                        </div>
-                    </div>
+                        )}
+                    </React.Fragment>
                 )}
-            </div>
-            <DirectoryModal show={showDir} onClose={() => setShowDir(false)} onSelect={({ name, address1: addr1, address2: addr2 }) => { safeSetShipTo(name); safeSetAddress1(addr1); safeSetAddress2(addr2); }} theme={theme} dealers={dealers} designFirms={designFirms} />
-            {justSubmitted && (
-                <div className="fixed inset-0 z-[1200] flex items-center justify-center pointer-events-none">
-                    <div className="absolute inset-0" style={{ background: overlayPhase==='enter' ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0)', transition: prefersReduced ? 'none' : 'background 320ms ease' }} />
-                    <div className="relative px-10 py-8 rounded-3xl text-center font-semibold" style={{ background: theme.colors.surface, color: theme.colors.textPrimary, border: `1px solid ${theme.colors.border}`, transform: overlayPhase==='enter' ? 'scale(1)' : 'scale(.9)', opacity: overlayPhase==='enter' ? 1 : 0.9, transition: prefersReduced ? 'none' : 'transform 480ms cubic-bezier(.3,1,.3,1), opacity 360ms ease', boxShadow:'0 12px 48px -6px rgba(0,0,0,0.25)' }}>
-                        Sample Request Submitted
-                    </div>
-                </div>
-            )}
+            </AnimatePresence>
+            <DirectoryModal show={showDir} onClose={() => setShowDir(false)} onSelect={({ name, address1 }) => { setShipToName(name); setAddress1(address1); }} theme={theme} dealers={dealers} designFirms={designFirms} />
         </>
     );
 };
 
+/* ====================== Sample Card ====================== */
+const SampleCard = React.memo(({ product, cart, onUpdateCart, theme }) => {
+    const id = idOf(product.id);
+    const qty = cart[id] || 0;
+    const add = useCallback((e) => { 
+        e?.stopPropagation(); 
+        onUpdateCart({ ...product, id }, 1); 
+    }, [product, id, onUpdateCart]);
+    
+    const remove = useCallback((e) => { 
+        e?.stopPropagation(); 
+        onUpdateCart({ ...product, id }, -1); 
+    }, [product, id, onUpdateCart]);
+
+    return (
+        <div className="w-full group">
+            <GlassCard
+                theme={theme}
+                variant="elevated"
+                interactive
+                className="relative w-full aspect-square overflow-hidden cursor-pointer transition-all duration-300 p-0"
+                style={{
+                    borderColor: qty > 0 ? theme.colors.accent : 'transparent',
+                    borderWidth: qty > 0 ? '2px' : '0',
+                    transform: qty > 0 ? 'scale(0.98)' : 'scale(1)'
+                }}
+                onClick={add}
+            >
+                {/* Image Area - matches style guide product cards */}
+                <div className="relative w-full h-full overflow-hidden">
+                    {product.image ? (
+                        <img 
+                            src={product.image} 
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                            alt={product.name}
+                        />
+                    ) : (
+                        <div className="w-full h-full" style={{ backgroundColor: product.color || theme.colors.subtle }} />
+                    )}
+
+                    {/* Quantity Controls - matches style guide pill buttons */}
+                    <AnimatePresence>
+                        {qty > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }} 
+                                animate={{ opacity: 1, y: 0 }} 
+                                exit={{ opacity: 0, y: 10 }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="absolute bottom-3 left-3 right-3 z-10"
+                            >
+                                <div className="flex items-center justify-between bg-white/95 backdrop-blur-md rounded-full shadow-xl border border-white/30 p-1.5 h-11">
+                                    <button
+                                        onClick={remove}
+                                        className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90 border border-gray-100"
+                                    >
+                                        {qty === 1 ? <Trash2 className="w-4 h-4 text-red-500" /> : <Minus className="w-4 h-4 text-black" />}
+                                    </button>
+
+                                    <span className="font-black text-sm text-black">{qty}</span>
+
+                                    <button
+                                        onClick={add}
+                                        className="w-9 h-9 rounded-full bg-black text-white flex items-center justify-center hover:bg-black/90 transition-all active:scale-90"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </motion.div>
+                        )}
+                        {qty === 0 && (
+                            <motion.div 
+                                initial={{ opacity: 0 }}
+                                whileHover={{ opacity: 1 }}
+                                className="absolute inset-0 bg-black/5 flex items-center justify-center pointer-events-none transition-opacity"
+                            >
+                                <div className="w-12 h-12 rounded-full bg-white/95 backdrop-blur-md shadow-lg flex items-center justify-center border border-white/30">
+                                    <Plus className="w-6 h-6 text-black" />
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </GlassCard>
+            
+            {/* Product Name - matches style guide typography */}
+            <div className="mt-3 text-center">
+                <div className="text-[13px] font-bold text-black line-clamp-1 px-1" style={{ fontFamily: DESIGN_TOKENS.typography.fontFamily }}>
+                    {product.name}
+                </div>
+                {product.code && (
+                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mt-1" style={{ fontFamily: DESIGN_TOKENS.typography.fontFamily }}>
+                        {product.code}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+});
+
 export const SamplesScreen = ({ theme, onNavigate, cart: cartProp, onUpdateCart: onUpdateCartProp, userSettings, dealerDirectory, designFirms, initialCartOpen = false }) => {
     const [cartInternal, setCartInternal] = useState({});
     const cart = cartProp ?? cartInternal;
-    const onUpdateCart = onUpdateCartProp ?? useCallback((item, delta) => { setCartInternal((prev) => { const id = idOf(item.id); const current = prev[id] || 0; const quantity = Math.max(0, current + delta); const next = { ...prev }; if (quantity === 0) delete next[id]; else next[id] = quantity; return next; }); }, []);
+    const onUpdateCart = onUpdateCartProp ?? useCallback((item, delta) => { setCartInternal((prev) => { const id = idOf(item.id); const current = prev[id] || 0; if (delta === -999) { const n = { ...prev }; delete n[id]; return n; } const quantity = Math.max(0, current + delta); const next = { ...prev }; if (quantity === 0) delete next[id]; else next[id] = quantity; return next; }); }, []);
+
     const [selectedCategory, setSelectedCategory] = useState('tfl');
-    const totalCartItems = useMemo(() => Object.values(cart).reduce((s, q) => s + q, 0), [cart]);
-    const isDesktop = useIsDesktop();
+    const categories = useMemo(() => {
+        return [...FINISH_CATEGORIES, ...SAMPLE_CATEGORIES.filter(c => c.id !== 'finishes')].map(c => ({ 
+            key: c.id, 
+            label: c.name 
+        }));
+    }, []);
 
-    const addSet = useCallback(() => { const cat = FINISH_CATEGORIES.find((c) => c.id === selectedCategory) || SAMPLE_CATEGORIES.find((c) => c.id === selectedCategory); const categoryName = cat?.name || 'Unknown'; const key = `set-${selectedCategory}`; const id = idOf(key); const currentQty = cart[id] || 0; onUpdateCart({ id, name: `Complete ${categoryName} Set` }, currentQty > 0 ? -currentQty : 1); }, [selectedCategory, onUpdateCart, cart]);
-    const addFull = useCallback(() => { const id = idOf('full-jsi-set'); const currentQty = cart[id] || 0; onUpdateCart({ id, name: 'Full JSI Sample Set' }, currentQty > 0 ? -currentQty : 1); }, [onUpdateCart, cart]);
+    const filteredProducts = useMemo(() => {
+        const isFinish = FINISH_CATEGORIES.some(c => c.id === selectedCategory);
+        let list = isFinish ? FINISH_SAMPLES.filter(s => s.category === selectedCategory) : SAMPLE_PRODUCTS.filter(p => p.category === selectedCategory && !p.subcategory);
+        if (selectedCategory === 'tfl') {
+            const order = ['woodgrain', 'stone', 'metallic', 'solid'];
+            list = [...list].sort((a, b) => (order.indexOf(a.finishType || 'solid') - order.indexOf(b.finishType || 'solid')) || a.name.localeCompare(b.name));
+        }
+        return list;
+    }, [selectedCategory]);
 
-    const filteredProducts = useMemo(() => { const isFinish = FINISH_CATEGORIES.some((cat) => cat.id === selectedCategory); const base = isFinish ? FINISH_SAMPLES.filter((s) => s.category === selectedCategory) : SAMPLE_PRODUCTS.filter((p) => p.category === selectedCategory && !p.subcategory); if (selectedCategory === 'tfl') { const order = ['woodgrain', 'stone', 'metallic', 'solid']; return base.sort((a, b) => (order.indexOf(a.finishType || 'solid') - order.indexOf(b.finishType || 'solid')) || a.name.localeCompare(b.name)); } return base; }, [selectedCategory]);
-
-    const setInCartQuantity = cart[idOf(`set-${selectedCategory}`)] || 0;
-    const fullSetInCart = (cart[idOf('full-jsi-set')] || 0) > 0;
-    const currentCategoryName = FINISH_CATEGORIES.find((c) => c.id === selectedCategory)?.name || SAMPLE_CATEGORIES.find((c) => c.id === selectedCategory)?.name || 'Unknown';
-    const allCategories = [...FINISH_CATEGORIES, ...SAMPLE_CATEGORIES.filter((cat) => cat.id !== 'finishes')];
-    
-    // Convert categories to FilterChips format
-    const categoryOptions = allCategories.map(cat => ({ key: cat.id, label: cat.name }));
-
-    // Responsive grid columns
-    const gridCols = isDesktop ? 'grid-cols-4 md:grid-cols-5 lg:grid-cols-6' : 'grid-cols-3';
-    const contentMaxWidth = isDesktop ? 'max-w-4xl mx-auto' : '';
-
-    // Sample card component to avoid duplication
-    const SampleCard = ({ product }) => {
-        const pid = idOf(product.id);
-        const qty = cart[pid] || 0;
-        const hasImage = !!product.image;
-        const bg = hasImage ? theme.colors.subtle : product.color || '#E5E7EB';
-        const addOne = (e) => { if (e) e.stopPropagation(); onUpdateCart({ ...product, id: pid }, 1); };
-        const removeOne = (e) => { if (e) e.stopPropagation(); onUpdateCart({ ...product, id: pid }, -1); };
-        
-        return (
-            <div className="w-full">
-                <div 
-                    role="button" 
-                    tabIndex={0} 
-                    onClick={addOne} 
-                    onKeyPress={e => { if (e.key === 'Enter') addOne(e); }} 
-                    className="relative w-full aspect-square rounded-2xl overflow-hidden transition-all duration-200 cursor-pointer" 
-                    style={{ 
-                        border: `2px solid ${qty > 0 ? theme.colors.accent : theme.colors.border}`, 
-                        backgroundColor: bg, 
-                        transform: qty > 0 ? 'scale(0.95)' : 'scale(1)', 
-                        boxShadow: qty > 0 ? `0 0 15px ${theme.colors.accent}40` : 'none' 
-                    }}
-                >
-                    {hasImage && (
-                        <img 
-                            loading="lazy" 
-                            width="300" 
-                            height="300" 
-                            src={product.image} 
-                            alt={product.name} 
-                            className="w-full h-full object-cover select-none pointer-events-none" 
-                            draggable={false} 
-                        />
-                    )}
-                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 w-24">
-                        <GlassCard theme={theme} className="p-0.5 flex items-center justify-between gap-1">
-                            {qty === 0 ? (
-                                <button type="button" onClick={addOne} className="w-full h-7 rounded-full flex items-center justify-center active:scale-95">
-                                    <Plus className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
-                                </button>
-                            ) : (
-                                <>
-                                    <button type="button" onClick={removeOne} className="w-7 h-7 rounded-full flex items-center justify-center active:scale-95">
-                                        {qty === 1 ? <Trash2 className="w-3.5 h-3.5 text-red-500" /> : <Minus className="w-3.5 h-3.5" style={{ color: theme.colors.textSecondary }} />}
-                                    </button>
-                                    <span className="font-bold text-sm select-none" style={{ color: theme.colors.textPrimary }}>{qty}</span>
-                                    <button type="button" onClick={addOne} className="w-7 h-7 rounded-full flex items-center justify-center active:scale-95">
-                                        <Plus className="w-3.5 h-3.5" style={{ color: theme.colors.textSecondary }} />
-                                    </button>
-                                </>
-                            )}
-                        </GlassCard>
-                    </div>
-                </div>
-                <div className="mt-1 text-[10px] text-center text-gray-700 truncate select-none">{product.name}</div>
+    const header = (
+        <div className="pb-4 pt-4 transition-all">
+            <div className="px-4">
+                <FilterChips 
+                    options={categories} 
+                    value={selectedCategory} 
+                    onChange={setSelectedCategory} 
+                    theme={theme}
+                />
             </div>
-        );
-    };
+
+            <div className="px-4 mt-4 flex items-center justify-center gap-3">
+                <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={() => onUpdateCart({ id: 'full-jsi-set', name: 'Full JSI Set' }, 1)}
+                    className="flex-1 max-w-[160px] h-11 !rounded-full !text-[11px] !font-black !tracking-widest uppercase shadow-sm"
+                    icon={<Plus className="w-3.5 h-3.5" />}
+                >
+                    Full Set
+                </Button>
+                <Button 
+                    variant="secondary" 
+                    size="sm"
+                    onClick={() => onUpdateCart({ id: `set-${selectedCategory}`, name: `Complete ${selectedCategory} Set` }, 1)}
+                    className="flex-1 max-w-[160px] h-11 !rounded-full !text-[11px] !font-black !tracking-widest uppercase shadow-sm"
+                    icon={<Plus className="w-3.5 h-3.5" />}
+                >
+                    All {categories.find(c => c.key === selectedCategory)?.label}
+                </Button>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="flex flex-col h-full" style={{ paddingBottom: totalCartItems > 0 ? `${COLLAPSED_HEIGHT + 4}px` : '0' }}>
-            <div className="flex-1 overflow-y-auto scrollbar-hide" style={{ backgroundColor: theme.colors.background }}>
-                <div className="sticky top-0 z-10 px-4 pt-2 pb-3 space-y-3" style={{ background: theme.colors.background, borderBottom: `1px solid ${theme.colors.border}40` }}>
-                    <div className={contentMaxWidth}>
-                        {/* JSI FilterChips for category selection */}
-                        <FilterChips
-                            options={categoryOptions}
-                            value={selectedCategory}
-                            onChange={setSelectedCategory}
+        <div className="h-full relative overflow-hidden">
+            <ScreenLayout
+                theme={theme}
+                header={header}
+                maxWidth="content"
+                padding={false}
+                paddingBottom="12rem"
+            >
+                <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 max-w-7xl mx-auto">
+                    {filteredProducts.map(p => (
+                        <SampleCard 
+                            key={p.id} 
+                            product={p} 
+                            cart={cart}
+                            onUpdateCart={onUpdateCart}
                             theme={theme}
-                            showArrows={false}
                         />
-                        <div className="flex gap-3 mt-3">
-                            <OrderFullSetButton onClick={addFull} theme={theme} inCart={fullSetInCart} />
-                            <AddCompleteSetButton onClick={addSet} theme={theme} inCart={setInCartQuantity > 0} categoryName={currentCategoryName} />
-                        </div>
-                    </div>
+                    ))}
                 </div>
-                <div className={`px-4 pb-4 pt-3 ${contentMaxWidth}`}>
-                    <div className={`grid gap-3 ${gridCols}`}>
-                        {filteredProducts.map(product => (
-                            <SampleCard key={idOf(product.id)} product={product} />
-                        ))}
-                    </div>
-                </div>
-            </div>
+            </ScreenLayout>
             <CartDrawer cart={cart} onUpdateCart={onUpdateCart} theme={theme} userSettings={userSettings} dealers={dealerDirectory} designFirms={designFirms} initialOpen={initialCartOpen} onNavigate={onNavigate} />
         </div>
     );

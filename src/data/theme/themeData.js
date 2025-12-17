@@ -30,25 +30,26 @@ const JSI_PALETTE = {
 
 export const lightTheme = {
     colors: {
-        background: JSI_PALETTE.warmBeige,        // #F0EDE8 - Warm Beige
-        surface: JSI_PALETTE.white,               // #FFFFFF - Clean white for cards
-        primary: JSI_PALETTE.charcoal,            // #353535 - Primary text
-        accent: JSI_PALETTE.warmCharcoal,         // #4A4543 - Softer accent for buttons/CTAs
-        secondary: JSI_PALETTE.sageGrey,          // #DFE2DD - Secondary elements
+        background: JSI_PALETTE.warmBeige,        // #F0EDE8 - Warm Beige (Primary Color from style guide)
+        surface: JSI_PALETTE.white,               // #FFFFFF - Clean white for cards (Primary Color)
+        primary: JSI_PALETTE.charcoal,            // #353535 - Primary text (Primary Color)
+        accent: JSI_PALETTE.charcoal,             // #353535 - Charcoal for buttons/CTAs (matches style guide)
+        secondary: JSI_PALETTE.sageGrey,          // #DFE2DD - Secondary elements (Primary Color)
         textPrimary: JSI_PALETTE.charcoal,        // #353535 - Main text (NO pure black)
         textSecondary: '#5C5C5C',                 // Softer secondary text
-        border: JSI_PALETTE.stone,                // #E3E0D8 - Subtle borders
+        border: JSI_PALETTE.stone,                // #E3E0D8 - Subtle borders (Primary Color)
         shadow: 'rgba(53,53,53,0.12)',            // Charcoal-based shadow
-        subtle: JSI_PALETTE.lightGrey,            // #EAECE9 - Subtle backgrounds
-        stone: JSI_PALETTE.stone,                 // For explicit stone usage
-        sageGrey: JSI_PALETTE.sageGrey,           // For explicit sage usage
+        subtle: JSI_PALETTE.lightGrey,            // #EAECE9 - Subtle backgrounds (Primary Color)
+        stone: JSI_PALETTE.stone,                 // #E3E0D8 - For explicit stone usage
+        sageGrey: JSI_PALETTE.sageGrey,           // #DFE2DD - For explicit sage usage
+        warmBeige: JSI_PALETTE.warmBeige,         // #F0EDE8 - For explicit warm beige usage
         // Semantic colors
         success: JSI_PALETTE.success,
         warning: JSI_PALETTE.warning,
         error: JSI_PALETTE.error,
         info: JSI_PALETTE.info,
     },
-    backdropFilter: 'blur(24px)',                 // JSI blur level
+    backdropFilter: 'blur(24px)',                 // JSI blur level (matches style guide Background Blur 24)
     fontFamily: '"Neue Haas Grotesk Display Pro", "Helvetica Neue", Helvetica, Arial, sans-serif',
 };
 

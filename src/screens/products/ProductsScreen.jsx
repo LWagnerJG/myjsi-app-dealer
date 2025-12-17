@@ -6,7 +6,7 @@ import React, {
     useEffect,
     useLayoutEffect
 } from 'react';
-import { GlassCard } from '../../components/common/GlassCard.jsx';
+import { GlassCard, ScreenLayout } from '../../design-system/index.js';
 import { SearchInput } from '../../components/common/SearchInput.jsx';
 import StandardSearchBar from '../../components/common/StandardSearchBar.jsx';
 import {
@@ -231,58 +231,64 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
     // Responsive content max-width
     const contentMaxWidth = isDesktop ? 'max-w-5xl mx-auto w-full' : '';
 
-    return (
-        <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
-            <StickyHeader
-                isScrolled={isScrolled}
+    const header = ({ isScrolled }) => (
+        <div className="flex items-center space-x-3 py-4 w-full">
+            <StandardSearchBar
+                value={searchTerm}
+                onChange={handleSearchChange}
+                placeholder="Search products..."
                 theme={theme}
-                viewMode={viewMode}
-                onToggleViewMode={toggleViewMode}
-                searchTerm={searchTerm}
-                onSearchChange={handleSearchChange}
-                isDesktop={isDesktop}
+                className="flex-grow"
             />
-            <div
-                ref={scrollContainerRef}
-                onScroll={handleScroll}
-                className="flex-1 overflow-y-auto px-4 pb-mobile-nav-safe scrollbar-hide"
-            >
-                <div className={contentMaxWidth}>
-                    {/* Page header for desktop */}
-                    {isDesktop && (
-                        <div className="mb-6 pt-2">
-                            <h1 className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>Products</h1>
-                            <p className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>
-                                Browse our furniture collections by category
-                            </p>
-                        </div>
-                    )}
-                    
-                    {filteredCategories.length === 0 ? (
-                        <EmptyState searchTerm={searchTerm} theme={theme} />
-                    ) : (
-                        <div 
-                            className={
-                                viewMode === 'grid' 
-                                    ? (isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-5' : 'grid grid-cols-1 gap-4')
-                                    : (isDesktop ? 'grid grid-cols-2 gap-3' : 'space-y-2')
-                            } 
-                            style={{ paddingTop: isDesktop ? '0' : '8px' }}
-                        >
-                            {filteredCategories.map(category => (
-                                <CategoryCard
-                                    key={category.name}
-                                    category={category}
-                                    theme={theme}
-                                    viewMode={viewMode}
-                                    onClick={handleCategoryClick}
-                                    isDesktop={isDesktop}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
+            <ViewModeToggle
+                viewMode={viewMode}
+                onToggle={toggleViewMode}
+                theme={theme}
+            />
         </div>
+    );
+
+    return (
+        <ScreenLayout
+            theme={theme}
+            header={header}
+            maxWidth="content"
+            padding={true}
+            paddingBottom="8rem"
+        >
+            {/* Page header for desktop */}
+            {isDesktop && (
+                <div className="mb-6 pt-2">
+                    <h1 className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>Products</h1>
+                    <p className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>
+                        Browse our furniture collections by category
+                    </p>
+                </div>
+            )}
+            
+            {filteredCategories.length === 0 ? (
+                <EmptyState searchTerm={searchTerm} theme={theme} />
+            ) : (
+                <div 
+                    className={
+                        viewMode === 'grid' 
+                            ? (isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-5' : 'grid grid-cols-1 gap-4')
+                            : (isDesktop ? 'grid grid-cols-2 gap-3' : 'space-y-2')
+                    } 
+                    style={{ paddingTop: isDesktop ? '0' : '8px' }}
+                >
+                    {filteredCategories.map(category => (
+                        <CategoryCard
+                            key={category.name}
+                            category={category}
+                            theme={theme}
+                            viewMode={viewMode}
+                            onClick={handleCategoryClick}
+                            isDesktop={isDesktop}
+                        />
+                    ))}
+                </div>
+            )}
+        </ScreenLayout>
     );
 };

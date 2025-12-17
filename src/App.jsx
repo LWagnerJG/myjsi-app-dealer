@@ -185,6 +185,7 @@ function App() {
     const [customerDirectory] = useState(CUSTOMER_DIRECTORY_DATA);
     const [designFirms, setDesignFirms] = useState(INITIAL_DESIGN_FIRMS);
     const [newLeadData, setNewLeadData] = usePersistentState('draft.newLead', EMPTY_LEAD);
+    const [customNavItems, setCustomNavItems] = usePersistentState('nav.customItems', ['home', 'projects', 'orders', 'sales', 'resources/dealer-directory']);
 
     const projectsScreenRef = useRef(null);
     const currentScreen = navigationHistory[navigationHistory.length - 1];
@@ -319,6 +320,8 @@ function App() {
         onNewLeadChange: handleNewLeadChange,
         isDarkMode,
         onToggleTheme: () => setIsDarkMode(d => !d),
+        customNavItems,
+        onUpdateNavItems: setCustomNavItems,
         onSuccess: handleLeadSuccess,
         onAddInstall: handleAddInstall,
         projectsInitialTab: projectsTabOverride,
@@ -379,6 +382,7 @@ function App() {
                     currentScreen={currentScreen}
                     onNavigate={handleNavigate}
                     theme={currentTheme}
+                    customNavItems={customNavItems}
                 />
 
                 <div className="flex-1 pt-[76px] lg:pl-24 overflow-hidden" style={{ backgroundColor: currentTheme.colors.background }}>

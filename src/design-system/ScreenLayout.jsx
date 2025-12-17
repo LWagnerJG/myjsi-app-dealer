@@ -39,6 +39,11 @@ export const ScreenLayout = ({
         xl: '896px',
         '2xl': '1024px',
         '3xl': '1152px',
+        '4xl': '1280px',
+        '5xl': '1440px',
+        '6xl': '1680px',
+        '7xl': '1920px',
+        content: '1440px',
         full: '100%',
     };
     

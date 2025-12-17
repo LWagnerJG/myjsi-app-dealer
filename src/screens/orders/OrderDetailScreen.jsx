@@ -1,216 +1,303 @@
+/* eslint-disable react/prop-types */
 import React, { useState, useMemo } from 'react';
-import { ChevronDown, CheckCircle2, Circle, Hourglass, MapPin, FileText, Share2, X } from 'lucide-react';
-import { GlassCard } from '../../components/common/GlassCard.jsx';
-import { PageTitle } from '../../components/common/PageTitle.jsx';
-import { ORDER_DATA, STATUS_COLORS } from './data.js';
+import {
+    Calendar, FileText, ChevronDown, ChevronUp, Package, Share2,
+    Truck, Factory, CheckCircle, ClipboardList, Play, Video,
+    MessageSquare, Check
+} from 'lucide-react';
+import { GlassCard } from '../../components/common/GlassCard';
+import { ORDER_DATA, STATUS_COLORS } from './data';
+import { motion, AnimatePresence } from 'framer-motion';
 
-/* ---------------- Line Item Row (minimal design) ---------------- */
-const LineItemRow = ({ item, expanded, onToggle, theme, formatTitleCase, isLast }) => {
+const currency = (n) => `$${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const titleCase = (s) => s ? s.toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : '';
+
+// Mock Data
+const PRODUCTION_STEPS = [
+    { label: 'Raw Materials', completed: true, date: 'Jun 15' },
+    { label: 'Machining', completed: true, date: 'Jun 16', video: true },
+    { label: 'Assembly', completed: true, date: 'Today', video: true },
+    { label: 'Finishing', completed: false },
+    { label: 'Quality Control', completed: false }
+];
+
+const ORDER_ENTRY_LOG = [
+    { type: 'question', text: 'Clarification Needed: Confirm finish for Table.', date: 'Jun 12', author: 'JSI Entry' },
+    { type: 'answer', text: 'Customer: Confirmed Mocha Laminate.', date: 'Jun 12', author: 'Luke Wagner' },
+    { type: 'success', text: 'Clean PO Generated', date: 'Jun 13', author: 'System' }
+];
+
+const LIFECYCLE_STEPS = [
+    { id: 'po', label: 'PO Received', icon: FileText },
+    { id: 'entry', label: 'Order Entry', icon: ClipboardList },
+    { id: 'ack', label: 'Acknowledged', icon: CheckCircle },
+    { id: 'production', label: 'In Production', icon: Factory },
+    { id: 'shipping', label: 'Shipping', icon: Truck },
+    { id: 'delivery', label: 'Delivered', icon: Package }
+];
+
+const STATUS_TO_INDEX = {
+    'Discovery': 0, 'Specifying': 0, 'Decision/Bidding': 0, 'PO Expected': 0, 'Won': 0,
+    'Order Entry': 1,
+    'Acknowledged': 2,
+    'In Production': 3,
+    'Shipping': 4,
+    'Delivered': 5
+};
+
+const TimelineNode = ({ step, index, active, isPast, isLast, expanded, onToggle, children, theme }) => {
     return (
-        <div className="select-none" style={{ borderBottom: isLast ? 'none' : `1px solid ${theme.colors.border}` }}>
-            <button onClick={onToggle} className="w-full text-left py-3 flex items-start gap-3 group focus:outline-none">
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-4">
-                        <p className="font-medium truncate" style={{ color: theme.colors.textPrimary }}>{formatTitleCase(item.name)}</p>
-                        <p className="font-semibold text-sm whitespace-nowrap" style={{ color: theme.colors.textPrimary }}>${item.extNet?.toLocaleString()}</p>
-                    </div>
-                    <div className="flex items-center gap-2 text-[11px] mt-1" style={{ color: theme.colors.textSecondary }}>
-                        <span>{item.model}</span>
-                        <span className="opacity-40">|</span>
-                        <span>Qty {item.quantity}</span>
-                    </div>
+        <div className="flex gap-4">
+            <div className="flex flex-col items-center">
+                <div
+                    onClick={onToggle}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center border-2 z-10 transition-all ${onToggle ? 'cursor-pointer hover:scale-110 shadow-sm' : ''}`}
+                    style={{
+                        borderColor: active || isPast ? theme.colors.accent : theme.colors.subtle,
+                        backgroundColor: active ? theme.colors.accent : isPast ? theme.colors.surface : theme.colors.background,
+                        color: active ? '#fff' : isPast ? theme.colors.accent : theme.colors.textSecondary
+                    }}
+                >
+                    <step.icon className="w-4 h-4" />
                 </div>
-                <div className={`flex items-center justify-center w-6 h-6 rounded-md transition-transform ${expanded ? 'rotate-180' : ''}`}> 
-                    <ChevronDown className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
-                </div>
-            </button>
-            {expanded && (
-                <div className="pb-4 pt-1 pl-0.5 pr-1 text-xs space-y-3" style={{ color: theme.colors.textSecondary }}>
-                    <div className="flex gap-6">
-                        <div>
-                            <p className="text-[11px] uppercase tracking-wide" style={{ color: theme.colors.textSecondary }}>Unit</p>
-                            <p className="font-semibold text-sm" style={{ color: theme.colors.textPrimary }}>${item.net?.toLocaleString()}</p>
-                        </div>
-                        <div>
-                            <p className="text-[11px] uppercase tracking-wide" style={{ color: theme.colors.textSecondary }}>Extended</p>
-                            <p className="font-semibold text-sm" style={{ color: theme.colors.textPrimary }}>${item.extNet?.toLocaleString()}</p>
-                        </div>
+                {!isLast && (
+                    <div
+                        className="w-0.5 flex-1 my-1"
+                        style={{ backgroundColor: isPast ? theme.colors.accent : theme.colors.subtle, opacity: isPast ? 0.3 : 0.1 }}
+                    />
+                )}
+            </div>
+            <div className="flex-1 pb-8">
+                <div onClick={onToggle} className={`flex items-baseline justify-between ${onToggle ? 'cursor-pointer' : ''}`}>
+                    <div>
+                        <h4 className={`font-bold text-sm ${active ? 'text-base' : ''} transition-all`}
+                            style={{ color: active ? theme.colors.textPrimary : isPast ? theme.colors.textPrimary : theme.colors.textSecondary }}>
+                            {step.label}
+                        </h4>
+                        {active && <div className="text-[10px] font-bold mt-0.5 uppercase tracking-wider" style={{ color: theme.colors.accent }}>Current Stage</div>}
                     </div>
-                    {item.specs?.length > 0 && (
-                        <div>
-                            <p className="text-[11px] uppercase tracking-wide mb-1" style={{ color: theme.colors.textSecondary }}>Specs</p>
-                            <div className="space-y-1">
-                                {item.specs.map((s,i)=>(
-                                    <div key={i} className="flex items-center justify-between text-[11px]">
-                                        <span>{s.label}</span>
-                                        <span className="font-medium" style={{ color: theme.colors.textPrimary }}>{s.value}</span>
-                                    </div>
-                                ))}
-                            </div>
+                    {children && (
+                        <div className="text-xs opacity-50 transition-transform" style={{ color: theme.colors.textSecondary, transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                            <ChevronDown className="w-4 h-4" />
                         </div>
                     )}
                 </div>
-            )}
+
+                <AnimatePresence>
+                    {(expanded || active) && children && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden mt-3"
+                        >
+                            <div className={`rounded-xl overflow-hidden`} style={{ backgroundColor: theme.colors.surface }}>
+                                {children}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
         </div>
     );
 };
 
-export const OrderDetailScreen = ({ theme, onNavigate, currentScreen }) => {
-    const [expanded, setExpanded] = useState(null);
-    const [showAck, setShowAck] = useState(false);
-    const orderId = currentScreen.split('/')[1];
-    const order = useMemo(() => ORDER_DATA.find(o => o.orderNumber === orderId), [orderId]);
+const LineItemTile = ({ item, index, theme }) => {
+    const [expanded, setExpanded] = useState(false);
+    return (
+        <GlassCard theme={theme} className="mb-3 overflow-hidden bg-opacity-40" variant="flat">
+            <div onClick={() => setExpanded(!expanded)} className="p-4 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors flex gap-4 items-center">
+                {/* Number Column */}
+                <div className="text-2xl font-bold opacity-10 w-8 text-center" style={{ color: theme.colors.textPrimary }}>
+                    {String(index).padStart(2, '0')}
+                </div>
 
-    const orderStages = useMemo(() => {
-        if (!order) return [];
-        return [
-            { name: 'Order Entry', date: order.date },
-            { name: 'Acknowledged', date: order.ackDate || (order.date ? new Date(new Date(order.date).getTime()+2*86400000).toISOString() : null) },
-            { name: 'In Production', date: 'Current' },
-            { name: 'Shipping', date: order.shipDate },
-            { name: 'Delivered', date: null }
-        ];
-    }, [order]);
+                <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-sm truncate" style={{ color: theme.colors.textPrimary }}>{titleCase(item.name)}</h4>
+                    <div className="flex items-center gap-2 text-xs mt-1" style={{ color: theme.colors.textSecondary }}>
+                        <span className="font-medium bg-black/5 dark:bg-white/10 px-1.5 py-0.5 rounded">{item.model}</span>
+                        <span>•</span>
+                        <span>Qty {item.quantity}</span>
+                    </div>
+                </div>
 
-    const formatTitleCase = str => str ? str.toLowerCase().replace(/\b(\w)|(LLC)|(IN)\b/g, s => s.toUpperCase()) : '';
-    const toggleRow = id => setExpanded(p => p === id ? null : id);
-
-    if (!order) {
-        return (
-            <div className="p-4">
-                <PageTitle title="Error" theme={theme} onBack={() => onNavigate('orders')} />
-                <GlassCard theme={theme} className="p-8 text-center"><p style={{ color: theme.colors.textPrimary }}>Order not found.</p></GlassCard>
+                <div className="text-right pl-2">
+                    <div className="font-bold text-sm" style={{ color: theme.colors.textPrimary }}>{currency(item.extNet)}</div>
+                    {expanded ?
+                        <ChevronUp className="w-4 h-4 ml-auto mt-1 opacity-50" /> :
+                        <ChevronDown className="w-4 h-4 ml-auto mt-1 opacity-50" />
+                    }
+                </div>
             </div>
-        );
-    }
 
-    const statusColor = STATUS_COLORS[order.status] || theme.colors.secondary;
-    const currentIndex = orderStages.findIndex(s => s.name === order.status);
-    const ackIndex = orderStages.findIndex(s => s.name === 'Acknowledged');
-    const ackCompleted = currentIndex >= ackIndex && ackIndex !== -1;
-
-    const InfoBlock = ({ label, value, subValue }) => (
-        <div>
-            <p className="text-[11px] uppercase tracking-wide font-medium" style={{ color: theme.colors.textSecondary }}>{label}</p>
-            <p className="font-bold text-lg" style={{ color: theme.colors.textPrimary }}>{value}</p>
-            {subValue && <p className="text-xs" style={{ color: theme.colors.textSecondary }}>{subValue}</p>}
-        </div>
+            <AnimatePresence>
+                {expanded && (
+                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
+                        <div className="px-4 pb-4 pt-0 pl-16 space-y-1.5">
+                            {item.specs?.map((s, i) => (
+                                <div key={i} className="flex justify-between text-xs py-1 border-b last:border-0 border-dashed" style={{ borderColor: theme.colors.subtle }}>
+                                    <span className="opacity-70" style={{ color: theme.colors.textSecondary }}>{titleCase(s.label)}</span>
+                                    <span className="font-medium" style={{ color: theme.colors.textPrimary }}>{s.value}</span>
+                                </div>
+                            ))}
+                            <div className="flex justify-between text-xs pt-2 font-bold opacity-70">
+                                <span style={{ color: theme.colors.textSecondary }}>Unit Price</span>
+                                <span style={{ color: theme.colors.textPrimary }}>{currency(item.net)}</span>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </GlassCard>
     );
+};
 
-    const ackUrl = order.ackUrl;
-    const shareAck = () => { if (navigator.share) navigator.share({ title: `Acknowledgment ${order.orderNumber}`, url: ackUrl }).catch(()=>{}); else window.open(ackUrl,'_blank','noopener'); };
+export const OrderDetailScreen = ({ theme, onNavigate, route, currentScreen }) => {
+    const effectiveRoute = route || currentScreen;
+    const orderNumber = typeof effectiveRoute === 'string' ? effectiveRoute.split('/')[1] : null;
+    const order = useMemo(() => ORDER_DATA.find(o => o.orderNumber === orderNumber), [orderNumber]);
+
+    // Derived State
+    const currentStepIndex = order ? (STATUS_TO_INDEX[order.status] ?? 0) : 0;
+    const [expandedStep, setExpandedStep] = useState(null);
+
+    const toggleStep = (id) => setExpandedStep(expandedStep === id ? null : id);
+
+    // Auto-open past steps that have interesting data (like Order Entry) for the demo?
+    // User requested "put an example", so we'll allow manual toggle to see it.
+
+    const handleShare = () => {
+        if (typeof navigator !== 'undefined' && navigator.share) {
+            navigator.share({ title: `Order #${order?.orderNumber}`, text: order?.details, url: window.location.href }).catch(console.error);
+        }
+    };
+
+    if (!order) return <div className="p-8 text-center opacity-50">Loading...</div>;
 
     return (
         <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
-            <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-4 scrollbar-hide pt-6">
-                <GlassCard theme={theme} className="p-5" style={{ backgroundColor: theme.colors.surface }}>
-                    <div className="text-center mb-4">
-                        <h1 className="text-2xl font-bold leading-tight" style={{ color: theme.colors.textPrimary }}>{formatTitleCase(order.details)}</h1>
-                        {/* Removed dealer/company subtitle for dealer app context */}
-                    </div>
-                    <div className="flex items-center justify-center mb-6">
-                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: `${statusColor}1a`, color: statusColor, border: `1px solid ${statusColor}55` }}>
-                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: statusColor }} /> {order.status}
-                        </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-6 pt-4 border-t" style={{ borderColor: theme.colors.border }}>
-                        <InfoBlock label="Sales Order #" value={order.orderNumber} subValue={`PO# ${order.po}`} />
-                        <InfoBlock label="Net Amount" value={`$${order.net.toLocaleString()}`} subValue={`${order.discount} Discount`} />
-                    </div>
-                </GlassCard>
-
-                <GlassCard theme={theme} className="p-5" style={{ backgroundColor: theme.colors.surface }}>
-                    <h3 className="font-bold mb-5" style={{ color: theme.colors.textPrimary }}>Order Progress</h3>
+            {/* Minimal Header */}
+            <div className={`px-6 pt-6 pb-2`}>
+                <div className="flex justify-between items-start">
                     <div>
-                        {orderStages.map((stage, idx) => {
-                            const isCompleted = idx < currentIndex;
-                            const isCurrent = idx === currentIndex;
-                            const Icon = isCompleted ? CheckCircle2 : isCurrent ? Hourglass : Circle;
-                            const accent = STATUS_COLORS[stage.name] || statusColor;
-                            const isAckStage = stage.name === 'Acknowledged';
-                            const rawDate = stage.date && stage.date !== 'Current' ? new Date(stage.date) : null;
-                            const dateStr = rawDate ? rawDate.toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric'}) : (stage.name === 'Shipping' && stage.date ? new Date(stage.date).toLocaleDateString('en-US',{month:'numeric',day:'numeric',year:'numeric'}) : '');
-                            const isShippingStage = stage.name === 'Shipping';
-                            return (
-                                <div key={stage.name} className="flex gap-4 relative">
-                                    <div className="flex flex-col items-center">
-                                        <div className="w-7 flex items-center justify-center">
-                                            <div className={`rounded-full flex items-center justify-center transition-colors ${isCurrent ? 'ring-2' : ''}`} style={{ width: 26, height: 26, backgroundColor: isCompleted ? accent+'22' : isCurrent ? accent+'18' : 'transparent', boxShadow: isCurrent ? `0 0 0 2px ${accent}33` : 'none' }}>
-                                                <Icon className="w-4 h-4" style={{ color: isCompleted || isCurrent ? accent : theme.colors.border }} />
-                                            </div>
-                                        </div>
-                                        {idx < orderStages.length - 1 && (
-                                            <div className="flex-1 w-px mt-1 mb-0" style={{ background: isCompleted ? accent : theme.colors.border, opacity: isCompleted ? 0.5 : 0.25 }} />
-                                        )}
-                                    </div>
-                                    <div className="flex-1 pb-6 pt-0.5 relative">
-                                        <div className={isShippingStage ? 'relative pr-16' : 'flex items-start justify-between'}>
-                                            <div className="relative w-full">
-                                                <div className="flex items-center gap-2">
-                                                    <p className={`font-semibold tracking-wide ${isCurrent ? 'text-base' : 'text-sm'}`} style={{ color: isCurrent ? theme.colors.textPrimary : theme.colors.textSecondary }}>{stage.name}</p>
-                                                    {isCurrent && <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ backgroundColor: accent }} />}
-                                                </div>
-                                                {isAckStage && ackCompleted && ackUrl && (
-                                                    <div className="flex items-center gap-2 mt-2">
-                                                        <button onClick={()=>setShowAck(true)} className="flex items-center gap-1.5 pl-2 pr-3 py-1 rounded-full text-[11px] font-medium border transition" style={{ backgroundColor: theme.colors.background, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>
-                                                            <FileText className="w-3.5 h-3.5" /> View Ack
-                                                        </button>
-                                                        <button onClick={shareAck} className="flex items-center gap-1.5 p-1.5 rounded-full border transition" style={{ backgroundColor: theme.colors.background, borderColor: theme.colors.border }} title="Share Acknowledgment">
-                                                            <Share2 className="w-3.5 h-3.5" style={{ color: theme.colors.textPrimary }} />
-                                                        </button>
-                                                    </div>
-                                                )}
-                                                {isShippingStage && order.shipTo && (
-                                                    <div className="mt-1">
-                                                        <div className="flex gap-2 items-start text-xs sm:text-sm leading-relaxed pr-12">
-                                                            <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
-                                                            <span className="whitespace-pre-line" style={{ color: theme.colors.textPrimary }}>{formatTitleCase(order.shipTo)}</span>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            {!isShippingStage && (
-                                                <p className="text-[11px] font-medium mt-0.5" style={{ color: theme.colors.textSecondary }}>{dateStr}</p>
-                                            )}
-                                            {isShippingStage && (
-                                                <p className="text-[11px] font-medium mt-0.5 absolute top-0 right-0" style={{ color: theme.colors.textSecondary }}>{dateStr}</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </GlassCard>
-
-                <GlassCard theme={theme} className="p-5" style={{ backgroundColor: theme.colors.surface }}>
-                    <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-bold" style={{ color: theme.colors.textPrimary }}>Line Items</h3>
-                        <p className="text-xs font-medium" style={{ color: theme.colors.textSecondary }}>{order.lineItems.length} Items</p>
-                    </div>
-                    <div className="mt-3">
-                        {order.lineItems.map((li, i) => (
-                            <LineItemRow key={li.line} item={li} expanded={expanded===li.line} onToggle={()=>toggleRow(li.line)} theme={theme} formatTitleCase={formatTitleCase} isLast={i===order.lineItems.length-1} />
-                        ))}
-                    </div>
-                </GlassCard>
-            </div>
-
-            {showAck && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={()=>setShowAck(false)} />
-                    <div className="relative w-full max-w-2xl h-[70vh] rounded-2xl overflow-hidden shadow-2xl flex flex-col" style={{ backgroundColor: theme.colors.surface, border: `1px solid ${theme.colors.border}` }}>
-                        <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: theme.colors.border }}>
-                            <h3 className="text-sm font-semibold" style={{ color: theme.colors.textPrimary }}>Acknowledgment � {order.orderNumber}</h3>
-                            <div className="flex items-center gap-2">
-                                <button onClick={shareAck} className="p-2 rounded-full" style={{ backgroundColor: theme.colors.subtle }} title="Share"><Share2 className="w-4 h-4" style={{ color: theme.colors.textPrimary }} /></button>
-                                <button onClick={()=>setShowAck(false)} className="p-2 rounded-full" style={{ backgroundColor: theme.colors.subtle }} title="Close"><X className="w-4 h-4" style={{ color: theme.colors.textPrimary }} /></button>
-                            </div>
-                        </div>
-                        <iframe title="Acknowledgment PDF" src={ackUrl} className="flex-1 w-full" style={{ background: '#fff' }} />
+                        <div className="text-[10px] font-bold uppercase tracking-wider mb-1 opacity-60" style={{ color: theme.colors.textSecondary }}>Order Details</div>
+                        <h1 className="text-2xl font-bold tracking-tight" style={{ color: theme.colors.textPrimary }}>#{order.orderNumber}</h1>
+                        <p className="text-sm font-medium mt-1 truncate max-w-[280px]" style={{ color: theme.colors.textSecondary }}>{order.details}</p>
                     </div>
                 </div>
-            )}
+            </div>
+
+            <div className="flex-1 overflow-y-auto scrollbar-hide px-6 pt-4 pb-32">
+
+                {/* Lifecycle Vertical Timeline */}
+                <div className="mb-10 pl-2">
+                    {LIFECYCLE_STEPS.map((step, index) => {
+                        const isActive = index === currentStepIndex;
+                        const isPast = index < currentStepIndex;
+                        const isExpanded = expandedStep === step.id; // Control expansion manually for history
+
+                        return (
+                            <TimelineNode
+                                key={step.id}
+                                step={step}
+                                index={index}
+                                isLast={index === LIFECYCLE_STEPS.length - 1}
+                                theme={theme}
+                                active={isActive}
+                                isPast={isPast}
+                                expanded={isExpanded || isActive} // Active step always expanded
+                                onToggle={() => toggleStep(step.id)}
+                            >
+                                {/* CONTENT PER STAGE */}
+
+                                {step.id === 'po' && (
+                                    <div className="bg-white/5 p-4 text-sm space-y-2">
+                                        <div className="flex justify-between"><span className="opacity-60">PO Number</span><span className="font-mono">{order.po}</span></div>
+                                        <div className="flex justify-between"><span className="opacity-60">Received</span><span>{new Date(order.date).toLocaleDateString()}</span></div>
+                                    </div>
+                                )}
+
+                                {step.id === 'entry' && (
+                                    <div className="bg-white/5 p-4 space-y-4">
+                                        {ORDER_ENTRY_LOG.map((log, i) => (
+                                            <div key={i} className="flex gap-3 text-xs">
+                                                <div className={`mt-0.5 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${log.type === 'success' ? 'bg-green-500/20 text-green-500' : 'bg-blue-500/20 text-blue-500'}`}>
+                                                    {log.type === 'question' ? <MessageSquare className="w-3 h-3" /> : log.type === 'success' ? <Check className="w-3 h-3" /> : <div className="w-1.5 h-1.5 rounded-full bg-current" />}
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium" style={{ color: theme.colors.textPrimary }}>{log.text}</div>
+                                                    <div className="opacity-50 mt-0.5 text-[10px]">{log.date} • {log.author}</div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {step.id === 'ack' && order.ackUrl && (
+                                    <div className="bg-white/5 p-4 flex gap-2">
+                                        <button onClick={() => window.open(order.ackUrl, '_blank')} className="flex-1 py-2.5 rounded-lg bg-black/5 dark:bg-white/10 text-xs font-bold flex items-center justify-center gap-2 transition-colors hover:bg-black/10" style={{ color: theme.colors.accent }}>
+                                            <FileText className="w-4 h-4" /> View Ack
+                                        </button>
+                                        <button onClick={handleShare} className="w-10 rounded-lg bg-black/5 dark:bg-white/10 flex items-center justify-center hover:bg-black/10" style={{ color: theme.colors.accent }}>
+                                            <Share2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                )}
+
+                                {step.id === 'production' && (
+                                    <div className="bg-white/5 p-4 space-y-4">
+                                        <div className="text-[10px] font-bold uppercase tracking-wider opacity-60">Factory Updates</div>
+                                        {PRODUCTION_STEPS.map((s, i) => (
+                                            <div key={i} className="flex gap-3 items-center">
+                                                <div className={`w-2 h-2 rounded-full ${s.completed ? '' : 'border border-dashed'}`} style={{ backgroundColor: s.completed ? theme.colors.success : 'transparent', borderColor: theme.colors.textSecondary }} />
+                                                <div className={`text-sm flex-1 ${s.completed ? '' : 'opacity-50'}`}>{s.label}</div>
+                                                {s.video && (
+                                                    <div className="px-2 py-0.5 rounded bg-red-500/10 text-red-500 flex items-center gap-1 cursor-pointer hover:bg-red-500/20">
+                                                        <Play className="w-3 h-3 fill-current" />
+                                                        <span className="text-[10px] font-bold">CLIP</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {(step.id === 'shipping' || step.id === 'delivery') && (
+                                    <div className="bg-white/5 p-4 text-sm space-y-3">
+                                        {step.id === 'shipping' && (
+                                            <div className="flex gap-3 py-1">
+                                                <Truck className="w-4 h-4 opacity-50 flex-shrink-0" />
+                                                <div>
+                                                    <div className="text-xs opacity-60 font-bold uppercase mb-1">Ship To</div>
+                                                    <div className="leading-relaxed opacity-90 whitespace-pre-line">{order.shipTo}</div>
+                                                </div>
+                                            </div>
+                                        )}
+                                        <div className="pt-2 border-t border-dashed opacity-70 flex justify-between text-xs" style={{ borderColor: theme.colors.subtle }}>
+                                            <span>{step.id === 'delivery' ? 'Est. Delivery' : 'Est. Ship Date'}</span>
+                                            <span className="font-mono font-bold">{new Date(order.shipDate).toLocaleDateString()}</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </TimelineNode>
+                        );
+                    })}
+                </div>
+
+                {/* Line Items Section - Tiles */}
+                <div>
+                    <div className="flex justify-between items-baseline mb-4 px-1">
+                        <h3 className="text-lg font-bold" style={{ color: theme.colors.textPrimary }}>Line Items</h3>
+                        <span className="text-xs opacity-60 font-medium">{order.lineItems.length} Products</span>
+                    </div>
+                    <div className="space-y-1">
+                        {order.lineItems.map((item, i) => (
+                            <LineItemTile key={i} index={i + 1} item={item} theme={theme} />
+                        ))}
+                    </div>
+                </div>
+
+            </div>
         </div>
     );
 };

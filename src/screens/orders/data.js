@@ -124,15 +124,16 @@ export const ORDER_DATA = [
     },
 ];
 
+// JSI Neutral Status Colors - Earth-toned palette matching design system
 export const STATUS_COLORS = {
-    'Discovery': '#3B82F6',
-    'Specifying': '#10B981',
-    'Decision/Bidding': '#F59E0B',
-    'PO Expected': '#8B5CF6',
-    'Won': '#059669',
-    'Lost': '#EF4444',
-    'Order Entry': '#6B7280',
-    'Acknowledged': '#F59E0B',
-    'In Production': '#6366F1',
-    'Shipping': '#06B6D4',
+    'Discovery': '#5C5C5C',        // Neutral gray
+    'Specifying': '#5C5C5C',       // Neutral gray
+    'Decision/Bidding': '#5C5C5C', // Neutral gray
+    'PO Expected': '#5C5C5C',      // Neutral gray
+    'Won': '#4A7C59',              // Earthy green (from JSI_COLORS.success)
+    'Lost': '#B85C5C',             // Muted red (from JSI_COLORS.error)
+    'Order Entry': '#6B7280',      // Neutral gray
+    'Acknowledged': '#6B7280',     // Neutral gray
+    'In Production': '#5C5C5C',    // Neutral gray
+    'Shipping': '#4A7C59',          // Earthy green (subtle success indicator)
 };

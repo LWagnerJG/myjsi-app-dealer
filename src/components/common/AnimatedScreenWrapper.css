@@ -33,27 +33,27 @@
     transition: opacity 280ms ease;
 }
 
-/* Enter / Exit animations (programmatically added) - Faster and smoother */
+/* Enter / Exit animations - Subtle, performant fade with minimal slide */
 .enter-right {
-    animation: enterRight 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation: enterRight 150ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .exit-left {
-    animation: exitLeft 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation: exitLeft 150ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .enter-left {
-    animation: enterLeft 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation: enterLeft 150ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .exit-right {
-    animation: exitRight 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    animation: exitRight 150ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes enterRight {
     from {
-        transform: translateX(100%);
-        opacity: 0.95;
+        transform: translateX(8%);
+        opacity: 0;
     }
 
     to {
@@ -69,15 +69,15 @@
     }
 
     to {
-        transform: translateX(-15%);
+        transform: translateX(-8%);
         opacity: 0;
     }
 }
 
 @keyframes enterLeft {
     from {
-        transform: translateX(-20%);
-        opacity: 0.95;
+        transform: translateX(-8%);
+        opacity: 0;
     }
 
     to {
@@ -93,7 +93,7 @@
     }
 
     to {
-        transform: translateX(100%);
+        transform: translateX(8%);
         opacity: 0;
     }
 }

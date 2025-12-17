@@ -4,6 +4,7 @@ import { Modal } from '../../components/common/Modal.jsx';
 import { Camera, Image, AlertCircle, CheckCircle, Clock, XCircle, Plus, MapPin, ChevronDown } from 'lucide-react';
 import { REPLACEMENT_REQUESTS_DATA } from './data.js';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
+import { ScreenLayout } from '../../design-system/index.js';
 import jsQR from 'jsqr';
 
 function RequestCard({ r, theme, getStatusColor, getStatusText, getIcon, onClick, isDesktop }) {
@@ -288,133 +289,136 @@ export const ReplacementsScreen = ({ theme }) => {
     const onPickPhotos = useCallback(async e => { const files=Array.from(e.target.files||[]); if(!files.length) return; const urls = await filesToDataURLs(files); setFormData(p=> ({ ...p, photos:[...(p.photos||[]), ...urls] })); e.target.value=''; }, []);
     const openPhotoPicker = useCallback(()=> { if(fileInputRef.current) fileInputRef.current.click(); }, []);
 
-    /* -------------------------------- UI ---------------------------------- */
-    return (
-        <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
-            <div className="flex-1 overflow-y-auto scrollbar-hide">
-                {view === 'list' ? (
-                    <div className={`px-4 lg:px-6 pt-4 lg:pt-6 pb-mobile-nav ${contentMaxWidth}`}>
-                        {/* Header */}
-                        <div className="flex items-center justify-between mb-6">
-                            <div>
-                                <h1 className="text-xl lg:text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>Replacements</h1>
-                                <p className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>Request replacement parts</p>
-                            </div>
-                            <button 
-                                onClick={() => { setFormData({ salesOrder: '', lineItem: '', dealer: '', notes: '', photos: [], requestFieldVisit: false, fieldVisitType: '', visitAddress: '' }); goToForm(); }}
-                                className="h-10 px-5 rounded-full text-sm font-bold transition-all duration-200 hover:scale-105 active:scale-95 shadow-md flex items-center gap-2"
-                                style={{ backgroundColor: theme.colors.accent, color: '#fff' }}
-                            >
-                                <Plus className="w-4 h-4" />
-                                <span className="hidden sm:inline">New Request</span>
-                                <span className="sm:hidden">New</span>
-                            </button>
-                        </div>
-                        
-                        {/* Action Cards - Side by side on desktop */}
-                        <div className={`${isDesktop ? 'grid grid-cols-2 gap-6' : 'space-y-4'} mb-8`}>
-                            {/* QR Scanner Card */}
-                            <GlassCard theme={theme} className="p-0 overflow-hidden" variant="elevated">
-                                <div className="relative rounded-2xl overflow-hidden" style={{ border: `2px dashed ${isScanning ? theme.colors.accent : theme.colors.border}` }}>
-                                    <video ref={videoRef} className={`block w-full ${isDesktop ? 'h-[280px]' : 'h-[260px]'} object-cover`} playsInline muted autoPlay />
-                                    {!isScanning && (
-                                        <button onClick={startScanning} className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent to-black/5">
-                                            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3" style={{ backgroundColor: `${theme.colors.accent}15` }}>
-                                                <Camera className="w-8 h-8" style={{ color: theme.colors.accent }} />
-                                            </div>
-                                            <div className="font-bold text-base" style={{ color: theme.colors.textPrimary }}>Scan QR Code</div>
-                                            <div className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>Tap to open camera</div>
-                                            {cameraError && (
-                                                <div className="mt-3 text-xs px-3 py-2 rounded-lg" style={{ backgroundColor: '#fee2e2', color: '#991b1b' }}>
-                                                    {cameraError}
-                                                </div>
-                                            )}
-                                        </button>
-                                    )}
-                                    {isScanning && (
-                                        <>
-                                            <div className="absolute top-3 left-3 text-xs px-3 py-1.5 rounded-full font-semibold" style={{ backgroundColor: '#0009', color: '#fff' }}>
-                                                Scanning…
-                                            </div>
-                                            <button onClick={stopScanning} className="absolute bottom-3 right-3 px-4 py-2 rounded-xl text-sm font-bold text-white active:scale-95" style={{ backgroundColor: '#ef4444' }}>
-                                                Cancel
-                                            </button>
-                                            <canvas ref={canvasRef} className="hidden" />
-                                        </>
-                                    )}
-                                </div>
-                            </GlassCard>
-                            
-                            {/* Manual Entry Card */}
-                            <GlassCard 
-                                theme={theme} 
-                                className={`${isDesktop ? 'h-[280px]' : 'min-h-[160px]'} flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all duration-200 p-6`}
-                                variant="elevated"
-                                onClick={() => { setFormData({ salesOrder: '', lineItem: '', dealer: '', notes: '', photos: [], requestFieldVisit: false, fieldVisitType: '', visitAddress: '' }); goToForm(); }}
-                            >
-                                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3" style={{ backgroundColor: `${theme.colors.accent}15` }}>
-                                    <Image className="w-7 h-7" style={{ color: theme.colors.accent }} />
-                                </div>
-                                <div className="font-bold text-base" style={{ color: theme.colors.textPrimary }}>
-                                    Enter Details Manually
-                                </div>
-                                <div className="text-sm mt-1 text-center" style={{ color: theme.colors.textSecondary }}>
-                                    Fill out the form without scanning
-                                </div>
-                            </GlassCard>
-                        </div>
+    const header = (
+        <div className="flex items-center justify-between py-4 w-full">
+            <div>
+                <h1 className="text-xl lg:text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>Replacements</h1>
+                <p className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>Request replacement parts</p>
+            </div>
+            <button 
+                onClick={() => { setFormData({ salesOrder: '', lineItem: '', dealer: '', notes: '', photos: [], requestFieldVisit: false, fieldVisitType: '', visitAddress: '' }); goToForm(); }}
+                className="h-10 px-5 rounded-full text-sm font-bold transition-all duration-200 hover:scale-105 active:scale-95 shadow-md flex items-center gap-2"
+                style={{ backgroundColor: theme.colors.accent, color: '#fff' }}
+            >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">New Request</span>
+                <span className="sm:hidden">New</span>
+            </button>
+        </div>
+    );
 
-                        {/* Previous Requests */}
-                        <div>
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="font-bold text-lg" style={{ color: theme.colors.textPrimary }}>
-                                    Previous Requests
-                                </h2>
-                                <span className="text-sm font-medium px-3 py-1 rounded-full" style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textSecondary }}>
-                                    {replacementRequests.length} total
-                                </span>
-                            </div>
-                            <div className={`${isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-3'}`}>
-                                {replacementRequests.length ? (
-                                    replacementRequests.map((r, i) => (
-                                        <RequestCard
-                                            key={`${r.name}-${i}`}
-                                            r={r}
-                                            theme={theme}
-                                            getStatusColor={getStatusColor}
-                                            getStatusText={getStatusText}
-                                            getIcon={getIcon}
-                                            onClick={() => setSelectedRequest(r)}
-                                            isDesktop={isDesktop}
-                                        />
-                                    ))
-                                ) : (
-                                    <GlassCard theme={theme} className={`p-8 text-center ${isDesktop ? 'col-span-2' : ''}`} variant="elevated">
-                                        <div className="font-semibold mb-1 text-base" style={{ color: theme.colors.textPrimary }}>
-                                            No Previous Requests
+    return (
+        <ScreenLayout
+            theme={theme}
+            header={view === 'list' ? header : null}
+            maxWidth="content"
+            padding={false}
+            paddingBottom="8rem"
+        >
+            {view === 'list' ? (
+                <div className="px-4 lg:px-6 py-4">
+                    {/* Action Cards - Side by side on desktop */}
+                    <div className={`${isDesktop ? 'grid grid-cols-2 gap-6' : 'space-y-4'} mb-8`}>
+                        {/* QR Scanner Card */}
+                        <GlassCard theme={theme} className="p-0 overflow-hidden" variant="elevated">
+                            <div className="relative rounded-2xl overflow-hidden" style={{ border: `2px dashed ${isScanning ? theme.colors.accent : theme.colors.border}` }}>
+                                <video ref={videoRef} className={`block w-full ${isDesktop ? 'h-[280px]' : 'h-[260px]'} object-cover`} playsInline muted autoPlay />
+                                {!isScanning && (
+                                    <button onClick={startScanning} className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-transparent to-black/5">
+                                        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3" style={{ backgroundColor: `${theme.colors.accent}15` }}>
+                                            <Camera className="w-8 h-8" style={{ color: theme.colors.accent }} />
                                         </div>
-                                        <div className="text-sm" style={{ color: theme.colors.textSecondary }}>
-                                            Submit your first replacement request.
+                                        <div className="font-bold text-base" style={{ color: theme.colors.textPrimary }}>Scan QR Code</div>
+                                        <div className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>Tap to open camera</div>
+                                        {cameraError && (
+                                            <div className="mt-3 text-xs px-3 py-2 rounded-lg" style={{ backgroundColor: '#fee2e2', color: '#991b1b' }}>
+                                                {cameraError}
+                                            </div>
+                                        )}
+                                    </button>
+                                )}
+                                {isScanning && (
+                                    <>
+                                        <div className="absolute top-3 left-3 text-xs px-3 py-1.5 rounded-full font-semibold" style={{ backgroundColor: '#0009', color: '#fff' }}>
+                                            Scanning…
                                         </div>
-                                    </GlassCard>
+                                        <button onClick={stopScanning} className="absolute bottom-3 right-3 px-4 py-2 rounded-xl text-sm font-bold text-white active:scale-95" style={{ backgroundColor: '#ef4444' }}>
+                                            Cancel
+                                        </button>
+                                        <canvas ref={canvasRef} className="hidden" />
+                                    </>
                                 )}
                             </div>
+                        </GlassCard>
+                        
+                        {/* Manual Entry Card */}
+                        <GlassCard 
+                            theme={theme} 
+                            className={`${isDesktop ? 'h-[280px]' : 'min-h-[160px]'} flex flex-col items-center justify-center cursor-pointer hover:shadow-lg transition-all duration-200 p-6`}
+                            variant="elevated"
+                            onClick={() => { setFormData({ salesOrder: '', lineItem: '', dealer: '', notes: '', photos: [], requestFieldVisit: false, fieldVisitType: '', visitAddress: '' }); goToForm(); }}
+                        >
+                            <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3" style={{ backgroundColor: `${theme.colors.accent}15` }}>
+                                <Image className="w-7 h-7" style={{ color: theme.colors.accent }} />
+                            </div>
+                            <div className="font-bold text-base" style={{ color: theme.colors.textPrimary }}>
+                                Enter Details Manually
+                            </div>
+                            <div className="text-sm mt-1 text-center" style={{ color: theme.colors.textSecondary }}>
+                                Fill out the form without scanning
+                            </div>
+                        </GlassCard>
+                    </div>
+
+                    {/* Previous Requests */}
+                    <div>
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="font-bold text-lg" style={{ color: theme.colors.textPrimary }}>
+                                Previous Requests
+                            </h2>
+                            <span className="text-sm font-medium px-3 py-1 rounded-full" style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textSecondary }}>
+                                {replacementRequests.length} total
+                            </span>
+                        </div>
+                        <div className={`${isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-3'}`}>
+                            {replacementRequests.length ? (
+                                replacementRequests.map((r, i) => (
+                                    <RequestCard
+                                        key={`${r.name}-${i}`}
+                                        r={r}
+                                        theme={theme}
+                                        getStatusColor={getStatusColor}
+                                        getStatusText={getStatusText}
+                                        getIcon={getIcon}
+                                        onClick={() => setSelectedRequest(r)}
+                                        isDesktop={isDesktop}
+                                    />
+                                ))
+                            ) : (
+                                <GlassCard theme={theme} className={`p-8 text-center ${isDesktop ? 'col-span-2' : ''}`} variant="elevated">
+                                    <div className="font-semibold mb-1 text-base" style={{ color: theme.colors.textPrimary }}>
+                                        No Previous Requests
+                                    </div>
+                                    <div className="text-sm" style={{ color: theme.colors.textSecondary }}>
+                                        Submit your first replacement request.
+                                    </div>
+                                </GlassCard>
+                            )}
                         </div>
                     </div>
-                ) : (
-                    <ReplacementForm
-                        theme={theme}
-                        formData={formData}
-                        onChange={onChange}
-                        onSubmit={submit}
-                        fileInputRef={fileInputRef}
-                        onPickPhotos={onPickPhotos}
-                        openPhotoPicker={openPhotoPicker}
-                        isDesktop={isDesktop}
-                        contentMaxWidth={contentMaxWidth}
-                    />
-                )}
-            </div>
+                </div>
+            ) : (
+                <ReplacementForm
+                    theme={theme}
+                    formData={formData}
+                    onChange={onChange}
+                    onSubmit={submit}
+                    fileInputRef={fileInputRef}
+                    onPickPhotos={onPickPhotos}
+                    openPhotoPicker={openPhotoPicker}
+                    isDesktop={isDesktop}
+                />
+            )}
 
             <Modal
                 show={!!selectedRequest}
@@ -461,6 +465,6 @@ export const ReplacementsScreen = ({ theme }) => {
                     </div>
                 )}
             </Modal>
-        </div>
+        </ScreenLayout>
     );
 };

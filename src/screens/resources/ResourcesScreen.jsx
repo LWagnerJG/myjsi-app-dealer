@@ -4,7 +4,7 @@ import {
     Palette, Package, Users, MapPin, MonitorPlay, Wrench, Clock, ChevronRight
 } from 'lucide-react';
 import { RESOURCES_DATA } from './data.js';
-import { GlassCard } from '../../components/common/GlassCard.jsx';
+import { GlassCard, ScreenLayout } from '../../design-system/index.js';
 import { DEFAULT_HOME_APPS, allApps } from '../../data.jsx';
 
 const sublabelMap = {
@@ -136,13 +136,26 @@ export const ResourcesScreen = ({ theme, onNavigate, homeApps }) => {
         </section>
     );
 
+    const header = (
+        <div className="pt-6 pb-2">
+            <h1 className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>Resources</h1>
+            <p className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>Tools and documentation</p>
+        </div>
+    );
+
     return (
-        <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
-            <div className="flex-1 overflow-y-auto no-scrollbar px-6 pt-2 pb-mobile-nav">
+        <ScreenLayout
+            theme={theme}
+            header={header}
+            maxWidth="content"
+            padding={true}
+            paddingBottom="8rem"
+        >
+            <div className="max-w-3xl mx-auto space-y-6">
                 {resourceCategories.map((cat, i) => (
                     <CategoryCard key={cat.category} category={cat} isFirst={i === 0} />
                 ))}
             </div>
-        </div>
+        </ScreenLayout>
     );
 };

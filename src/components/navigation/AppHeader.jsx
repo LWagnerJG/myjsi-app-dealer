@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+/* eslint-disable react/prop-types */
+import React from 'react';
 import { ArrowLeft, User } from 'lucide-react';
-import { logoLight } from '../../data.jsx';
+import { logoLight } from '../../data.jsx'; // checking import path
 import { DESIGN_TOKENS } from '../../design-system/tokens.js';
 import { useModalState } from '../../hooks/useModalState.js';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const AppHeader = React.memo(({
     onHomeClick,
@@ -16,87 +18,94 @@ export const AppHeader = React.memo(({
     const { isModalOpen } = useModalState();
     const filterStyle = isDarkMode ? 'brightness(0) invert(1)' : 'none';
     const isHome = !showBack;
-    const [isAnimating, setIsAnimating] = useState(false);
-    const [prevShowBack, setPrevShowBack] = useState(showBack);
 
-    // Animate back arrow slide-out when going back
-    useEffect(() => {
-        if (prevShowBack && !showBack) {
-            // Going back - animate arrow out
-            setIsAnimating(true);
-            const timer = setTimeout(() => setIsAnimating(false), 250);
-            return () => clearTimeout(timer);
-        }
-        setPrevShowBack(showBack);
-    }, [showBack, prevShowBack]);
-
-    // Reduce shadow when modal is open to prevent "lit up" appearance
-    const PILL = {
-        backgroundColor: theme.colors.surface,
-        border: 'none',
-        boxShadow: isModalOpen 
-            ? '0 1px 3px rgba(0,0,0,0.04)' 
-            : '0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)',
-        borderRadius: 9999,
-        height: 56,
-        transition: 'box-shadow 0.3s ease',
-    };
+    // Shadow logic - COMPLETELY REMOVED to solve "horizontal line" issue
+    const pillShadow = 'none';
 
     return (
-        <div 
-            className="px-4 pt-4 pb-1 fixed top-0 left-0 right-0"
+        <div
+            className="pt-4 pb-1 fixed top-0 left-0 right-0 pointer-events-none px-4"
             style={{ zIndex: DESIGN_TOKENS.zIndex.header }}
         >
-            <div className="w-full flex items-center justify-between px-5" style={PILL}>
-                <div className="flex items-center">
-                    <div 
-                        className={`transition-all duration-250 ease-out overflow-hidden ${
-                            showBack 
-                                ? 'w-9 -ml-2 mr-1.5 opacity-100 translate-x-0' 
-                                : isAnimating 
-                                    ? 'w-9 -ml-2 mr-1.5 opacity-0 -translate-x-8' 
-                                    : 'w-0 ml-0 mr-0 opacity-0 translate-x-0'
-                        }`}
-                    >
-                        <button
-                            aria-label="Go back"
-                            onClick={handleBack}
-                            disabled={!showBack}
-                            className="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+            <div className="mx-auto w-full" style={{ maxWidth: DESIGN_TOKENS.maxWidth.content }}>
+                <motion.div
+                    className="w-full flex items-center justify-between px-5 pointer-events-auto bg-white dark:bg-[#353535]"
+                    initial={false}
+                    animate={{
+                        backgroundColor: theme.colors.surface,
+                        boxShadow: pillShadow
+                    }}
+                    transition={{ duration: 0.3 }}
+                    style={{
+                        borderRadius: 9999,
+                        height: 56,
+                        border: 'none', // Explicitly remove border
+                    }}
+                >
+                    <div className="flex items-center gap-1 overflow-hidden">
+                        <AnimatePresence initial={false} mode="popLayout">
+                            {showBack && (
+                                <motion.button
+                                    key="back-btn"
+                                    layout
+                                    initial={{ opacity: 0, x: -20, width: 0 }}
+                                    animate={{ opacity: 1, x: 0, width: 'auto' }}
+                                    exit={{ opacity: 0, x: -20, width: 0 }}
+                                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                                    aria-label="Go back"
+                                    onClick={handleBack}
+                                    className="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors -ml-2 mr-1"
+                                >
+                                    <ArrowLeft className="w-5 h-5 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
+                                </motion.button>
+                            )}
+                        </AnimatePresence>
+
+                        <motion.button
+                            layout
+                            aria-label="Go to homepage"
+                            onClick={onHomeClick}
+                            className="hover:opacity-90 transition-opacity flex items-center"
+                            transition={{ type: "spring", stiffness: 450, damping: 35 }}
                         >
-                            <ArrowLeft className="w-5 h-5 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
-                        </button>
+                            <motion.img
+                                layoutId="app-logo"
+                                src={logoLight}
+                                alt="MyJSI Logo"
+                                className="h-8 w-auto"
+                                style={{ filter: filterStyle }}
+                            />
+                        </motion.button>
                     </div>
 
-                    <button
-                        aria-label="Go to homepage"
-                        onClick={onHomeClick}
-                        className="hover:opacity-90 transition-opacity"
-                    >
-                        {/* 15% larger logo */}
-                        <img src={logoLight} alt="MyJSI Logo" className="h-8 w-auto" style={{ filter: filterStyle }} />
-                    </button>
-                </div>
+                    <div className="flex items-center space-x-2">
+                        <AnimatePresence>
+                            {isHome && (
+                                <motion.div
+                                    key="greeting"
+                                    initial={{ opacity: 0, width: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, width: 'auto', scale: 1 }}
+                                    exit={{ opacity: 0, width: 0, scale: 0.95 }}
+                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                    className="text-[15px] leading-tight whitespace-nowrap overflow-hidden origin-right"
+                                    style={{ color: theme.colors.textPrimary }}
+                                >
+                                    Hello, {userName}!
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
 
-                <div className="flex items-center space-x-2">
-                    <div
-                        className={`transition-all duration-300 ease-in-out text-[15px] leading-tight whitespace-nowrap overflow-hidden ${isHome ? 'max-w-[170px] opacity-100' : 'max-w-0 opacity-0'
-                            }`}
-                        style={{ color: theme.colors.textPrimary }}
-                        aria-hidden={!isHome}
-                    >
-                        Hello, {userName}!
+                        <motion.button
+                            layout
+                            aria-label="Open profile menu"
+                            onClick={onProfileClick}
+                            className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-black/5 dark:hover:bg:white/5"
+                            style={{ backgroundColor: theme.colors.surface, boxShadow: 'none' }}
+                        >
+                            <User className="w-5 h-5" style={{ color: theme.colors.textPrimary }} strokeWidth={2} />
+                        </motion.button>
                     </div>
-
-                    <button
-                        aria-label="Open profile menu"
-                        onClick={onProfileClick}
-                        className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-black/5 dark:hover:bg:white/5"
-                        style={{ backgroundColor: theme.colors.surface, boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)' }}
-                    >
-                        <User className="w-5 h-5" style={{ color: theme.colors.textPrimary }} strokeWidth={2} />
-                    </button>
-                </div>
+                </motion.div>
             </div>
         </div>
     );

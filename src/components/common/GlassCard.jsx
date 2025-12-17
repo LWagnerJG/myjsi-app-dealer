@@ -11,16 +11,16 @@ import { DESIGN_TOKENS, JSI_COLORS, isDarkTheme } from '../../design-system/toke
 //  - outlined: subtle border, no shadow
 export const GlassCard = React.memo(
   React.forwardRef(function GlassCard(
-    { 
-      children, 
-      className = '', 
-      theme, 
-      variant = 'elevated', 
-      interactive = false, 
+    {
+      children,
+      className = '',
+      theme,
+      variant = 'elevated',
+      interactive = false,
       hoverOverlay = false,  // JSI: Enable dark overlay on hover
-      style = {}, 
-      as: Component = 'div', 
-      ...props 
+      style = {},
+      as: Component = 'div',
+      ...props
     },
     ref
   ) {
@@ -39,8 +39,8 @@ export const GlassCard = React.memo(
       ? 'cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-[0.985] active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#353535]/10'
       : '';
 
-    const outlinedStyles = variant === 'outlined' 
-      ? { border: `1.5px solid ${borderColor}` } 
+    const outlinedStyles = variant === 'outlined'
+      ? { border: `1.5px solid ${borderColor}` }
       : { border: 'none' };
 
     return (
@@ -65,7 +65,7 @@ export const GlassCard = React.memo(
 // Product Card with JSI hover overlay
 export const ProductCard = React.memo(
   React.forwardRef(function ProductCard(
-    { 
+    {
       children,
       familyName,
       subCategoryTitle,
@@ -75,12 +75,12 @@ export const ProductCard = React.memo(
       theme,
       className = '',
       style = {},
-      ...props 
+      ...props
     },
     ref
   ) {
     const [isHovered, setIsHovered] = React.useState(false);
-    
+
     return (
       <div
         ref={ref}
@@ -98,37 +98,40 @@ export const ProductCard = React.memo(
         {/* Image */}
         {image && (
           <div className="aspect-[4/3] overflow-hidden">
-            <img 
-              src={image} 
+            <img
+              src={image}
               alt={subCategoryTitle}
+              loading="lazy"
+              width="400"
+              height="300"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           </div>
         )}
-        
+
         {/* Content - Family name small, SubCategory bold */}
         <div className="p-4">
           {familyName && (
-            <p 
+            <p
               className="text-xs font-medium uppercase tracking-wider mb-1"
-              style={{ color: '#888888' }}
+              style={{ color: theme?.colors?.textSecondary || JSI_COLORS.charcoal }}
             >
               {familyName}
             </p>
           )}
           {subCategoryTitle && (
-            <h3 
+            <h3
               className="text-lg font-bold"
-              style={{ color: JSI_COLORS.charcoal }}
+              style={{ color: theme?.colors?.textPrimary || JSI_COLORS.charcoal }}
             >
               {subCategoryTitle}
             </h3>
           )}
           {children}
         </div>
-        
+
         {/* JSI Dark Overlay on Hover */}
-        <div 
+        <div
           className="absolute inset-0 flex items-center justify-center gap-3 transition-all duration-300"
           style={{
             backgroundColor: isHovered ? 'rgba(53,53,53,0.85)' : 'rgba(53,53,53,0)',

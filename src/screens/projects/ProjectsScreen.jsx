@@ -5,29 +5,29 @@ import { Briefcase, ArrowRight, Users, Building2, MapPin, Shield, Package, X, Se
 import { STAGES, VERTICALS, COMPETITORS, DISCOUNT_OPTIONS, PO_TIMEFRAMES, INITIAL_DESIGN_FIRMS } from './data.js';
 import { ProbabilitySlider } from '../../components/forms/ProbabilitySlider.jsx';
 import { ToggleSwitch } from '../../components/forms/ToggleSwitch.jsx';
-import { TabToggle, FilterChips } from '../../design-system/SegmentedToggle.jsx';
+import { TabToggle, FilterChips, ScreenLayout } from '../../design-system/index.js';
 import { JSI_SERIES } from '../products/data.js';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
 import { MOCK_CUSTOMERS, STATUS_COLORS, CUSTOMER_FILTER_OPTIONS } from '../../data/mockCustomers.js';
-import { DESIGN_TOKENS } from '../../design-system/tokens.js';
+import { DESIGN_TOKENS, JSI_COLORS, getToggleButtonStyles } from '../../design-system/tokens.js';
 import StandardSearchBar from '../../components/common/StandardSearchBar.jsx';
 import { useModalState } from '../../hooks/useModalState.js';
 
 // currency util
-const fmtCurrency = (v) => typeof v === 'string' ? (v.startsWith('$')? v : '$'+v) : (v ?? 0).toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
+const fmtCurrency = (v) => typeof v === 'string' ? (v.startsWith('$') ? v : '$' + v) : (v ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
 // Suggest input pill (inline tag adder w/ suggestions)
 const SuggestInputPill = ({ placeholder, suggestions, onAdd, theme }) => {
-  const [q,setQ]=useState(''); const [open,setOpen]=useState(false); const ref=useRef(null); const menu=useRef(null);
-  const filtered = useMemo(()=> suggestions.filter(s=> s.toLowerCase().includes(q.toLowerCase()) && s.toLowerCase()!==q.toLowerCase()).slice(0,12),[q,suggestions]);
-  useEffect(()=>{ if(!open) return; const close=e=>{ if(ref.current && !ref.current.contains(e.target) && menu.current && !menu.current.contains(e.target)) setOpen(false); }; window.addEventListener('mousedown',close); return ()=>window.removeEventListener('mousedown',close); },[open]);
-  const commit = (val)=>{ if(val){ onAdd(val); setQ(''); } setOpen(false); };
-  return <div className="relative" ref={ref} style={{ minWidth:140 }}>
-    <input value={q} onChange={e=>{ setQ(e.target.value); setOpen(true); }} onFocus={()=>setOpen(true)} onKeyDown={e=>{ if(e.key==='Enter'){ commit(q.trim()); } if(e.key==='Escape'){ setOpen(false);} }} placeholder={placeholder} className="h-8 px-3 rounded-full text-xs font-medium outline-none border w-full" style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }} />
-    {open && filtered.length>0 && (
-      <div ref={menu} className="absolute z-50 mt-1 rounded-xl border shadow-lg overflow-hidden" style={{ background: theme.colors.surface, borderColor: theme.colors.border, maxHeight:220, width:'100%' }}>
-        <div className="overflow-y-auto" style={{ maxHeight:220 }}>
-          {filtered.map(s=> <button key={s} onClick={()=>commit(s)} className="w-full text-left px-3 py-2 text-xs hover:bg-black/5" style={{ color: theme.colors.textPrimary }}>{s}</button>)}
+  const [q, setQ] = useState(''); const [open, setOpen] = useState(false); const ref = useRef(null); const menu = useRef(null);
+  const filtered = useMemo(() => suggestions.filter(s => s.toLowerCase().includes(q.toLowerCase()) && s.toLowerCase() !== q.toLowerCase()).slice(0, 12), [q, suggestions]);
+  useEffect(() => { if (!open) return; const close = e => { if (ref.current && !ref.current.contains(e.target) && menu.current && !menu.current.contains(e.target)) setOpen(false); }; window.addEventListener('mousedown', close); return () => window.removeEventListener('mousedown', close); }, [open]);
+  const commit = (val) => { if (val) { onAdd(val); setQ(''); } setOpen(false); };
+  return <div className="relative" ref={ref} style={{ minWidth: 140 }}>
+    <input value={q} onChange={e => { setQ(e.target.value); setOpen(true); }} onFocus={() => setOpen(true)} onKeyDown={e => { if (e.key === 'Enter') { commit(q.trim()); } if (e.key === 'Escape') { setOpen(false); } }} placeholder={placeholder} className="h-8 px-3 rounded-full text-xs font-medium outline-none border w-full" style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }} />
+    {open && filtered.length > 0 && (
+      <div ref={menu} className="absolute z-50 mt-1 rounded-xl border shadow-lg overflow-hidden" style={{ background: theme.colors.surface, borderColor: theme.colors.border, maxHeight: 220, width: '100%' }}>
+        <div className="overflow-y-auto" style={{ maxHeight: 220 }}>
+          {filtered.map(s => <button key={s} onClick={() => commit(s)} className="w-full text-left px-3 py-2 text-xs hover:bg-black/5" style={{ color: theme.colors.textPrimary }}>{s}</button>)}
         </div>
       </div>
     )}
@@ -36,102 +36,104 @@ const SuggestInputPill = ({ placeholder, suggestions, onAdd, theme }) => {
 
 // Helper label / inputs
 const SoftLabel = ({ children, theme }) => <span className="text-[11px] uppercase tracking-wide font-semibold" style={{ color: theme.colors.textSecondary }}>{children}</span>;
-const InlineTextInput = ({ value, onChange, theme, placeholder, className='' }) => (
-  <input value={value||''} onChange={e=>onChange(e.target.value)} placeholder={placeholder} className={`bg-transparent outline-none border-b border-transparent focus:border-[currentColor] transition-colors ${className}`} style={{ color: theme.colors.textPrimary }} />
+const InlineTextInput = ({ value, onChange, theme, placeholder, className = '' }) => (
+  <input value={value || ''} onChange={e => onChange(e.target.value)} placeholder={placeholder} className={`bg-transparent outline-none border-b border-transparent focus:border-[currentColor] transition-colors ${className}`} style={{ color: theme.colors.textPrimary }} />
 );
 const CurrencyInput = ({ value, onChange, theme }) => {
-  const raw = (''+(value||'')).replace(/[^0-9]/g,'');
-  return <input inputMode="numeric" value={raw} onChange={e=>{ const val=e.target.value.replace(/[^0-9]/g,''); onChange(val? ('$'+parseInt(val,10).toLocaleString()):''); }} className="bg-transparent outline-none px-0 py-1 text-sm font-semibold border-b border-transparent focus:border-[currentColor] w-32" style={{ color: theme.colors.textPrimary }} />;
+  const raw = ('' + (value || '')).replace(/[^0-9]/g, '');
+  return <input inputMode="numeric" value={raw} onChange={e => { const val = e.target.value.replace(/[^0-9]/g, ''); onChange(val ? ('$' + parseInt(val, 10).toLocaleString()) : ''); }} className="bg-transparent outline-none px-0 py-1 text-sm font-semibold border-b border-transparent focus:border-[currentColor] w-32" style={{ color: theme.colors.textPrimary }} />;
 };
 
 // Opportunity Detail
 const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
-  const [draft,setDraft]=useState(opp); const dirty=useRef(false); const saveRef=useRef(null);
-  useEffect(()=>{ setDraft(opp); },[opp.id]);
-  const update=(k,v)=> setDraft(p=>{ const n={...p,[k]:v}; dirty.current= true; return n; });
-  useEffect(()=>{ if(!dirty.current) return; clearTimeout(saveRef.current); saveRef.current=setTimeout(()=>{ onUpdate(draft); dirty.current=false; },500); return ()=>clearTimeout(saveRef.current); },[draft,onUpdate]);
+  const [draft, setDraft] = useState(opp); const dirty = useRef(false); const saveRef = useRef(null);
+  useEffect(() => { setDraft(opp); }, [opp.id]);
+  const update = (k, v) => setDraft(p => { const n = { ...p, [k]: v }; dirty.current = true; return n; });
+  useEffect(() => { if (!dirty.current) return; clearTimeout(saveRef.current); saveRef.current = setTimeout(() => { onUpdate(draft); dirty.current = false; }, 500); return () => clearTimeout(saveRef.current); }, [draft, onUpdate]);
 
-  const [discountOpen,setDiscountOpen]=useState(false); const discBtn=useRef(null); const discMenu=useRef(null); const [discPos,setDiscPos]=useState({top:0,left:0,width:0});
-  const openDiscount=()=>{ if(discBtn.current){ const r=discBtn.current.getBoundingClientRect(); setDiscPos({ top:r.bottom+8+window.scrollY, left:r.left+window.scrollX, width:r.width }); } setDiscountOpen(true); };
-  useEffect(()=>{ if(!discountOpen) return; const handler=e=>{ if(discMenu.current && !discMenu.current.contains(e.target) && !discBtn.current.contains(e.target)) setDiscountOpen(false); }; window.addEventListener('mousedown',handler); window.addEventListener('resize',()=>setDiscountOpen(false)); return ()=>window.removeEventListener('mousedown',handler); },[discountOpen]);
+  const [discountOpen, setDiscountOpen] = useState(false); const discBtn = useRef(null); const discMenu = useRef(null); const [discPos, setDiscPos] = useState({ top: 0, left: 0, width: 0 });
+  const openDiscount = () => { if (discBtn.current) { const r = discBtn.current.getBoundingClientRect(); setDiscPos({ top: r.bottom + 8 + window.scrollY, left: r.left + window.scrollX, width: r.width }); } setDiscountOpen(true); };
+  useEffect(() => { if (!discountOpen) return; const handler = e => { if (discMenu.current && !discMenu.current.contains(e.target) && !discBtn.current.contains(e.target)) setDiscountOpen(false); }; window.addEventListener('mousedown', handler); window.addEventListener('resize', () => setDiscountOpen(false)); return () => window.removeEventListener('mousedown', handler); }, [discountOpen]);
 
-  const removeFrom=(key,val)=> update(key,(draft[key]||[]).filter(x=>x!==val));
-  const addUnique=(key,val)=>{ if(!val) return; const list=draft[key]||[]; if(!list.includes(val)) update(key,[...list,val]); };
-  const addProductSeries = (series)=>{ if(!series) return; const list=draft.products||[]; if(!list.some(p=>p.series===series)) update('products',[...list,{series}]); };
-  const removeProductSeries = (series)=> update('products',(draft.products||[]).filter(p=>p.series!==series));
+  const removeFrom = (key, val) => update(key, (draft[key] || []).filter(x => x !== val));
+  const addUnique = (key, val) => { if (!val) return; const list = draft[key] || []; if (!list.includes(val)) update(key, [...list, val]); };
+  const addProductSeries = (series) => { if (!series) return; const list = draft.products || []; if (!list.some(p => p.series === series)) update('products', [...list, { series }]); };
+  const removeProductSeries = (series) => update('products', (draft.products || []).filter(p => p.series !== series));
 
   return (
     <div className="flex flex-col h-full" style={{ background: theme.colors.background }}>
       <div className="px-4 pt-5 pb-mobile-nav-safe overflow-y-auto scrollbar-hide">
         <GlassCard theme={theme} className="p-6 rounded-3xl space-y-8" variant="elevated">
           <div className="space-y-1">
-            <InlineTextInput value={draft.project||draft.name} onChange={v=>update('project',v)} theme={theme} className="text-[20px] leading-tight" />
-            <InlineTextInput value={draft.company} onChange={v=>update('company',v)} theme={theme} placeholder="Company" className="text-sm font-medium opacity-80" />
+            <InlineTextInput value={draft.project || draft.name} onChange={v => update('project', v)} theme={theme} className="text-[20px] leading-tight" />
+            <InlineTextInput value={draft.company} onChange={v => update('company', v)} theme={theme} placeholder="Company" className="text-sm font-medium opacity-80" />
           </div>
 
           <div className="flex flex-col gap-6">
             <div>
               <SoftLabel theme={theme}>Stage</SoftLabel>
               <div className="flex flex-wrap gap-2 mt-2">
-                {STAGES.map(s=>{ const active=s===draft.stage; return <button key={s} onClick={()=>update('stage',s)} className="px-3 h-8 rounded-full text-[11px] font-medium border transition-colors" style={{ backgroundColor: active? theme.colors.accent: theme.colors.surface, color: active? '#fff': theme.colors.textPrimary, borderColor: active? theme.colors.accent: theme.colors.border }}>{s}</button>; })}
+                {STAGES.map(s => { const active = s === draft.stage; return <button key={s} onClick={() => update('stage', s)} className="px-3 h-8 rounded-full text-[11px] font-medium border transition-colors" style={{ backgroundColor: active ? theme.colors.accent : theme.colors.surface, color: active ? '#fff' : theme.colors.textPrimary, borderColor: active ? theme.colors.accent : theme.colors.border }}>{s}</button>; })}
               </div>
             </div>
             <div className="flex flex-wrap items-end gap-8">
               <div className="flex flex-col gap-2">
                 <SoftLabel theme={theme}>Discount</SoftLabel>
-                <button ref={discBtn} onClick={()=>discountOpen? setDiscountOpen(false):openDiscount()} className="px-4 h-9 rounded-full text-xs font-semibold border shadow-sm flex items-center gap-2" style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textPrimary, borderColor: theme.colors.border }}>{draft.discount || 'Undecided'} <span className={`transition-transform ${discountOpen?'rotate-180':''}`}>?</span></button>
+                <button ref={discBtn} onClick={() => discountOpen ? setDiscountOpen(false) : openDiscount()} className="px-4 h-9 rounded-full text-xs font-semibold border shadow-sm flex items-center gap-2" style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textPrimary, borderColor: theme.colors.border }}>{draft.discount || 'Undecided'} <span className={`transition-transform ${discountOpen ? 'rotate-180' : ''}`}>?</span></button>
               </div>
               <div className="flex flex-col gap-2 min-w-[220px]">
                 <SoftLabel theme={theme}>Vertical</SoftLabel>
                 <div className="flex flex-wrap gap-2 max-w-[380px]">
-                  {VERTICALS.map(v=>{ const a=v===draft.vertical; return <button key={v} onClick={()=>update('vertical',v)} className="px-3 h-8 rounded-full text-[11px] font-medium border transition-colors" style={{ backgroundColor:a? theme.colors.accent:theme.colors.surface, color:a? '#fff': theme.colors.textPrimary, borderColor:a? theme.colors.accent: theme.colors.border }}>{v}</button>; })}
+                  {VERTICALS.map(v => { const a = v === draft.vertical; return <button key={v} onClick={() => update('vertical', v)} className="px-3 h-8 rounded-full text-[11px] font-medium border transition-colors" style={{ backgroundColor: a ? theme.colors.accent : theme.colors.surface, color: a ? '#fff' : theme.colors.textPrimary, borderColor: a ? theme.colors.accent : theme.colors.border }}>{v}</button>; })}
                 </div>
               </div>
               <div className="flex flex-col gap-2">
                 <SoftLabel theme={theme}>PO Timeframe</SoftLabel>
                 <div className="flex flex-wrap gap-2 max-w-[360px]">
-                  {PO_TIMEFRAMES.map(t=>{ const a=t===draft.poTimeframe; return <button key={t} onClick={()=>update('poTimeframe',t)} className="px-3 h-8 rounded-full text-[11px] font-medium border transition-colors" style={{ backgroundColor:a? theme.colors.accent:theme.colors.surface, color:a? '#fff': theme.colors.textPrimary, borderColor:a? theme.colors.accent: theme.colors.border }}>{t}</button>; })}
+                  {PO_TIMEFRAMES.map(t => { const a = t === draft.poTimeframe; return <button key={t} onClick={() => update('poTimeframe', t)} className="px-3 h-8 rounded-full text-[11px] font-medium border transition-colors" style={{ backgroundColor: a ? theme.colors.accent : theme.colors.surface, color: a ? '#fff' : theme.colors.textPrimary, borderColor: a ? theme.colors.accent : theme.colors.border }}>{t}</button>; })}
                 </div>
               </div>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <div className="px-3 h-8 flex items-center gap-1 rounded-full border text-[11px] font-semibold" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>$ {draft.value?.toString().replace(/[^0-9]/g,'') || '0'}</div>
-            <div className="px-3 h-8 flex items-center gap-1 rounded-full border text-[11px] font-semibold" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>Win {draft.winProbability||0}%</div>
-            <div className="px-3 h-8 flex items-center gap-1 rounded-full border text-[11px] font-semibold" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{draft.discount||'Undecided'}</div>
+            <div className="px-3 h-8 flex items-center gap-1 rounded-full border text-[11px] font-semibold" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>$ {draft.value?.toString().replace(/[^0-9]/g, '') || '0'}</div>
+            <div className="px-3 h-8 flex items-center gap-1 rounded-full border text-[11px] font-semibold" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>Win {draft.winProbability || 0}%</div>
+            <div className="px-3 h-8 flex items-center gap-1 rounded-full border text-[11px] font-semibold" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{draft.discount || 'Undecided'}</div>
           </div>
 
           <div className="grid gap-8 md:grid-cols-2">
             <div className="space-y-4">
               <div className="flex flex-col gap-2">
                 <SoftLabel theme={theme}>Win Probability</SoftLabel>
-                <ProbabilitySlider value={draft.winProbability||0} onChange={v=>update('winProbability',v)} theme={theme} />
+                <ProbabilitySlider value={draft.winProbability || 0} onChange={v => update('winProbability', v)} theme={theme} />
               </div>
               <div className="flex items-center gap-4">
                 <SoftLabel theme={theme}>Competition?</SoftLabel>
-                <ToggleSwitch checked={!!draft.competitionPresent} onChange={v=>update('competitionPresent',v)} theme={theme} />
+                <ToggleSwitch checked={!!draft.competitionPresent} onChange={v => update('competitionPresent', v)} theme={theme} />
               </div>
               {draft.competitionPresent && (
                 <div className="pt-2">
                   <SoftLabel theme={theme}>Competitors</SoftLabel>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {COMPETITORS.filter(c=>c!=='None').map(c=>{ const on=(draft.competitors||[]).includes(c); return (
-                      <button key={c} onClick={()=>{ const list=draft.competitors||[]; update('competitors', on? list.filter(x=>x!==c): [...list,c]); }} className="px-3 h-8 rounded-full text-[11px] font-medium border transition-colors" style={{ backgroundColor:on? theme.colors.accent: theme.colors.surface, color:on? '#fff': theme.colors.textPrimary, borderColor:on? theme.colors.accent: theme.colors.border }}>{c}</button>
-                    );})}
+                    {COMPETITORS.filter(c => c !== 'None').map(c => {
+                      const on = (draft.competitors || []).includes(c); return (
+                        <button key={c} onClick={() => { const list = draft.competitors || []; update('competitors', on ? list.filter(x => x !== c) : [...list, c]); }} className="px-3 h-8 rounded-full text-[11px] font-medium border transition-colors" style={{ backgroundColor: on ? theme.colors.accent : theme.colors.surface, color: on ? '#fff' : theme.colors.textPrimary, borderColor: on ? theme.colors.accent : theme.colors.border }}>{c}</button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
             </div>
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-6">
-                <div className="flex flex-col gap-1"><SoftLabel theme={theme}>Contact</SoftLabel><InlineTextInput value={draft.contact} onChange={v=>update('contact',v)} theme={theme} placeholder="Contact" /></div>
-                <div className="flex flex-col gap-1"><SoftLabel theme={theme}>Value</SoftLabel><CurrencyInput value={draft.value} onChange={v=>update('value',v)} theme={theme} /></div>
+                <div className="flex flex-col gap-1"><SoftLabel theme={theme}>Contact</SoftLabel><InlineTextInput value={draft.contact} onChange={v => update('contact', v)} theme={theme} placeholder="Contact" /></div>
+                <div className="flex flex-col gap-1"><SoftLabel theme={theme}>Value</SoftLabel><CurrencyInput value={draft.value} onChange={v => update('value', v)} theme={theme} /></div>
               </div>
               <div>
                 <SoftLabel theme={theme}>Products</SoftLabel>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {(draft.products||[]).map(p=> <button key={p.series} onClick={()=>removeProductSeries(p.series)} className="px-3 h-8 rounded-full text-[11px] font-medium flex items-center gap-1 border" style={{ background: theme.colors.subtle, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{p.series}<span className="opacity-60">�</span></button>)}
+                  {(draft.products || []).map(p => <button key={p.series} onClick={() => removeProductSeries(p.series)} className="px-3 h-8 rounded-full text-[11px] font-medium flex items-center gap-1 border" style={{ background: theme.colors.subtle, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{p.series}<span className="opacity-60">�</span></button>)}
                   <SuggestInputPill placeholder="Add series" suggestions={JSI_SERIES} onAdd={addProductSeries} theme={theme} />
                 </div>
               </div>
@@ -139,14 +141,14 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
                 <div>
                   <SoftLabel theme={theme}>Design Firms</SoftLabel>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {(draft.designFirms||[]).map(f=> <button key={f} onClick={()=>removeFrom('designFirms',f)} className="px-3 h-8 rounded-full text-[11px] font-medium flex items-center gap-1 border" style={{ background: theme.colors.subtle, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{f}<span className="opacity-60">�</span></button>)}
-                    <SuggestInputPill placeholder="Add firm" suggestions={INITIAL_DESIGN_FIRMS} onAdd={v=>addUnique('designFirms',v)} theme={theme} />
+                    {(draft.designFirms || []).map(f => <button key={f} onClick={() => removeFrom('designFirms', f)} className="px-3 h-8 rounded-full text-[11px] font-medium flex items-center gap-1 border" style={{ background: theme.colors.subtle, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{f}<span className="opacity-60">�</span></button>)}
+                    <SuggestInputPill placeholder="Add firm" suggestions={INITIAL_DESIGN_FIRMS} onAdd={v => addUnique('designFirms', v)} theme={theme} />
                   </div>
                 </div>
                 <div>
                   <SoftLabel theme={theme}>Customer</SoftLabel>
                   <div className="flex flex-col gap-1">
-                    <InlineTextInput value={draft.customer||draft.company} onChange={v=>{ update('customer',v); update('company',v); }} theme={theme} placeholder="Customer name" className="text-sm font-medium" />
+                    <InlineTextInput value={draft.customer || draft.company} onChange={v => { update('customer', v); update('company', v); }} theme={theme} placeholder="Customer name" className="text-sm font-medium" />
                   </div>
                 </div>
               </div>
@@ -155,12 +157,12 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
 
           <div>
             <SoftLabel theme={theme}>Notes</SoftLabel>
-            <textarea value={draft.notes||''} onChange={e=>update('notes',e.target.value)} rows={4} className="w-full mt-2 resize-none rounded-xl p-3 text-sm outline-none border" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }} placeholder="Add project notes..." />
-            {Array.isArray(draft.quotes)&&draft.quotes.length>0 && (
+            <textarea value={draft.notes || ''} onChange={e => update('notes', e.target.value)} rows={4} className="w-full mt-2 resize-none rounded-xl p-3 text-sm outline-none border" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }} placeholder="Add project notes..." />
+            {Array.isArray(draft.quotes) && draft.quotes.length > 0 && (
               <div className="mt-4 space-y-2">
                 <SoftLabel theme={theme}>Quotes</SoftLabel>
                 <div className="flex flex-col gap-2">
-                  {draft.quotes.map(q=> <a key={q.id} href={q.url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg text-xs font-medium border hover:bg-black/5 transition-colors" style={{ color: theme.colors.textPrimary, borderColor: theme.colors.border }}>{q.fileName}</a>)}
+                  {draft.quotes.map(q => <a key={q.id} href={q.url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg text-xs font-medium border hover:bg-black/5 transition-colors" style={{ color: theme.colors.textPrimary, borderColor: theme.colors.border }}>{q.fileName}</a>)}
                 </div>
               </div>
             )}
@@ -169,9 +171,9 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
         </GlassCard>
       </div>
       {discountOpen && (
-        <div ref={discMenu} className="fixed z-[9999] rounded-2xl border shadow-2xl overflow-hidden" style={{ top:discPos.top, left:discPos.left, width:discPos.width, background:theme.colors.surface, borderColor:theme.colors.border }}>
+        <div ref={discMenu} className="fixed z-[9999] rounded-2xl border shadow-2xl overflow-hidden" style={{ top: discPos.top, left: discPos.left, width: discPos.width, background: theme.colors.surface, borderColor: theme.colors.border }}>
           <div className="max-h-[360px] overflow-y-auto custom-scroll-hide py-1">
-            {DISCOUNT_OPTIONS.map(opt=> <button key={opt} onClick={()=>{ update('discount',opt); setDiscountOpen(false); }} className={`w-full text-left px-3 py-2 text-xs hover:bg-black/5 ${opt===draft.discount?'font-semibold':''}`} style={{ color: theme.colors.textPrimary }}>{opt}</button>)}
+            {DISCOUNT_OPTIONS.map(opt => <button key={opt} onClick={() => { update('discount', opt); setDiscountOpen(false); }} className={`w-full text-left px-3 py-2 text-xs hover:bg-black/5 ${opt === draft.discount ? 'font-semibold' : ''}`} style={{ color: theme.colors.textPrimary }}>{opt}</button>)}
           </div>
         </div>
       )}
@@ -181,23 +183,23 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
 
 // Project card component
 const ProjectCard = ({ opp, theme, onClick }) => {
-  const discountPct = typeof opp.discount === 'string' ? opp.discount : typeof opp.discount === 'number' ? opp.discount+'%' : null;
+  const discountPct = typeof opp.discount === 'string' ? opp.discount : typeof opp.discount === 'number' ? opp.discount + '%' : null;
   let displayValue = opp.value;
   if (displayValue != null) {
     if (typeof displayValue === 'number') displayValue = '$' + displayValue.toLocaleString();
     else if (typeof displayValue === 'string' && !displayValue.trim().startsWith('$')) {
-      const num = parseFloat(displayValue.replace(/[^0-9.]/g,'')); if(!isNaN(num)) displayValue = '$'+num.toLocaleString();
+      const num = parseFloat(displayValue.replace(/[^0-9.]/g, '')); if (!isNaN(num)) displayValue = '$' + num.toLocaleString();
     }
   }
   return (
-    <button onClick={onClick} className="w-full text-left group" style={{ WebkitTapHighlightColor:'transparent' }}>
+    <button onClick={onClick} className="w-full text-left group" style={{ WebkitTapHighlightColor: 'transparent' }}>
       <GlassCard theme={theme} className="p-5 transition-all duration-200 rounded-2xl hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0" variant="elevated">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="font-semibold text-[15px] leading-snug truncate" style={{ color: theme.colors.textPrimary }}>{opp.name}</p>
-            <p className="mt-1 text-[13px] font-medium leading-tight truncate" style={{ color: theme.colors.textSecondary }}>{opp.company||'Unknown'}</p>
+            <p className="mt-1 text-[13px] font-medium leading-tight truncate" style={{ color: theme.colors.textSecondary }}>{opp.company || 'Unknown'}</p>
           </div>
-          {discountPct && <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-wide" style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textSecondary, border:`1px solid ${theme.colors.border}` }}>{discountPct}</span>}
+          {discountPct && <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold tracking-wide" style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textSecondary, border: `1px solid ${theme.colors.border}` }}>{discountPct}</span>}
         </div>
         <div className="mt-3 mb-3 h-px" style={{ backgroundColor: theme.colors.subtle }} />
         <div className="flex items-end justify-end">
@@ -220,12 +222,12 @@ const InstallationDetail = ({ project, theme, onAddPhotoFiles }) => {
               <p className="font-bold text-xl truncate" style={{ color: theme.colors.textPrimary }}>{project.name}</p>
               <p className="text-sm truncate" style={{ color: theme.colors.textSecondary }}>{project.location}</p>
             </div>
-            <button type="button" onClick={()=>fileRef.current?.click()} className="px-4 py-2 rounded-full text-xs font-semibold" style={{ backgroundColor: theme.colors.accent, color:'#fff' }}>Add Photos</button>
-            <input ref={fileRef} type="file" multiple accept="image/*" className="hidden" onChange={e=>onAddPhotoFiles(e.target.files)} />
+            <button type="button" onClick={() => fileRef.current?.click()} className="px-4 py-2 rounded-full text-xs font-semibold" style={{ backgroundColor: theme.colors.accent, color: '#fff' }}>Add Photos</button>
+            <input ref={fileRef} type="file" multiple accept="image/*" className="hidden" onChange={e => onAddPhotoFiles(e.target.files)} />
           </div>
           <div className="grid grid-cols-3 gap-2">
-            {(project.photos || [project.image]).map((img,i)=>(
-              <div key={i} className="relative aspect-square overflow-hidden rounded-lg"><img src={typeof img==='string'?img:URL.createObjectURL(img)} alt={project.name+'-photo-'+i} className="w-full h-full object-cover" /></div>
+            {(project.photos || [project.image]).map((img, i) => (
+              <div key={i} className="relative aspect-square overflow-hidden rounded-lg"><img src={typeof img === 'string' ? img : URL.createObjectURL(img)} alt={project.name + '-photo-' + i} className="w-full h-full object-cover" /></div>
             ))}
           </div>
         </GlassCard>
@@ -238,7 +240,7 @@ const InstallationDetail = ({ project, theme, onAddPhotoFiles }) => {
 const CustomerCard = ({ customer, theme, onClick }) => {
   const activeStandards = customer.standardsPrograms?.filter(p => p.status === 'Active').length || 0;
   const currentOrders = customer.orders?.current?.length || 0;
-  
+
   return (
     <button onClick={onClick} className="w-full text-left group" style={{ WebkitTapHighlightColor: 'transparent' }}>
       <GlassCard theme={theme} className="p-0 overflow-hidden transition-all duration-200 rounded-2xl hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0" variant="elevated">
@@ -280,7 +282,7 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCu
   const mobileNavHeight = 80;
   const safeAreaBottom = typeof window !== 'undefined' ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom') || '0', 10) : 0;
   const bottomPadding = isMobile ? mobileNavHeight + safeAreaBottom + 24 : 0;
-  
+
   useEffect(() => {
     if (isOpen) {
       openModal();
@@ -289,7 +291,7 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCu
     }
     return () => closeModal();
   }, [isOpen, openModal, closeModal]);
-  
+
   const [mode, setMode] = useState(null); // null, 'project', 'customer'
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customerSearch, setCustomerSearch] = useState('');
@@ -327,8 +329,8 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCu
   const filteredCustomers = useMemo(() => {
     if (!customerSearch.trim()) return customers;
     const q = customerSearch.toLowerCase();
-    return customers.filter(c => 
-      c.name.toLowerCase().includes(q) || 
+    return customers.filter(c =>
+      c.name.toLowerCase().includes(q) ||
       c.location.city.toLowerCase().includes(q)
     );
   }, [customerSearch, customers]);
@@ -355,12 +357,12 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCu
       documents: [],
       contacts: []
     };
-    
+
     // Callback to add customer to parent state
     if (onAddCustomer) {
       onAddCustomer(newCustomer);
     }
-    
+
     setSubmitted(true);
     setTimeout(() => {
       onClose();
@@ -388,43 +390,36 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCu
   // Use portal to render at document body level for proper stacking
   return createPortal(
     <>
-      {/* Full-screen dimming backdrop - covers entire screen including header */}
-      <div 
-        className="fixed inset-0 bg-black/40"
-        style={{ 
-          zIndex: DESIGN_TOKENS.zIndex.overlay - 1,
-          top: 0, // Start from very top to cover header
+      {/* Full-screen dimming backdrop - COVERS HEADER (top: 0) */}
+      <div
+        className="fixed inset-0 bg-black/60 transition-opacity duration-300 pointer-events-auto backdrop-blur-[2px]"
+        style={{
+          zIndex: DESIGN_TOKENS.zIndex.overlay + 10,
+          top: 0,
         }}
         onClick={() => { onClose(); resetModal(); }}
       />
-      
-      {/* Interactive Backdrop - positioned below header for click handling */}
-      <div 
-        className="fixed inset-0 lg:left-24 pointer-events-none"
-        style={{ 
-          top: 76, // Below the header
-          zIndex: DESIGN_TOKENS.zIndex.overlay 
-        }}
-      />
-      
-      {/* Modal Container - positioned above bottom nav on mobile */}
-      <div 
-        className="fixed inset-x-0 sm:inset-0 sm:flex sm:items-center sm:justify-center lg:pl-24"
-        style={{ 
-          top: 76, // Below the header
-          bottom: isMobile ? 'calc(80px + env(safe-area-inset-bottom, 0px) + 24px)' : 0, // Above bottom nav on mobile
-          padding: isMobile ? '1rem' : '1.5rem',
-          zIndex: DESIGN_TOKENS.zIndex.modal 
+
+      {/* Modal Container - Floating Island Style */}
+      <div
+        className="fixed inset-x-0 flex items-end sm:items-center justify-center pointer-events-none"
+        style={{
+          top: 0,
+          bottom: 0,
+          zIndex: DESIGN_TOKENS.zIndex.modal + 10,
+          padding: !isDesktop ? '1rem' : '1.5rem',
+          paddingBottom: !isDesktop ? 'calc(80px + env(safe-area-inset-bottom, 0px) + 16px)' : '1.5rem',
         }}
         onClick={() => { onClose(); resetModal(); }}
       >
-        <div 
-          className="w-full sm:max-w-lg sm:mx-4 rounded-t-3xl sm:rounded-3xl overflow-hidden flex flex-col shadow-2xl"
-          style={{ 
+        <div
+          className="w-full sm:max-w-lg sm:mx-4 rounded-3xl overflow-hidden flex flex-col shadow-2xl pointer-events-auto transition-all duration-300 transform scale-100"
+          style={{
             backgroundColor: theme.colors.background,
-            maxHeight: isMobile 
-              ? `calc(100vh - ${76 + 80 + 24}px - env(safe-area-inset-bottom, 0px))` 
+            maxHeight: !isDesktop
+              ? 'calc(100vh - (80px + env(safe-area-inset-bottom, 0px) + 48px))'
               : '85vh',
+            boxShadow: DESIGN_TOKENS.shadows.modal
           }}
           onClick={e => e.stopPropagation()}
         >
@@ -546,7 +541,7 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCu
                         className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all"
                         style={{
                           backgroundColor: projectVertical === v ? theme.colors.accent : theme.colors.subtle,
-                          color: projectVertical === v ? '#fff' : theme.colors.textSecondary,
+                          color: projectVertical === v ? JSI_COLORS.white : theme.colors.textSecondary,
                         }}
                       >
                         {v}
@@ -557,8 +552,8 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCu
                 <button
                   onClick={handleSubmitProject}
                   disabled={!projectName.trim()}
-                  className="w-full py-3 rounded-full font-bold text-white disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
-                  style={{ backgroundColor: theme.colors.accent }}
+                  className="w-full py-3 rounded-full font-bold disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
+                  style={{ backgroundColor: theme.colors.accent, color: JSI_COLORS.white }}
                 >
                   <Plus className="w-4 h-4" />
                   Create Project
@@ -681,7 +676,7 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCu
               </button>
             </div>
           )}
-          
+
           {/* Safe area padding for iOS */}
           <div className="h-[env(safe-area-inset-bottom)]" />
         </div>
@@ -696,44 +691,44 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
   const initial = projectsInitialTab || 'pipeline';
   const [projectsTab, setProjectsTab] = useState(initial);
   const isDesktop = useIsDesktop();
-  useEffect(()=>{ if(projectsInitialTab) clearProjectsInitialTab && clearProjectsInitialTab(); },[projectsInitialTab, clearProjectsInitialTab]);
-  const [selectedPipelineStage,setSelectedPipelineStage] = useState('Discovery');
-  const [selectedOpportunity,setSelectedOpportunity] = useState(null);
-  const [selectedInstall,setSelectedInstall] = useState(null);
+  useEffect(() => { if (projectsInitialTab) clearProjectsInitialTab && clearProjectsInitialTab(); }, [projectsInitialTab, clearProjectsInitialTab]);
+  const [selectedPipelineStage, setSelectedPipelineStage] = useState('Discovery');
+  const [selectedOpportunity, setSelectedOpportunity] = useState(null);
+  const [selectedInstall, setSelectedInstall] = useState(null);
   const scrollContainerRef = useRef(null);
-  const [isScrolled,setIsScrolled]=useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [customerFilter, setCustomerFilter] = useState('all');
   const [customerSearch, setCustomerSearch] = useState('');
   const [showNewModal, setShowNewModal] = useState(false);
   const [localCustomers, setLocalCustomers] = useState(MOCK_CUSTOMERS);
-  
+
   // Handler to add new customer
   const handleAddCustomer = useCallback((newCustomer) => {
     setLocalCustomers(prev => [newCustomer, ...prev]);
   }, []);
 
-  useImperativeHandle(ref,()=>({ clearSelection:()=>{ let cleared=false; if(selectedOpportunity){ setSelectedOpportunity(null); cleared=true;} if(selectedInstall){ setSelectedInstall(null); cleared=true;} return cleared; } }));
-  const handleScroll = useCallback(()=>{ if(scrollContainerRef.current) setIsScrolled(scrollContainerRef.current.scrollTop>10); },[]);
+  useImperativeHandle(ref, () => ({ clearSelection: () => { let cleared = false; if (selectedOpportunity) { setSelectedOpportunity(null); cleared = true; } if (selectedInstall) { setSelectedInstall(null); cleared = true; } return cleared; } }));
+  const handleScroll = useCallback(() => { if (scrollContainerRef.current) setIsScrolled(scrollContainerRef.current.scrollTop > 10); }, []);
 
-  const filteredOpportunities = useMemo(()=> (opportunities||[]).filter(o=>o.stage===selectedPipelineStage),[selectedPipelineStage, opportunities]);
-  const stageTotals = useMemo(()=>{ const totalValue = filteredOpportunities.reduce((sum,o)=>{ const raw= typeof o.value==='string'? o.value.replace(/[^0-9.]/g,''): o.value; const num=parseFloat(raw)||0; return sum+num; },0); return { totalValue }; },[filteredOpportunities]);
-  const updateOpportunity = updated => setOpportunities(prev=> prev.map(o=> o.id===updated.id? updated:o));
-  const addInstallPhotos = files => { if(!files||!selectedInstall) return; const arr=Array.from(files); setMyProjects(prev=> prev.map(p=> p.id===selectedInstall.id? {...p, photos:[...(p.photos||[]), ...arr]}:p)); setSelectedInstall(prev=> prev? {...prev, photos:[...(prev.photos||[]), ...arr]}: prev); };
-  
+  const filteredOpportunities = useMemo(() => (opportunities || []).filter(o => o.stage === selectedPipelineStage), [selectedPipelineStage, opportunities]);
+  const stageTotals = useMemo(() => { const totalValue = filteredOpportunities.reduce((sum, o) => { const raw = typeof o.value === 'string' ? o.value.replace(/[^0-9.]/g, '') : o.value; const num = parseFloat(raw) || 0; return sum + num; }, 0); return { totalValue }; }, [filteredOpportunities]);
+  const updateOpportunity = updated => setOpportunities(prev => prev.map(o => o.id === updated.id ? updated : o));
+  const addInstallPhotos = files => { if (!files || !selectedInstall) return; const arr = Array.from(files); setMyProjects(prev => prev.map(p => p.id === selectedInstall.id ? { ...p, photos: [...(p.photos || []), ...arr] } : p)); setSelectedInstall(prev => prev ? { ...prev, photos: [...(prev.photos || []), ...arr] } : prev); };
+
   // Filter customers
   const filteredCustomers = useMemo(() => {
     let result = localCustomers;
-    
+
     // Apply search
     if (customerSearch.trim()) {
       const q = customerSearch.toLowerCase();
-      result = result.filter(c => 
-        c.name.toLowerCase().includes(q) || 
+      result = result.filter(c =>
+        c.name.toLowerCase().includes(q) ||
         c.location.city.toLowerCase().includes(q) ||
         c.location.state.toLowerCase().includes(q)
       );
     }
-    
+
     // Apply filter
     if (customerFilter === 'active-standards') {
       result = result.filter(c => c.standardsPrograms?.some(p => p.status === 'Active'));
@@ -742,155 +737,156 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
     } else if (customerFilter === 'recently-installed') {
       result = result.filter(c => c.installs?.length > 0);
     }
-    
+
     return result;
   }, [customerSearch, customerFilter, localCustomers]);
-  
+
   // Desktop: center content, account for sidebar
   const contentMaxWidth = isDesktop ? 'max-w-4xl mx-auto w-full lg:pl-20' : '';
-  
+
   const projectTabOptions = [
     { key: 'pipeline', label: 'Active Projects' },
     { key: 'customers', label: 'Customers' },
   ];
-  
+
   const stageOptions = STAGES.map(stage => ({ key: stage, label: stage }));
-  
-  if(selectedOpportunity) return <OpportunityDetail opp={selectedOpportunity} theme={theme} onBack={()=>setSelectedOpportunity(null)} onUpdate={u=>{ updateOpportunity(u); setSelectedOpportunity(u); }} />;
-  if(selectedInstall) return <InstallationDetail project={selectedInstall} theme={theme} onAddPhotoFiles={addInstallPhotos} />;
-  
-  return (
-    <div className="h-full flex flex-col" style={{ backgroundColor: theme.colors.background }}>
-      {/* Premium Header */}
-      <div className={`sticky top-0 z-10 transition-all duration-300 ${isScrolled ? 'shadow-lg' : ''}`} style={{ backgroundColor: isScrolled ? `${theme.colors.background}f5` : theme.colors.background, backdropFilter: isScrolled ? 'blur(16px)' : 'none', WebkitBackdropFilter: isScrolled ? 'blur(16px)' : 'none' }}>
-        <div className={`px-4 lg:px-6 pt-4 lg:pt-6 pb-3 ${contentMaxWidth}`}>
-          {/* Top row: Toggle + New Button - Improved layout */}
-          <div className="flex items-center justify-between gap-3 mb-4">
-            {/* Premium Pill Tab Toggle - Inset style */}
-            <div className="flex-1 max-w-md">
-              <div className="inline-flex rounded-full p-1 shadow-inner" style={{ backgroundColor: theme.colors.stone || '#E3E0D8' }}>
-                {projectTabOptions.map(opt => {
-                  const isActive = opt.key === projectsTab;
-                  return (
-                    <button
-                      key={opt.key}
-                      onClick={() => setProjectsTab(opt.key)}
-                      className={`px-5 lg:px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${isActive ? 'shadow-md' : ''}`}
-                      style={{
-                        backgroundColor: isActive ? '#fff' : 'transparent',
-                        color: isActive ? theme.colors.accent : theme.colors.textSecondary,
-                      }}
-                    >
-                      {opt.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            
-            {/* Premium + New Button - Better positioned */}
-            <button 
-              onClick={() => {
-                if (projectsTab === 'customers') {
-                  setShowNewModal(true);
-                } else {
-                  onNavigate('new-lead');
-                }
-              }} 
-              className="h-11 px-5 rounded-full text-sm font-bold transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 flex-shrink-0"
-              style={{ 
-                backgroundColor: theme.colors.accent, 
-                color: '#fff',
-                minWidth: '44px',
-              }}
-              aria-label={projectsTab === 'customers' ? 'Add new customer' : 'Create new project'}
-            >
-              <span className="text-lg leading-none">+</span>
-              <span className="hidden sm:inline text-sm">New</span>
-            </button>
+
+  if (selectedOpportunity) return <OpportunityDetail opp={selectedOpportunity} theme={theme} onBack={() => setSelectedOpportunity(null)} onUpdate={u => { updateOpportunity(u); setSelectedOpportunity(u); }} />;
+  if (selectedInstall) return <InstallationDetail project={selectedInstall} theme={theme} onAddPhotoFiles={addInstallPhotos} />;
+
+  const header = (
+    <div className="pt-4 lg:pt-6 pb-3 w-full">
+      {/* Top row: Toggle + New Button - Improved layout */}
+      <div className="flex items-center justify-between gap-3 mb-4">
+        {/* Premium Pill Tab Toggle - Inset style */}
+        <div className="flex-1 max-w-md">
+          <div className="inline-flex rounded-full p-1 shadow-inner" style={{ backgroundColor: theme.colors.stone || '#E3E0D8' }}>
+            {projectTabOptions.map(opt => {
+              const isActive = opt.key === projectsTab;
+              return (
+                <button
+                  key={opt.key}
+                  onClick={() => setProjectsTab(opt.key)}
+                  className={`px-5 lg:px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${isActive ? 'shadow-md' : ''}`}
+                  style={{
+                    backgroundColor: isActive ? '#fff' : 'transparent',
+                    color: isActive ? theme.colors.accent : theme.colors.textSecondary,
+                  }}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
           </div>
-          
-          {/* Stage Pipeline Filter for Projects */}
-          {projectsTab === 'pipeline' && (
-            <div className="mt-4 space-y-2">
-              <FilterChips
-                options={stageOptions}
-                value={selectedPipelineStage}
-                onChange={setSelectedPipelineStage}
-                theme={theme}
-                showArrows={true}
-              />
-              {/* Total display - discrete, underneath filter */}
-              {filteredOpportunities.length > 0 && (
-                <div className="flex items-center justify-end px-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium" style={{ color: theme.colors.textSecondary }}>
-                      {selectedPipelineStage} Total:
-                    </span>
-                    <span className="text-sm font-semibold" style={{ color: theme.colors.textPrimary }}>
-                      {fmtCurrency(stageTotals.totalValue)}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          
-          {/* Search for Customers - Using StandardSearchBar, filters removed */}
-          {projectsTab === 'customers' && (
-            <div className="mt-4">
-              <StandardSearchBar
-                value={customerSearch}
-                onChange={setCustomerSearch}
-                placeholder="Search customers..."
-                theme={theme}
-                className="w-full"
-              />
+        </div>
+
+        {/* Premium + New Button - Better positioned */}
+        <button
+          onClick={() => {
+            if (projectsTab === 'customers') {
+              setShowNewModal(true);
+            } else {
+              onNavigate('new-lead');
+            }
+          }}
+          className="h-11 px-5 rounded-full text-sm font-bold transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg flex items-center justify-center gap-1.5 flex-shrink-0"
+          style={{
+            backgroundColor: theme.colors.accent,
+            color: '#fff',
+            minWidth: '44px',
+          }}
+          aria-label={projectsTab === 'customers' ? 'Add new customer' : 'Create new project'}
+        >
+          <span className="text-lg leading-none">+</span>
+          <span className="hidden sm:inline text-sm">New</span>
+        </button>
+      </div>
+
+      {/* Stage Pipeline Filter for Projects */}
+      {projectsTab === 'pipeline' && (
+        <div className="mt-4 space-y-2">
+          <FilterChips
+            options={stageOptions}
+            value={selectedPipelineStage}
+            onChange={setSelectedPipelineStage}
+            theme={theme}
+            showArrows={true}
+          />
+          {/* Total display - discrete, underneath filter */}
+          {filteredOpportunities.length > 0 && (
+            <div className="flex items-center justify-end px-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium" style={{ color: theme.colors.textSecondary }}>
+                  {selectedPipelineStage} Total:
+                </span>
+                <span className="text-sm font-semibold" style={{ color: theme.colors.textPrimary }}>
+                  {fmtCurrency(stageTotals.totalValue)}
+                </span>
+              </div>
             </div>
           )}
         </div>
-      </div>
-      
-      {/* Content Area */}
-      <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className={`px-4 lg:px-6 pt-4 space-y-3 pb-mobile-nav-safe ${contentMaxWidth}`}>
-          {projectsTab==='pipeline' && (
-            filteredOpportunities.length ? (
-              <div className={isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-3'}>
-                {filteredOpportunities.map(opp=> <ProjectCard key={opp.id} opp={opp} theme={theme} onClick={()=>setSelectedOpportunity(opp)} />)}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-16">
-                <Briefcase className="w-14 h-14 mb-4" style={{ color: theme.colors.textSecondary, opacity: 0.5 }} />
-                <p className="text-center text-base font-semibold" style={{ color: theme.colors.textSecondary }}>No projects in {selectedPipelineStage}</p>
-                <p className="text-center text-sm mt-1" style={{ color: theme.colors.textSecondary, opacity: 0.7 }}>Add a new project to get started</p>
-              </div>
-            )
-          )}
-          {projectsTab==='customers' && (
-            filteredCustomers.length ? (
-              <div className={isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'}>
-                {filteredCustomers.map(customer => (
-                  <CustomerCard 
-                    key={customer.id} 
-                    customer={customer} 
-                    theme={theme} 
-                    onClick={() => onNavigate(`customers/${customer.id}`)} 
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-16">
-                <Users className="w-14 h-14 mb-4" style={{ color: theme.colors.textSecondary, opacity: 0.5 }} />
-                <p className="text-center text-base font-semibold" style={{ color: theme.colors.textSecondary }}>No customers found</p>
-                <p className="text-center text-sm mt-1" style={{ color: theme.colors.textSecondary, opacity: 0.7 }}>Try a different search or filter</p>
-              </div>
-            )
-          )}
+      )}
+
+      {/* Search for Customers - Using StandardSearchBar, filters removed */}
+      {projectsTab === 'customers' && (
+        <div className="mt-4">
+          <StandardSearchBar
+            value={customerSearch}
+            onChange={setCustomerSearch}
+            placeholder="Search customers..."
+            theme={theme}
+            className="w-full"
+          />
         </div>
-      </div>
-      
-      
+      )}
+    </div>
+  );
+
+  return (
+    <div className="h-full flex flex-col overflow-hidden">
+      <ScreenLayout
+        theme={theme}
+        header={header}
+        maxWidth="content"
+        padding={true}
+        paddingBottom="8rem"
+      >
+        {projectsTab === 'pipeline' && (
+          filteredOpportunities.length ? (
+            <div className={isDesktop ? 'grid grid-cols-2 gap-4' : 'space-y-3'}>
+              {filteredOpportunities.map(opp => <ProjectCard key={opp.id} opp={opp} theme={theme} onClick={() => setSelectedOpportunity(opp)} />)}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Briefcase className="w-14 h-14 mb-4" style={{ color: theme.colors.textSecondary, opacity: 0.5 }} />
+              <p className="text-center text-base font-semibold" style={{ color: theme.colors.textSecondary }}>No projects in {selectedPipelineStage}</p>
+              <p className="text-center text-sm mt-1" style={{ color: theme.colors.textSecondary, opacity: 0.7 }}>Add a new project to get started</p>
+            </div>
+          )
+        )}
+        {projectsTab === 'customers' && (
+          filteredCustomers.length ? (
+            <div className={isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'}>
+              {filteredCustomers.map(customer => (
+                <CustomerCard
+                  key={customer.id}
+                  customer={customer}
+                  theme={theme}
+                  onClick={() => onNavigate(`customers/${customer.id}`)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16">
+              <Users className="w-14 h-14 mb-4" style={{ color: theme.colors.textSecondary, opacity: 0.5 }} />
+              <p className="text-center text-base font-semibold" style={{ color: theme.colors.textSecondary }}>No customers found</p>
+              <p className="text-center text-sm mt-1" style={{ color: theme.colors.textSecondary, opacity: 0.7 }}>Try a different search or filter</p>
+            </div>
+          )
+        )}
+      </ScreenLayout>
+
       {/* New Action Modal for Customers tab */}
       <NewActionModal
         isOpen={showNewModal}

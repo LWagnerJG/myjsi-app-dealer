@@ -4,9 +4,9 @@ import React from 'react';
 import { DESIGN_TOKENS, JSI_COLORS } from './tokens.js';
 
 // Base skeleton with JSI-branded shimmer animation
-export const Skeleton = ({ 
-    width = '100%', 
-    height = 16, 
+export const Skeleton = ({
+    width = '100%',
+    height = 16,
     radius = 'md',
     theme,
     className = '',
@@ -14,7 +14,7 @@ export const Skeleton = ({
 }) => {
     const borderRadius = DESIGN_TOKENS.borderRadius[radius] || radius;
     const bgColor = theme?.colors?.subtle || JSI_COLORS.lightGrey;
-    
+
     return (
         <div
             className={`skeleton-shimmer ${className}`}
@@ -30,8 +30,8 @@ export const Skeleton = ({
 };
 
 // Text skeleton - mimics text lines
-export const SkeletonText = ({ 
-    lines = 1, 
+export const SkeletonText = ({
+    lines = 1,
     lastLineWidth = '60%',
     theme,
     className = '',
@@ -50,8 +50,8 @@ export const SkeletonText = ({
 );
 
 // Avatar skeleton
-export const SkeletonAvatar = ({ 
-    size = 40, 
+export const SkeletonAvatar = ({
+    size = 40,
     theme,
     className = '',
 }) => (
@@ -66,9 +66,9 @@ export const SkeletonAvatar = ({
 
 // Card skeleton - for list items
 export const SkeletonCard = ({ theme, className = '' }) => (
-    <div 
+    <div
         className={`p-4 rounded-2xl ${className}`}
-        style={{ 
+        style={{
             backgroundColor: theme?.colors?.surface || '#FFFFFF',
             boxShadow: DESIGN_TOKENS.shadows.card,
         }}
@@ -86,10 +86,10 @@ export const SkeletonCard = ({ theme, className = '' }) => (
 
 // Grid item skeleton - for sample cards, products
 export const SkeletonGridItem = ({ theme, className = '' }) => (
-    <div 
+    <div
         className={`rounded-2xl overflow-hidden ${className}`}
-        style={{ 
-            backgroundColor: theme?.colors?.surface || '#FFFFFF',
+        style={{
+            backgroundColor: theme?.colors?.surface || JSI_COLORS.white,
             boxShadow: DESIGN_TOKENS.shadows.card,
         }}
     >
@@ -103,9 +103,9 @@ export const SkeletonGridItem = ({ theme, className = '' }) => (
 
 // Stats card skeleton
 export const SkeletonStat = ({ theme, className = '' }) => (
-    <div 
+    <div
         className={`p-4 rounded-2xl ${className}`}
-        style={{ 
+        style={{
             backgroundColor: theme?.colors?.surface || '#FFFFFF',
             boxShadow: DESIGN_TOKENS.shadows.card,
         }}
@@ -116,11 +116,11 @@ export const SkeletonStat = ({ theme, className = '' }) => (
 );
 
 // List skeleton - multiple cards
-export const SkeletonList = ({ 
-    count = 3, 
-    theme, 
+export const SkeletonList = ({
+    count = 3,
+    theme,
     gap = 12,
-    className = '' 
+    className = ''
 }) => (
     <div className={className} style={{ display: 'flex', flexDirection: 'column', gap }}>
         {Array.from({ length: count }).map((_, i) => (
@@ -130,17 +130,17 @@ export const SkeletonList = ({
 );
 
 // Grid skeleton
-export const SkeletonGrid = ({ 
-    count = 6, 
+export const SkeletonGrid = ({
+    count = 6,
     columns = 3,
-    theme, 
+    theme,
     gap = 12,
-    className = '' 
+    className = ''
 }) => (
-    <div 
+    <div
         className={className}
-        style={{ 
-            display: 'grid', 
+        style={{
+            display: 'grid',
             gridTemplateColumns: `repeat(${columns}, 1fr)`,
             gap,
         }}
@@ -155,11 +155,11 @@ export const SkeletonGrid = ({
 export const SkeletonQuickAccess = ({ theme, className = '' }) => (
     <div className={`grid grid-cols-3 gap-3 ${className}`}>
         {Array.from({ length: 6 }).map((_, i) => (
-            <div 
+            <div
                 key={i}
                 className="flex flex-col items-center gap-2 p-4 rounded-2xl"
-                style={{ 
-                    backgroundColor: theme?.colors?.surface || '#FFFFFF',
+                style={{
+                    backgroundColor: theme?.colors?.surface || JSI_COLORS.white,
                     boxShadow: DESIGN_TOKENS.shadows.card,
                 }}
             >

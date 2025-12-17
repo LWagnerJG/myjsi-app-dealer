@@ -1,17 +1,28 @@
 import React from 'react';
-import { Home, Briefcase, Package, Users, PieChart, Settings } from 'lucide-react';
+import { Home, Briefcase, Package, Users, PieChart, Settings, MessageSquare, Database, Armchair, Box } from 'lucide-react';
 import { DESIGN_TOKENS } from '../../design-system/tokens.js';
 import { useModalState } from '../../hooks/useModalState.js';
 
-export const NavigationShell = ({ currentScreen, onNavigate, theme }) => {
+// All available navigation items - can be customized in Settings
+export const ALL_NAV_ITEMS = [
+    { id: 'home', icon: Home, label: 'Home' },
+    { id: 'projects', icon: Briefcase, label: 'Projects' },
+    { id: 'orders', icon: Package, label: 'Orders' },
+    { id: 'sales', icon: PieChart, label: 'Sales' },
+    { id: 'samples', icon: Box, label: 'Samples' },
+    { id: 'products', icon: Armchair, label: 'Products' },
+    { id: 'community', icon: MessageSquare, label: 'Community' },
+    { id: 'resources', icon: Database, label: 'Resources' },
+    { id: 'resources/dealer-directory', icon: Users, label: 'Directory' },
+];
+
+export const NavigationShell = ({ currentScreen, onNavigate, theme, customNavItems }) => {
     const { isModalOpen } = useModalState();
-    const navItems = [
-        { id: 'home', icon: Home, label: 'Home' },
-        { id: 'projects', icon: Briefcase, label: 'Projects' },
-        { id: 'orders', icon: Package, label: 'Orders' },
-        { id: 'sales', icon: PieChart, label: 'Sales' },
-        { id: 'resources/dealer-directory', icon: Users, label: 'Directory' },
-    ];
+    
+    // Use custom nav items if provided, otherwise use default
+    const navItems = customNavItems && customNavItems.length > 0 
+        ? customNavItems.map(id => ALL_NAV_ITEMS.find(item => item.id === id)).filter(Boolean)
+        : ALL_NAV_ITEMS.slice(0, 5); // Default: first 5 items
 
     const isActive = (id) => {
         if (id === 'home' && currentScreen === 'home') return true;
@@ -65,7 +76,7 @@ export const NavigationShell = ({ currentScreen, onNavigate, theme }) => {
                         border: '1px solid rgba(0,0,0,0.04)'
                     }}
                 >
-                    {navItems.slice(0, 4).map((item) => (
+                    {navItems.slice(0, 5).map((item) => (
                         <button
                             key={item.id}
                             onClick={() => onNavigate(item.id)}
@@ -77,12 +88,6 @@ export const NavigationShell = ({ currentScreen, onNavigate, theme }) => {
                             <item.icon className="w-5 h-5" />
                         </button>
                     ))}
-                    <button
-                        onClick={() => onNavigate('settings')}
-                        className="p-3 rounded-full transition-all duration-200 text-gray-400 active:bg-gray-100 active:text-gray-700"
-                    >
-                        <Settings className="w-5 h-5" />
-                    </button>
                 </div>
             </div>
         </>
