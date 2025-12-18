@@ -1,6 +1,5 @@
 // JSI ScreenLayout - Consistent page structure wrapper
 // Handles: responsive max-width, sticky header, scroll detection, padding
-// Uses JSI blur effects and typography
 import React, { useState, useRef, useCallback } from 'react';
 import { useIsDesktop } from '../hooks/useResponsive.js';
 import { DESIGN_TOKENS, JSI_COLORS, JSI_TYPOGRAPHY } from './tokens.js';
@@ -13,10 +12,10 @@ export const ScreenLayout = ({
     stickyHeader = true,
     headerBlur = true,
     // Content configuration
-    maxWidth = 'default', // 'sm' | 'md' | 'lg' | 'default' | 'wide' | 'full'
+    maxWidth = 'default',
     padding = true,
-    paddingBottom = '6rem', // Extra space for bottom navigation/FAB
-    gap = '1rem', // Gap between children
+    paddingBottom = '6rem',
+    gap = '1rem',
     // Scroll behavior
     onScrollChange,
     className = '',
@@ -32,56 +31,35 @@ export const ScreenLayout = ({
         onScrollChange?.(scrolled, scrollRef.current.scrollTop);
     }, [onScrollChange]);
     
-    // Max-width values
-    const widthMap = {
-        sm: 480,
-        md: 560,
-        lg: 640,
-        default: 720,
-        wide: 960,
+    const bgColor = theme?.colors?.background || JSI_COLORS.warmBeige;
+    
+    // Responsive horizontal padding
+    const horizontalPadding = padding ? (isDesktop ? '24px' : '16px') : '0';
+    
+    // Container class for centering - max-width applied via inline style
+    const containerClass = 'mx-auto';
+    
+    // Max-width values in pixels
+    const maxWidthMap = {
+        sm: 448,
+        md: 512,
+        lg: 576,
+        default: 672,
+        wide: 896,
         full: null,
     };
-    
-    const maxWidthValue = widthMap[maxWidth];
-    
-    const bgColor = theme?.colors?.background || JSI_COLORS.warmBeige;
+    const maxWidthPx = maxWidthMap[maxWidth];
     
     const headerWrapperStyles = stickyHeader ? {
         position: 'sticky',
         top: 0,
         zIndex: DESIGN_TOKENS.zIndex.sticky,
-        backgroundColor: isScrolled 
-            ? `${bgColor}e8` 
-            : bgColor,
+        backgroundColor: isScrolled ? `${bgColor}e8` : bgColor,
         backdropFilter: isScrolled && headerBlur ? DESIGN_TOKENS.blur.light : 'none',
         WebkitBackdropFilter: isScrolled && headerBlur ? DESIGN_TOKENS.blur.light : 'none',
         borderBottom: `1px solid ${isScrolled ? JSI_COLORS.stone : 'transparent'}`,
         transition: DESIGN_TOKENS.transitions.fast,
-        // Flex centering for header content
-        display: 'flex',
-        justifyContent: 'center',
-        width: '100%',
-    } : {
-        display: 'flex',
-        justifyContent: 'center',
-        width: '100%',
-    };
-
-    // Responsive horizontal padding
-    const horizontalPadding = padding 
-        ? (isDesktop ? 24 : 16)
-        : 0;
-    
-    // Inner container styles with max-width
-    // Using flex: '0 1 auto' with maxWidth to properly constrain content
-    const innerContainerStyle = {
-        flex: '1 1 auto',
-        width: maxWidthValue ? `min(100%, ${maxWidthValue}px)` : '100%',
-        maxWidth: maxWidthValue ? `${maxWidthValue}px` : 'none',
-        paddingLeft: `${horizontalPadding}px`,
-        paddingRight: `${horizontalPadding}px`,
-        boxSizing: 'border-box',
-    };
+    } : {};
     
     return (
         <div 
@@ -91,10 +69,18 @@ export const ScreenLayout = ({
                 fontFamily: JSI_TYPOGRAPHY.fontFamily,
             }}
         >
-            {/* Sticky Header Area - Using flex centering */}
+            {/* Sticky Header Area */}
             {header && (
                 <div style={headerWrapperStyles}>
-                    <div style={innerContainerStyle}>
+                    <div 
+                        className={containerClass}
+                        style={{
+                            width: '100%',
+                            maxWidth: maxWidthPx ? `${maxWidthPx}px` : 'none',
+                            paddingLeft: horizontalPadding,
+                            paddingRight: horizontalPadding,
+                        }}
+                    >
                         {typeof header === 'function' ? header({ isScrolled, isDesktop }) : header}
                     </div>
                 </div>
@@ -106,19 +92,19 @@ export const ScreenLayout = ({
                 onScroll={handleScroll}
                 className="flex-1 overflow-y-auto scrollbar-hide"
             >
-                {/* Flex centering wrapper */}
-                <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                    <div 
-                        className="flex flex-col"
-                        style={{
-                            ...innerContainerStyle,
-                            paddingTop: padding ? 16 : 0,
-                            paddingBottom: paddingBottom,
-                            gap: gap,
-                        }}
-                    >
-                        {children}
-                    </div>
+                <div 
+                    className={`flex flex-col ${containerClass}`}
+                    style={{
+                        width: '100%',
+                        maxWidth: maxWidthPx ? `${maxWidthPx}px` : 'none',
+                        paddingLeft: horizontalPadding,
+                        paddingRight: horizontalPadding,
+                        paddingTop: padding ? '16px' : 0,
+                        paddingBottom: paddingBottom,
+                        gap: gap,
+                    }}
+                >
+                    {children}
                 </div>
             </div>
         </div>
