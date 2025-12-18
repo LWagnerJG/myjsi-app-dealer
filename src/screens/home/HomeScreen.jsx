@@ -1,11 +1,11 @@
 // HomeScreen with responsive dealer dashboard
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { allApps, QUICK_ACCESS_APPS, DEFAULT_QUICK_ACCESS_IDS, DEALER_QUICK_ACCESS_ALLOWLIST } from '../../data.jsx';
+import { allApps, QUICK_ACCESS_APPS, DEFAULT_QUICK_ACCESS_IDS, DEALER_QUICK_ACCESS_ALLOWLIST, REPLACEMENT_REQUESTS_DATA } from '../../data.jsx';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 import { HomeSearchInput } from '../../components/common/SearchInput.jsx';
 import { DropdownPortal } from '../../DropdownPortal.jsx';
-import { Briefcase, Package, ArrowRight, SlidersHorizontal, X, Check, TrendingUp, TrendingDown } from 'lucide-react';
+import { Briefcase, Package, ArrowRight, SlidersHorizontal, X, Check, TrendingUp, TrendingDown, ShoppingCart } from 'lucide-react';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
 import { DESIGN_TOKENS, JSI_TYPOGRAPHY } from '../../design-system/tokens.js';
 import { useModalState } from '../../hooks/useModalState.js';
@@ -25,55 +25,88 @@ const USER_ROLE = 'dealer'; // 'dealer' | 'internal'
 const MAX_QUICK_ACCESS_APPS = 9;
 
 // Quick Access Grid Component with integrated stats for desktop - Memoized for performance
-const QuickAccessGrid = React.memo(({ theme, onNavigate, activeAppIds, onCustomize, stats, isDesktop }) => {
+const QuickAccessGrid = React.memo(({ theme, onNavigate, activeAppIds, onCustomize, stats, isDesktop, cart, hasNewCommunityPosts, pendingReplacements }) => {
     const activeApps = useMemo(() => {
         return QUICK_ACCESS_APPS.filter(app => activeAppIds.includes(app.id)).slice(0, MAX_QUICK_ACCESS_APPS);
     }, [activeAppIds]);
 
-    // Map app IDs to their stat data for desktop view - ALL apps get contextual metrics
+    // Calculate cart item count
+    const cartItemCount = useMemo(() => {
+        if (!cart) return 0;
+        return Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+    }, [cart]);
+
+    // Map app IDs to their stat data - Dynamic and smart blips
     const getAppStats = (appId) => {
-        if (!isDesktop || !stats) return null;
         switch (appId) {
             case 'sales':
+                if (!isDesktop || !stats) return null;
                 return { value: `$${stats.ytdSales > 0 ? (stats.ytdSales / 1000).toFixed(0) + 'k' : '0'}`, trend: stats.ytdTrend, accent: true };
             case 'projects':
+                if (!isDesktop || !stats) return null;
                 return { value: stats.activeProjects };
             case 'orders':
+                if (!isDesktop || !stats) return null;
                 return { value: stats.recentOrders };
             case 'replacements':
-                return { value: '0' }; // Pending replacements
+                // Only show if there are pending replacements
+                if (pendingReplacements > 0) {
+                    return { value: pendingReplacements, accent: true, pulse: true };
+                }
+                return null; // Hide blip if no pending replacements
             case 'samples':
-                return { value: '�' }; // No count needed, dash indicates available
+                // Show cart count if items in cart
+                if (cartItemCount > 0) {
+                    return { value: cartItemCount, accent: true, icon: 'cart' };
+                }
+                return null; // Hide blip if cart is empty
             case 'community':
-                return { value: 'New' }; // Indicates new content
+                // Only show "New" if there are new posts
+                if (hasNewCommunityPosts) {
+                    return { value: 'New', accent: true, pulse: true };
+                }
+                return null; // Hide blip if no new posts
             case 'products':
+                if (!isDesktop) return null;
                 return { value: '7' }; // Number of categories
             case 'resources':
+                if (!isDesktop) return null;
                 return { value: '15+' }; // Number of resources
             case 'lead-times':
+                if (!isDesktop) return null;
                 return { value: 'Live' }; // Live data indicator
             case 'contracts':
+                if (!isDesktop) return null;
                 return { value: '3' }; // Active contracts
             case 'customer-directory':
+                if (!isDesktop) return null;
                 return { value: '50+' }; // Customer count
             case 'discounts':
+                if (!isDesktop) return null;
                 return { value: '%' }; // Discount indicator
             case 'loaner-pool':
+                if (!isDesktop) return null;
                 return { value: '12' }; // Available items
             case 'discontinued-finishes':
+                if (!isDesktop) return null;
                 return { value: 'DB' }; // Database indicator
             case 'social-media':
+                if (!isDesktop) return null;
                 return { value: '4' }; // Posts count
             case 'design-days':
-                return { value: '??' }; // Calendar indicator
+                if (!isDesktop) return null;
+                return { value: '📅' }; // Calendar indicator
             case 'presentations':
+                if (!isDesktop) return null;
                 return { value: '8' }; // Presentations count
             case 'install-instructions':
+                if (!isDesktop) return null;
                 return { value: 'PDF' }; // Document indicator
             case 'customer-ranking':
+                if (!isDesktop) return null;
                 return { value: '#' }; // Ranking indicator
             default:
-                return { value: '�' }; // Default dot
+                return null;
         }
     };
 
@@ -113,12 +146,18 @@ const QuickAccessGrid = React.memo(({ theme, onNavigate, activeAppIds, onCustomi
                                 minHeight: isDesktop ? '110px' : '88px'
                             }}
                         >
-                            {/* Stat badge in top-right corner on desktop */}
-                            {appStats && isDesktop && (
+                            {/* Dynamic stat badge - shows on mobile for actionable items, more on desktop */}
+                            {appStats && (
                                 <div
-                                    className="absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-md"
-                                    style={{ backgroundColor: appStats.accent ? `${theme.colors.accent}15` : theme.colors.subtle }}
+                                    className={`absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-md ${appStats.pulse ? 'animate-pulse' : ''}`}
+                                    style={{ 
+                                        backgroundColor: appStats.accent ? `${theme.colors.accent}20` : theme.colors.subtle,
+                                        boxShadow: appStats.accent ? `0 0 8px ${theme.colors.accent}30` : 'none'
+                                    }}
                                 >
+                                    {appStats.icon === 'cart' && (
+                                        <ShoppingCart className="w-2.5 h-2.5" style={{ color: theme.colors.accent }} />
+                                    )}
                                     <span
                                         className="text-[10px] font-bold"
                                         style={{ color: appStats.accent ? theme.colors.accent : theme.colors.textSecondary }}
@@ -157,7 +196,10 @@ const QuickAccessGrid = React.memo(({ theme, onNavigate, activeAppIds, onCustomi
         prevProps.activeAppIds === nextProps.activeAppIds &&
         prevProps.theme === nextProps.theme &&
         prevProps.isDesktop === nextProps.isDesktop &&
-        prevProps.stats === nextProps.stats
+        prevProps.stats === nextProps.stats &&
+        prevProps.cart === nextProps.cart &&
+        prevProps.hasNewCommunityPosts === nextProps.hasNewCommunityPosts &&
+        prevProps.pendingReplacements === nextProps.pendingReplacements
     );
 });
 QuickAccessGrid.displayName = 'QuickAccessGrid';
@@ -539,8 +581,32 @@ const ensureResourcesIncluded = (appIds) => {
 };
 
 // Main HomeScreen Component
-export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opportunities = [], orders = [], customerDirectory = [] }) => {
+export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opportunities = [], orders = [], customerDirectory = [], cart = {}, posts = [] }) => {
     const isDesktop = useIsDesktop();
+    
+    // Track last seen community timestamp in localStorage
+    const [lastSeenCommunity, setLastSeenCommunity] = useState(() => {
+        try {
+            return parseInt(localStorage.getItem('community.lastSeen') || '0', 10);
+        } catch {
+            return 0;
+        }
+    });
+
+    // Calculate if there are new community posts
+    const hasNewCommunityPosts = useMemo(() => {
+        if (!posts || posts.length === 0) return false;
+        // Check if any post was created after the last time user visited community
+        return posts.some(post => {
+            const postTime = post.createdAt || 0;
+            return postTime > lastSeenCommunity;
+        });
+    }, [posts, lastSeenCommunity]);
+
+    // Calculate pending replacements
+    const pendingReplacements = useMemo(() => {
+        return REPLACEMENT_REQUESTS_DATA.filter(r => r.status === 'Pending').length;
+    }, []);
 
     // Calculate stats at parent level for use in QuickAccessGrid
     const stats = useMemo(() => {
@@ -642,6 +708,9 @@ export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opport
                 onCustomize={() => setIsCustomizeOpen(true)}
                 stats={stats}
                 isDesktop={isDesktop}
+                cart={cart}
+                hasNewCommunityPosts={hasNewCommunityPosts}
+                pendingReplacements={pendingReplacements}
             />
 
             <RecentActivityFeed theme={theme} opportunities={opportunities} orders={orders} onNavigate={onNavigate} />

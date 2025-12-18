@@ -315,7 +315,7 @@ export const FilterChips = ({
     value,
     onChange,
     theme,
-    showArrows = true,      // Show arrow separators between chips
+    showArrows = false,      // Show arrow separators between chips (default to false per user request)
     className = '',
 }) => {
     const scrollRef = useRef(null);

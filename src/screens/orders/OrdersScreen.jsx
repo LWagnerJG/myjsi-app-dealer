@@ -153,74 +153,73 @@ const GroupTile = React.memo(({ theme, dateKey, group, onNavigate }) => {
   const hasMultipleOrders = group.orders.length > 1;
   
   return (
-    <div className="mb-4 last:mb-0">
-      <GlassCard theme={theme} className="overflow-hidden" variant="elevated" style={{ borderRadius: '24px' }}>
-        {/* Date and Total Header - Inside the card */}
+    <div className="mb-5 last:mb-0">
+      {/* Orders Card - Clean white surface with date header inside */}
+      <GlassCard theme={theme} className="overflow-hidden" variant="elevated" style={{ borderRadius: '20px' }}>
+        {/* Date Header - Inside the card */}
         <div 
-          className="flex items-center justify-between px-5 py-3.5"
+          className="flex items-center justify-between px-4 py-3"
           style={{ 
-            borderBottom: `1px solid ${theme.colors.border}40`,
-            backgroundColor: theme.colors.subtle
+            backgroundColor: `${theme.colors.subtle}50`,
+            borderBottom: `1px solid ${theme.colors.border}40`
           }}
         >
           <h2 
-            className="font-semibold text-sm uppercase tracking-wider" 
+            className="font-semibold text-[13px] uppercase tracking-wide" 
             style={{ 
-              color: theme.colors.textPrimary,
+              color: theme.colors.textSecondary,
               fontFamily: DESIGN_TOKENS.typography.fontFamily
             }}
           >
             {label}
           </h2>
           {hasMultipleOrders && (
-            <div className="flex items-center gap-2">
-              <span 
-                className="text-[11px] font-medium uppercase tracking-wider" 
-                style={{ color: theme.colors.textSecondary }}
-              >
-                Total:
-              </span>
-              <p 
-                className="font-bold text-base" 
-                style={{ color: theme.colors.textPrimary }}
-              >
-                {currency0(group.total)}
-              </p>
-            </div>
+            <p 
+              className="font-semibold text-[13px]" 
+              style={{ color: theme.colors.textSecondary }}
+            >
+              {group.orders.length} orders • {currency0(group.total)}
+            </p>
           )}
         </div>
-        <div className="space-y-1">
-          {group.orders.map((o, idx) => {
-            const showDivider = idx < group.orders.length - 1;
-            return (
-              <React.Fragment key={o.orderNumber}>
-                <button 
-                  onClick={() => onNavigate(`orders/${o.orderNumber}`)} 
-                  className="w-full text-left p-4 rounded-2xl hover:bg-black/5 active:scale-[0.99] transition-all group flex items-center gap-4"
-                >
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105" style={{ backgroundColor: theme.colors.subtle }}>
-                    <Package className="w-6 h-6" style={{ color: theme.colors.textSecondary }} />
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <p className="font-bold text-[15px] truncate leading-tight" style={{ color: theme.colors.textPrimary }}>{formatTitleCase(o.details)}</p>
-                      <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-2 transition-all group-hover:opacity-100 group-hover:translate-x-0" style={{ color: theme.colors.textSecondary }} />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-bold uppercase tracking-wider" style={{ color: theme.colors.textSecondary }}>SO {o.orderNumber}</span>
-                      <StatusPill status={o.status} theme={theme} />
-                    </div>
-                  </div>
-                  
-                  <div className="text-right">
-                    <p className="font-black text-[17px] leading-tight" style={{ color: theme.colors.textPrimary }}>{currency0(o.net)}</p>
-                  </div>
-                </button>
-                {showDivider && <div className="h-[1px] mx-4 bg-gray-50" />}
-              </React.Fragment>
-            );
-          })}
+        
+        {/* Order items */}
+        <div className="divide-y" style={{ borderColor: `${theme.colors.border}25` }}>
+          {group.orders.map((o) => (
+            <button 
+              key={o.orderNumber}
+              onClick={() => onNavigate(`orders/${o.orderNumber}`)} 
+              className="w-full text-left px-4 py-4 hover:bg-black/[0.02] active:bg-black/[0.04] transition-all group flex items-center gap-3"
+            >
+              <div 
+                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-105" 
+                style={{ backgroundColor: `${theme.colors.accent}10` }}
+              >
+                <Package className="w-5 h-5" style={{ color: theme.colors.accent }} />
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="font-medium text-[15px] truncate leading-tight" style={{ color: theme.colors.textPrimary }}>
+                    {formatTitleCase(o.details)}
+                  </p>
+                  <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-2 transition-all group-hover:opacity-50 group-hover:translate-x-0 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: theme.colors.textSecondary }}>
+                    SO {o.orderNumber}
+                  </span>
+                  <StatusPill status={o.status} theme={theme} />
+                </div>
+              </div>
+              
+              <div className="text-right flex-shrink-0">
+                <p className="font-semibold text-[15px] leading-tight" style={{ color: theme.colors.textPrimary }}>
+                  {currency0(o.net)}
+                </p>
+              </div>
+            </button>
+          ))}
         </div>
       </GlassCard>
     </div>
@@ -259,7 +258,8 @@ export const OrdersScreen = ({ theme, onNavigate }) => {
 
   const header = ({ isScrolled }) => (
     <div className="py-4 flex flex-col gap-4 w-full">
-      <div className="flex items-center gap-3 h-12">
+      {/* Search row with proper alignment */}
+      <div className="flex items-center gap-3">
         <div className="flex-1">
           <SearchInput 
             value={searchTerm} 
@@ -269,63 +269,64 @@ export const OrdersScreen = ({ theme, onNavigate }) => {
             variant="header" 
           />
         </div>
+        {/* Calendar toggle button - circular and properly aligned with search input */}
         <button 
           onClick={() => setViewMode(v => v === 'list' ? 'calendar' : 'list')} 
-          className="h-12 w-12 rounded-2xl flex items-center justify-center active:scale-90 transition-all shadow-sm border border-gray-100 flex-shrink-0" 
-          style={{ backgroundColor: theme.colors.surface }}
+          className="h-[56px] w-[56px] rounded-full flex items-center justify-center active:scale-90 transition-all flex-shrink-0" 
+          style={{ 
+            backgroundColor: viewMode === 'calendar' ? theme.colors.accent : theme.colors.surface,
+            boxShadow: DESIGN_TOKENS.shadows.md,
+            border: `1px solid ${theme.colors.border}`
+          }}
           title={viewMode === 'list' ? 'Calendar View' : 'List View'}
+          aria-label={viewMode === 'list' ? 'Switch to Calendar View' : 'Switch to List View'}
         >
-          {viewMode === 'list' ? <Calendar className="w-5 h-5 text-black" /> : <List className="w-5 h-5 text-black" />}
+          {viewMode === 'list' 
+            ? <Calendar className="w-5 h-5" style={{ color: theme.colors.textPrimary }} /> 
+            : <List className="w-5 h-5" style={{ color: '#FFF' }} />
+          }
         </button>
       </div>
       
+      {/* Date type toggle - clear clickable buttons */}
       <div className="flex items-center justify-between">
-        {/* Date Type Toggle - Switch style, not sequential */}
-        <div className="flex items-center gap-3">
-          <span 
-            className="text-[11px] font-medium uppercase tracking-wider whitespace-nowrap" 
-            style={{ color: theme.colors.textSecondary }}
+        <div 
+          className="inline-flex items-center rounded-full p-1 gap-1" 
+          style={{ 
+            backgroundColor: theme.colors.surface,
+            border: `1px solid ${theme.colors.border}`,
+            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)'
+          }}
+        >
+          <button
+            onClick={() => setDateType('shipDate')}
+            className="px-5 py-2.5 rounded-full text-[13px] font-semibold transition-all active:scale-95"
+            style={{
+              backgroundColor: dateType === 'shipDate' ? theme.colors.accent : 'transparent',
+              color: dateType === 'shipDate' ? '#FFF' : theme.colors.textSecondary,
+              boxShadow: dateType === 'shipDate' ? DESIGN_TOKENS.shadows.sm : 'none'
+            }}
           >
-            View by:
-          </span>
-          <div className="flex items-center gap-2 bg-gray-50 rounded-full p-1" style={{ backgroundColor: theme.colors.subtle }}>
-            <button
-              onClick={() => setDateType('shipDate')}
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                dateType === 'shipDate' 
-                  ? 'bg-white shadow-sm' 
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              style={{
-                backgroundColor: dateType === 'shipDate' ? theme.colors.surface : 'transparent',
-                color: dateType === 'shipDate' ? theme.colors.textPrimary : theme.colors.textSecondary,
-                boxShadow: dateType === 'shipDate' ? DESIGN_TOKENS.shadows.sm : 'none'
-              }}
-            >
-              Ship Date
-            </button>
-            <button
-              onClick={() => setDateType('date')}
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
-                dateType === 'date' 
-                  ? 'bg-white shadow-sm' 
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              style={{
-                backgroundColor: dateType === 'date' ? theme.colors.surface : 'transparent',
-                color: dateType === 'date' ? theme.colors.textPrimary : theme.colors.textSecondary,
-                boxShadow: dateType === 'date' ? DESIGN_TOKENS.shadows.sm : 'none'
-              }}
-            >
-              PO Date
-            </button>
-          </div>
+            Ship Date
+          </button>
+          <button
+            onClick={() => setDateType('date')}
+            className="px-5 py-2.5 rounded-full text-[13px] font-semibold transition-all active:scale-95"
+            style={{
+              backgroundColor: dateType === 'date' ? theme.colors.accent : 'transparent',
+              color: dateType === 'date' ? '#FFF' : theme.colors.textSecondary,
+              boxShadow: dateType === 'date' ? DESIGN_TOKENS.shadows.sm : 'none'
+            }}
+          >
+            PO Date
+          </button>
         </div>
         {isDesktop && (
-            <div className="text-right">
-                <p className="text-[10px] font-medium uppercase tracking-wider" style={{ color: theme.colors.textSecondary }}>Total Results</p>
-                <p className="text-lg font-bold" style={{ color: theme.colors.textPrimary }}>{filtered.length}</p>
-            </div>
+          <div className="text-right">
+            <p className="text-[10px] font-medium uppercase tracking-wider" style={{ color: theme.colors.textSecondary }}>
+              {filtered.length} orders
+            </p>
+          </div>
         )}
       </div>
     </div>

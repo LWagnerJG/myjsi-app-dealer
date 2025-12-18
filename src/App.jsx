@@ -385,7 +385,7 @@ function App() {
                     customNavItems={customNavItems}
                 />
 
-                <div className="flex-1 pt-[76px] lg:pl-24 overflow-hidden" style={{ backgroundColor: currentTheme.colors.background }}>
+                <div className="flex-1 pt-[76px] overflow-hidden" style={{ backgroundColor: currentTheme.colors.background }}>
                     <AnimatedScreenWrapper screenKey={currentScreen} direction={lastNavigationDirection} onSwipeBack={navigationHistory.length > 1 ? handleBack : null}>
                         <ScreenRouter screenKey={currentScreen} projectsScreenRef={projectsScreenRef} SuspenseFallback={suspenseFallback} {...screenProps} />
                     </AnimatedScreenWrapper>

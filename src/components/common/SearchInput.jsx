@@ -202,8 +202,8 @@ export const SearchInput = React.memo(function SearchInput({
         border: 'none',
         boxShadow: DESIGN_TOKENS.shadows.lg,
         borderRadius: DESIGN_TOKENS.borderRadius.pill,
-        paddingLeft: 18,
-        paddingRight: 18,
+        paddingLeft: 20,
+        paddingRight: 20,
         transition: DESIGN_TOKENS.transitions.fast
     } : {
         height: 44,

@@ -37,15 +37,15 @@ export const Modal = ({ show, onClose, title, children, theme }) => {
 
     return ReactDOM.createPortal(
         <>
-            {/* Backdrop - NOW COVERS HEADER (top: 0) with higher Z-index - JSI Blur 24 */}
+            {/* Backdrop - NOW COVERS HEADER (top: 0) with higher Z-index - JSI Blur 12 per user request */}
             <div
-                className="fixed inset-0 bg-black/40 transition-opacity duration-300 pointer-events-auto"
+                className="fixed inset-0 bg-black/30 transition-opacity duration-300 pointer-events-auto"
                 style={{
                     top: 0, // Cover entire screen including header
                     zIndex: DESIGN_TOKENS.zIndex.overlay + 10, // Ensure it's above header (30) and standard overlay (50)
                     opacity: show ? 1 : 0,
-                    backdropFilter: DESIGN_TOKENS.blur.light, // Background Blur 24 from style guide
-                    WebkitBackdropFilter: DESIGN_TOKENS.blur.light
+                    backdropFilter: 'blur(12px)', // Reduced blur per user request
+                    WebkitBackdropFilter: 'blur(12px)'
                 }}
                 onClick={onClose}
             />

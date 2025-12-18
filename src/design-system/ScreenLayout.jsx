@@ -72,6 +72,11 @@ export const ScreenLayout = ({
         marginRight: 'auto',
         width: '100%',
     } : {};
+
+    const responsivePadding = padding ? {
+        paddingLeft: isDesktop ? '1.5rem' : '1rem',
+        paddingRight: isDesktop ? '1.5rem' : '1rem',
+    } : {};
     
     return (
         <div 
@@ -84,7 +89,12 @@ export const ScreenLayout = ({
             {/* Sticky Header Area */}
             {header && (
                 <div style={headerStyles}>
-                    <div style={contentWrapperStyle}>
+                    <div 
+                        style={{
+                            ...contentWrapperStyle,
+                            ...responsivePadding,
+                        }}
+                    >
                         {typeof header === 'function' ? header({ isScrolled, isDesktop }) : header}
                     </div>
                 </div>
@@ -99,8 +109,7 @@ export const ScreenLayout = ({
                 <div 
                     style={{
                         ...contentWrapperStyle,
-                        paddingLeft: padding ? (isDesktop ? '1.5rem' : '1rem') : 0,
-                        paddingRight: padding ? (isDesktop ? '1.5rem' : '1rem') : 0,
+                        ...responsivePadding,
                         paddingTop: padding ? '1rem' : 0,
                         paddingBottom: paddingBottom,
                     }}

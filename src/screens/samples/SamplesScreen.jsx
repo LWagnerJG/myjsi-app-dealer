@@ -96,11 +96,11 @@ const CartDrawer = ({ cart, onUpdateCart, theme, userSettings, dealers, designFi
 
     const cartItems = useMemo(() => Object.entries(cart).map(([rawId, quantity]) => {
         const id = idOf(rawId);
-        if (id === 'full-jsi-set') return { id, name: 'Full JSI Sample Set', quantity, isSet: true };
+        if (id === 'full-jsi-set') return { id, name: 'All JSI Sample Set', quantity, isSet: true };
         if (id.startsWith('set-')) { 
             const categoryId = id.replace('set-', ''); 
             const categoryName = FINISH_CATEGORIES.find((c) => c.id === categoryId)?.name || SAMPLE_CATEGORIES.find((c) => c.id === categoryId)?.name || categoryId; 
-            return { id, name: `Complete ${categoryName} Set`, quantity, isSet: true }; 
+            return { id, name: `Full JSI ${categoryName.toUpperCase()} Set`, quantity, isSet: true }; 
         }
         const product = getSampleProduct(id); 
         return product ? { ...product, id, quantity, isSet: false } : null;
@@ -124,121 +124,185 @@ const CartDrawer = ({ cart, onUpdateCart, theme, userSettings, dealers, designFi
             <AnimatePresence mode="wait">
                 {totalCartItems > 0 && (
                     <React.Fragment key="cart-container">
+                        {/* Floating cart button - RIGHT ALIGNED with bottom nav items */}
                         {!isExpanded && (
                             <motion.button
                                 key="collapsed-btn"
                                 layout
-                                initial={{ scale: 0.9, y: 20, opacity: 0 }}
-                                animate={{ scale: 1, y: 0, opacity: 1 }}
-                                exit={{ scale: 0.9, y: 20, opacity: 0 }}
+                                initial={{ scale: 0.9, x: 20, opacity: 0 }}
+                                animate={{ scale: 1, x: 0, opacity: 1 }}
+                                exit={{ scale: 0.9, x: 20, opacity: 0 }}
                                 transition={{ type: "spring", stiffness: 500, damping: 25 }}
                                 onClick={() => setIsExpanded(true)}
-                                className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[2000] h-14 pl-6 pr-2 rounded-full shadow-2xl flex items-center gap-4 active:scale-95 transition-all border border-black/5"
+                                className="fixed bottom-[96px] right-6 z-[2000] h-12 pl-5 pr-1.5 rounded-full flex items-center gap-3 active:scale-95 transition-all shadow-xl"
                                 style={{ 
-                                    backgroundColor: theme.colors.accent,
-                                    boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-                                    color: '#FFF'
+                                    backgroundColor: 'rgba(255,255,255,0.98)',
+                                    backdropFilter: 'blur(12px)',
+                                    WebkitBackdropFilter: 'blur(12px)',
+                                    boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.05)',
+                                    color: theme.colors.textPrimary
                                 }}
                             >
-                                <span className="font-bold text-sm tracking-tight uppercase">View Sample Cart</span>
-                                <div className="bg-white/20 backdrop-blur-md text-white w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold shadow-sm border border-white/20">{totalCartItems}</div>
+                                <ShoppingCart className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
+                                <span className="font-bold text-[11px] tracking-widest uppercase">Sample Cart</span>
+                                <div 
+                                    className="w-9 h-9 flex items-center justify-center rounded-full text-[13px] font-bold"
+                                    style={{ 
+                                        backgroundColor: theme.colors.accent,
+                                        color: '#FFF'
+                                    }}
+                                >
+                                    {totalCartItems}
+                                </div>
                             </motion.button>
                         )}
 
+                        {/* Cart Modal - Centered with balanced blur overlay (less intense per user) */}
                         {isExpanded && (
-                            <div key="expanded-sheet" className="fixed inset-0 z-[4000] flex flex-col justify-end">
-                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsExpanded(false)} />
+                            <div key="expanded-modal" className="fixed inset-0 z-[5000] flex items-center justify-center p-4">
+                                {/* Back-drop with balanced blur */}
+                                <motion.div 
+                                    initial={{ opacity: 0 }} 
+                                    animate={{ opacity: 1 }} 
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="absolute inset-0" 
+                                    style={{
+                                        backgroundColor: 'rgba(0,0,0,0.3)', 
+                                        backdropFilter: 'blur(12px)',
+                                        WebkitBackdropFilter: 'blur(12px)'
+                                    }}
+                                    onClick={() => setIsExpanded(false)} 
+                                />
+                                
+                                {/* Modal content - centered and refined */}
                                 <motion.div
-                                    initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
-                                    className="bg-white rounded-t-[32px] relative z-20 overflow-hidden flex flex-col shadow-2xl h-auto max-h-[90vh]"
-                                    style={{ boxShadow: getDrawerShadow(true) }}
+                                    initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+                                    animate={{ opacity: 1, scale: 1, y: 0 }} 
+                                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                    className="bg-white rounded-[32px] relative z-20 overflow-hidden flex flex-col w-full max-w-md"
+                                    style={{ 
+                                        maxHeight: 'min(calc(100vh - 80px), 640px)',
+                                        boxShadow: '0 32px 80px rgba(0,0,0,0.25)'
+                                    }}
                                 >
-                                    <div onClick={() => setIsExpanded(false)} className="flex items-center justify-between p-6 border-b border-gray-100 bg-white cursor-pointer hover:bg-gray-50 transition-colors">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${theme.colors.accent}10` }}>
-                                                <ShoppingCart className="w-6 h-6" style={{ color: theme.colors.accent }} />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold text-lg tracking-tight text-black">Sample Cart</h3>
-                                                <p className="text-xs text-gray-500 font-medium">{totalCartItems} items selected</p>
-                                            </div>
-                                        </div>
-                                        <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center active:scale-90 transition">
-                                            <ChevronDown className="w-5 h-5 text-gray-600" />
-                                        </div>
+                                    {/* Header - Matches "Add Replacement Finish" modal style */}
+                                    <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
+                                        <h3 className="font-bold text-xl text-black">Sample Cart</h3>
+                                        <button 
+                                            onClick={() => setIsExpanded(false)}
+                                            className="w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition hover:bg-black/5"
+                                            style={{ backgroundColor: 'rgba(0,0,0,0.04)' }}
+                                        >
+                                            <X className="w-5 h-5 text-gray-500" />
+                                        </button>
                                     </div>
 
                                     {isSuccess ? (
-                                        <div className="h-80 flex items-center justify-center relative">
+                                        <div className="h-72 flex items-center justify-center relative">
                                             <SuccessModal isOpen={true} />
                                         </div>
                                     ) : (
-                                        <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-32 bg-white scrollbar-hide">
-                                            <div className="space-y-4">
-                                                {cartItems.map((item) => (
-                                                    <div key={item.id} className="flex items-center gap-4 group">
-                                                        <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0 border border-black/5 shadow-sm">
-                                                            {item.isSet ? (
-                                                                <Package className="w-8 h-8 opacity-20" />
-                                                            ) : item.image ? (
-                                                                <img src={item.image} className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                <div className="w-full h-full" style={{ background: item.color }} />
-                                                            )}
+                                        <>
+                                            <div className="flex-1 overflow-y-auto scrollbar-hide px-6">
+                                                {/* Cart items */}
+                                                <div className="space-y-3 pt-2">
+                                                    {cartItems.map((item) => (
+                                                        <div 
+                                                            key={item.id} 
+                                                            className="flex items-center gap-4 p-3 rounded-2xl"
+                                                            style={{ backgroundColor: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.03)' }}
+                                                        >
+                                                            <div className="w-14 h-14 rounded-xl bg-white flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm border border-black/5">
+                                                                {item.isSet ? (
+                                                                    <Package className="w-6 h-6 opacity-20" />
+                                                                ) : item.image ? (
+                                                                    <img src={item.image} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="w-full h-full" style={{ background: item.color }} />
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="font-bold text-[15px] text-black leading-tight truncate">{item.name}</div>
+                                                                {item.code && <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mt-1">{item.code}</div>}
+                                                            </div>
+                                                            <div className="flex items-center gap-2.5 bg-white rounded-full p-1 border border-black/5 shadow-sm">
+                                                                <button 
+                                                                    onClick={() => onUpdateCart(item, -1)} 
+                                                                    className="w-8 h-8 flex items-center justify-center rounded-full active:scale-90 transition-all hover:bg-black/5"
+                                                                >
+                                                                    {item.quantity === 1 ? <Trash2 className="w-3.5 h-3.5 text-red-500" /> : <Minus className="w-3.5 h-3.5 text-black" />}
+                                                                </button>
+                                                                <span className="font-bold text-sm min-w-[16px] text-center text-black">{item.quantity}</span>
+                                                                <button 
+                                                                    onClick={() => onUpdateCart(item, 1)} 
+                                                                    className="w-8 h-8 flex items-center justify-center rounded-full bg-black text-white active:scale-90 transition-all shadow-sm"
+                                                                >
+                                                                    <Plus className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                        <div className="flex-1">
-                                                            <div className="font-bold text-[15px] text-black leading-tight">{item.name}</div>
-                                                            {item.code && <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mt-1">{item.code}</div>}
-                                                        </div>
-                                                        <div className="flex items-center bg-gray-50 rounded-full p-1.5 gap-3 border border-gray-100 shadow-inner">
-                                                            <button onClick={() => onUpdateCart(item, -1)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-black transition-all hover:scale-105 active:scale-90 border border-gray-100">
-                                                                {item.quantity === 1 ? <Trash2 className="w-4 h-4 text-red-500" /> : <Minus className="w-4 h-4" />}
+                                                    ))}
+                                                </div>
+
+                                                {/* Ship To section - more integrated look */}
+                                                <div className="mt-6 p-5 rounded-2xl" style={{ backgroundColor: 'rgba(0,0,0,0.02)', border: '1px solid rgba(0,0,0,0.03)' }}>
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <h4 className="text-[11px] font-black uppercase tracking-widest text-gray-400">Ship To</h4>
+                                                        <div className="flex gap-2">
+                                                            <button 
+                                                                onClick={() => { setShipToName('Luke Wagner'); setAddress1(userSettings?.homeAddress); }} 
+                                                                className="text-[10px] font-bold text-gray-600 bg-white px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-all border border-black/5"
+                                                            >
+                                                                Use Home
                                                             </button>
-                                                            <span className="font-bold text-sm w-5 text-center text-black">{item.quantity}</span>
-                                                            <button onClick={() => onUpdateCart(item, 1)} className="w-8 h-8 flex items-center justify-center rounded-full bg-black text-white shadow-sm transition-all hover:scale-105 active:scale-90 border border-black/5"><Plus className="w-4 h-4" /></button>
+                                                            <button 
+                                                                onClick={() => setShowDir(true)} 
+                                                                className="text-[10px] font-bold text-gray-600 bg-white px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-all flex items-center gap-1 border border-black/5"
+                                                            >
+                                                                Directory
+                                                            </button>
                                                         </div>
                                                     </div>
-                                                ))}
-                                            </div>
-
-                                            <div className="space-y-4 bg-[#F8F9FA] p-5 rounded-[24px] border border-gray-100">
-                                                <div className="flex items-center justify-between">
-                                                    <h4 className="text-[11px] font-black uppercase tracking-[0.08em] text-gray-400">Ship To</h4>
-                                                    <div className="flex gap-2">
-                                                        <button 
-                                                            onClick={() => { setShipToName('Luke Wagner'); setAddress1(userSettings?.homeAddress); }} 
-                                                            className="text-[10px] font-bold text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-all hover:bg-gray-50"
-                                                        >
-                                                            Use My Address
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => setShowDir(true)} 
-                                                            className="text-[10px] font-bold text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-all hover:bg-gray-50 flex items-center gap-1.5"
-                                                        >
-                                                            <Search className="w-3 h-3" /> Directory
-                                                        </button>
+                                                    <div className="space-y-3">
+                                                        <input 
+                                                            value={shipToName} 
+                                                            onChange={e => setShipToName(e.target.value)} 
+                                                            placeholder="Recipient / Company" 
+                                                            className="w-full bg-white rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:ring-2 ring-black/5 text-black border border-black/5 shadow-sm placeholder:text-gray-300" 
+                                                        />
+                                                        <input 
+                                                            value={address1} 
+                                                            onChange={e => setAddress1(e.target.value)} 
+                                                            placeholder="Street Address" 
+                                                            className="w-full bg-white rounded-xl px-4 py-3 text-sm font-semibold outline-none focus:ring-2 ring-black/5 text-black border border-black/5 shadow-sm placeholder:text-gray-300" 
+                                                        />
                                                     </div>
                                                 </div>
-                                                <div className="space-y-3">
-                                                    <input value={shipToName} onChange={e => setShipToName(e.target.value)} placeholder="Full Name / Company" className="w-full bg-white rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all focus:ring-2 ring-black/5 text-black border border-gray-200 shadow-sm placeholder:text-gray-300" />
-                                                    <input value={address1} onChange={e => setAddress1(e.target.value)} placeholder="Street Address" className="w-full bg-white rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all focus:ring-2 ring-black/5 text-black border border-gray-200 shadow-sm placeholder:text-gray-300" />
-                                                </div>
                                             </div>
 
-                                            <button
-                                                disabled={!canSubmit}
-                                                onClick={handleSubmit}
-                                                className="w-full py-4 rounded-2xl font-bold text-white shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-[15px] disabled:opacity-50 disabled:grayscale"
-                                                style={{ 
-                                                    backgroundColor: canSubmit ? theme.colors.accent : '#e5e7eb',
-                                                    boxShadow: canSubmit ? `0 8px 32px ${theme.colors.accent}40` : 'none'
-                                                }}
-                                            >
-                                                <span>Submit Sample Request</span>
-                                                {canSubmit && <ChevronRight className="w-5 h-5" />}
-                                            </button>
-                                        </div>
+                                            {/* Action buttons at bottom - Matches "Add Replacement Finish" modal style */}
+                                            <div className="p-6 flex gap-3 flex-shrink-0 bg-white border-t border-black/5 mt-2">
+                                                <button
+                                                    onClick={() => setIsExpanded(false)}
+                                                    className="flex-1 py-3.5 rounded-2xl font-bold text-gray-600 bg-gray-100 active:scale-[0.98] transition-all text-sm shadow-sm"
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    disabled={!canSubmit}
+                                                    onClick={handleSubmit}
+                                                    className="flex-[1.5] py-3.5 rounded-2xl font-bold text-white active:scale-[0.98] transition-all text-sm shadow-lg disabled:opacity-50"
+                                                    style={{ 
+                                                        backgroundColor: canSubmit ? theme.colors.accent : '#d1d5db',
+                                                        boxShadow: canSubmit ? `0 8px 24px ${theme.colors.accent}30` : 'none'
+                                                    }}
+                                                >
+                                                    {isSuccess ? 'Submitting...' : 'Submit Sample Request'}
+                                                </button>
+                                            </div>
+                                        </>
                                     )}
                                 </motion.div>
                             </div>
@@ -266,82 +330,91 @@ const SampleCard = React.memo(({ product, cart, onUpdateCart, theme }) => {
     }, [product, id, onUpdateCart]);
 
     return (
-        <div className="w-full group">
+        <div className="w-full relative">
             <GlassCard
                 theme={theme}
                 variant="elevated"
                 interactive
-                className="relative w-full aspect-square overflow-hidden cursor-pointer transition-all duration-300 p-0"
+                className="relative w-full aspect-square overflow-hidden cursor-pointer transition-all duration-200 p-0"
                 style={{
                     borderColor: qty > 0 ? theme.colors.accent : 'transparent',
                     borderWidth: qty > 0 ? '2px' : '0',
-                    transform: qty > 0 ? 'scale(0.98)' : 'scale(1)'
                 }}
                 onClick={add}
             >
-                {/* Image Area - matches style guide product cards */}
+                {/* Image Area */}
                 <div className="relative w-full h-full overflow-hidden">
                     {product.image ? (
                         <img 
                             src={product.image} 
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                            className="w-full h-full object-cover" 
                             alt={product.name}
                         />
                     ) : (
                         <div className="w-full h-full" style={{ backgroundColor: product.color || theme.colors.subtle }} />
                     )}
 
-                    {/* Quantity Controls - matches style guide pill buttons */}
-                    <AnimatePresence>
+                    {/* Quantity Controls - Glass pill centered at bottom - ENSURE IT DOES NOT FALL OFF */}
+                    <AnimatePresence mode="wait">
                         {qty > 0 && (
                             <motion.div
-                                initial={{ opacity: 0, y: 10 }} 
-                                animate={{ opacity: 1, y: 0 }} 
-                                exit={{ opacity: 0, y: 10 }}
+                                key="qty-controls"
+                                initial={{ opacity: 0, scale: 0.9, y: 4 }} 
+                                animate={{ opacity: 1, scale: 1, y: 0 }} 
+                                exit={{ opacity: 0, scale: 0.9, y: 4 }}
+                                transition={{ duration: 0.15 }}
                                 onClick={(e) => e.stopPropagation()}
-                                className="absolute bottom-3 left-3 right-3 z-10"
+                                className="absolute bottom-2 left-2 right-2 z-10"
                             >
-                                <div className="flex items-center justify-between bg-white/95 backdrop-blur-md rounded-full shadow-xl border border-white/30 p-1.5 h-11">
+                                <div 
+                                    className="flex items-center justify-between px-1 py-1 rounded-full"
+                                    style={{
+                                        backgroundColor: 'rgba(255,255,255,0.92)',
+                                        backdropFilter: 'blur(16px)',
+                                        WebkitBackdropFilter: 'blur(16px)',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.12), 0 0 0 1px rgba(255,255,255,0.4) inset'
+                                    }}
+                                >
                                     <button
                                         onClick={remove}
-                                        className="w-9 h-9 rounded-full bg-gray-50 flex items-center justify-center hover:bg-gray-100 transition-all active:scale-90 border border-gray-100"
+                                        className="w-6 h-6 rounded-full flex items-center justify-center transition-all active:scale-90"
+                                        style={{ 
+                                            backgroundColor: qty === 1 ? 'rgba(239,68,68,0.08)' : 'rgba(0,0,0,0.04)'
+                                        }}
                                     >
-                                        {qty === 1 ? <Trash2 className="w-4 h-4 text-red-500" /> : <Minus className="w-4 h-4 text-black" />}
+                                        {qty === 1 
+                                            ? <Trash2 className="w-2.5 h-2.5 text-red-500" /> 
+                                            : <Minus className="w-2.5 h-2.5 text-black" />
+                                        }
                                     </button>
 
-                                    <span className="font-black text-sm text-black">{qty}</span>
+                                    <span className="font-bold text-[11px] text-black text-center min-w-[14px]">{qty}</span>
 
                                     <button
                                         onClick={add}
-                                        className="w-9 h-9 rounded-full bg-black text-white flex items-center justify-center hover:bg-black/90 transition-all active:scale-90"
+                                        className="w-6 h-6 rounded-full bg-black text-white flex items-center justify-center transition-all active:scale-90"
                                     >
-                                        <Plus className="w-4 h-4" />
+                                        <Plus className="w-2.5 h-2.5" />
                                     </button>
-                                </div>
-                            </motion.div>
-                        )}
-                        {qty === 0 && (
-                            <motion.div 
-                                initial={{ opacity: 0 }}
-                                whileHover={{ opacity: 1 }}
-                                className="absolute inset-0 bg-black/5 flex items-center justify-center pointer-events-none transition-opacity"
-                            >
-                                <div className="w-12 h-12 rounded-full bg-white/95 backdrop-blur-md shadow-lg flex items-center justify-center border border-white/30">
-                                    <Plus className="w-6 h-6 text-black" />
                                 </div>
                             </motion.div>
                         )}
                     </AnimatePresence>
+                    
+                    {/* Simple add indicator on hover - no plus flash */}
+                    {qty === 0 && (
+                        <div className="absolute inset-0 bg-black/0 hover:bg-black/[0.03] transition-colors duration-200" />
+                    )}
                 </div>
             </GlassCard>
             
-            {/* Product Name - matches style guide typography */}
-            <div className="mt-3 text-center">
-                <div className="text-[13px] font-bold text-black line-clamp-1 px-1" style={{ fontFamily: DESIGN_TOKENS.typography.fontFamily }}>
+            {/* Product Name */}
+            <div className="mt-2 text-center">
+                <div className="text-[11px] sm:text-[12px] font-semibold text-black line-clamp-1 px-0.5" style={{ fontFamily: DESIGN_TOKENS.typography.fontFamily }}>
                     {product.name}
                 </div>
                 {product.code && (
-                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mt-1" style={{ fontFamily: DESIGN_TOKENS.typography.fontFamily }}>
+                    <div className="text-[9px] font-medium text-gray-400 uppercase tracking-wider mt-0.5" style={{ fontFamily: DESIGN_TOKENS.typography.fontFamily }}>
                         {product.code}
                     </div>
                 )}
@@ -388,20 +461,20 @@ export const SamplesScreen = ({ theme, onNavigate, cart: cartProp, onUpdateCart:
                 <Button 
                     variant="secondary" 
                     size="sm"
-                    onClick={() => onUpdateCart({ id: 'full-jsi-set', name: 'Full JSI Set' }, 1)}
-                    className="flex-1 max-w-[160px] h-11 !rounded-full !text-[11px] !font-black !tracking-widest uppercase shadow-sm"
+                    onClick={() => onUpdateCart({ id: `set-${selectedCategory}`, name: `Full JSI ${selectedCategory.toUpperCase()} Set` }, 1)}
+                    className="flex-1 max-w-[180px] h-11 !rounded-full !text-[10px] !font-bold !tracking-widest uppercase shadow-sm"
                     icon={<Plus className="w-3.5 h-3.5" />}
                 >
-                    Full Set
+                    Full JSI {selectedCategory.toUpperCase()} Set
                 </Button>
                 <Button 
                     variant="secondary" 
                     size="sm"
-                    onClick={() => onUpdateCart({ id: `set-${selectedCategory}`, name: `Complete ${selectedCategory} Set` }, 1)}
-                    className="flex-1 max-w-[160px] h-11 !rounded-full !text-[11px] !font-black !tracking-widest uppercase shadow-sm"
+                    onClick={() => onUpdateCart({ id: 'full-jsi-set', name: 'All JSI Sample Set' }, 1)}
+                    className="flex-1 max-w-[180px] h-11 !rounded-full !text-[10px] !font-bold !tracking-widest uppercase shadow-sm"
                     icon={<Plus className="w-3.5 h-3.5" />}
                 >
-                    All {categories.find(c => c.key === selectedCategory)?.label}
+                    All JSI Sample Set
                 </Button>
             </div>
         </div>
@@ -414,9 +487,10 @@ export const SamplesScreen = ({ theme, onNavigate, cart: cartProp, onUpdateCart:
                 header={header}
                 maxWidth="content"
                 padding={false}
-                paddingBottom="12rem"
+                paddingBottom="10rem"
             >
-                <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 max-w-7xl mx-auto">
+                {/* 3 columns on small, growing dynamically to 6 on large screens */}
+                <div className="px-3 sm:px-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3 sm:gap-4 md:gap-5 max-w-7xl mx-auto">
                     {filteredProducts.map(p => (
                         <SampleCard 
                             key={p.id} 
@@ -432,3 +506,4 @@ export const SamplesScreen = ({ theme, onNavigate, cart: cartProp, onUpdateCart:
         </div>
     );
 };
+

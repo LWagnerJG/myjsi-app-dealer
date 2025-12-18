@@ -810,7 +810,7 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
             value={selectedPipelineStage}
             onChange={setSelectedPipelineStage}
             theme={theme}
-            showArrows={true}
+            showArrows={false}
           />
           {/* Total display - discrete, underneath filter */}
           {filteredOpportunities.length > 0 && (
