@@ -1,41 +1,85 @@
 import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Modal } from '../../components/common/Modal';
-import { ArrowUp, ArrowDown, TrendingUp, Award, BarChart, Table } from 'lucide-react';
+import { ArrowUp, ArrowDown, TrendingUp, Award, BarChart, Table, Target, ChevronRight, Trophy, Users } from 'lucide-react';
 import { MONTHLY_SALES_DATA, SALES_VERTICALS_DATA } from './data.js';
 import { ORDER_DATA, STATUS_COLORS } from '../orders/data.js';
 import { SalesByVerticalBreakdown } from './components/SalesByVerticalBreakdown.jsx';
 import { CountUp } from '../../components/common/CountUp.jsx';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GlassCard, ScreenLayout } from '../../design-system/index.js';
-import { JSI_COLORS } from '../../design-system/tokens.js';
+import { JSI_COLORS, DESIGN_TOKENS } from '../../design-system/tokens.js';
 
 const formatCompanyName = (name = '') => name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 const monthNameToNumber = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
 
+// Redesigned tabs - Customer Leaderboard left, Sales Rewards right
 const SegmentedTabs = ({ theme, active, onChange }) => {
   const tabs = useMemo(() => [
-    { key: 'rewards', label: 'Rewards', Icon: Award },
-    { key: 'ranking', label: 'Ranking', Icon: TrendingUp },
+    { key: 'ranking', label: 'Customer Leaderboard', Icon: Trophy },
+    { key: 'rewards', label: 'Sales Rewards', Icon: Award },
   ], []);
+  
   const wrapRef = useRef(null);
   const btnRefs = useRef([]);
-  const [u, setU] = useState({ left: 0, width: 0, ready: false });
+  const [indicator, setIndicator] = useState({ left: 0, width: 0, ready: false });
+  
   const recalc = useCallback(() => {
-    const i = tabs.findIndex(t => t.key === active); if (i === -1) { setU(o => ({ ...o, ready: false })); return; }
-    const el = btnRefs.current[i]; const wrap = wrapRef.current; if (!el || !wrap) return;
-    const wl = wrap.getBoundingClientRect().left; const { left, width } = el.getBoundingClientRect();
-    setU({ left: left - wl, width, ready: true });
+    const i = tabs.findIndex(t => t.key === active);
+    if (i === -1) { setIndicator(o => ({ ...o, ready: false })); return; }
+    const el = btnRefs.current[i];
+    const wrap = wrapRef.current;
+    if (!el || !wrap) return;
+    const wl = wrap.getBoundingClientRect().left;
+    const { left, width } = el.getBoundingClientRect();
+    setIndicator({ left: left - wl, width, ready: true });
   }, [active, tabs]);
+  
   useEffect(() => { recalc(); }, [recalc]);
-  useEffect(() => { const r = () => recalc(); window.addEventListener('resize', r); return () => window.removeEventListener('resize', r); }, [recalc]);
+  useEffect(() => {
+    const r = () => recalc();
+    window.addEventListener('resize', r);
+    return () => window.removeEventListener('resize', r);
+  }, [recalc]);
+  
   return (
-    <div ref={wrapRef} className="relative w-full flex" style={{ borderBottom: `1px solid ${theme.colors.border}` }}>
-      {u.ready && <motion.div layout className="absolute bottom-0 h-[3px] rounded-full" style={{ left: u.left, width: u.width, background: theme.colors.accent }} transition={{ type: 'spring', stiffness: 220, damping: 30 }} />}
+    <div 
+      ref={wrapRef} 
+      className="relative w-full flex rounded-full p-1 gap-1" 
+      style={{ 
+        backgroundColor: theme.colors.surface,
+        border: `1px solid ${theme.colors.border}`,
+        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)'
+      }}
+    >
+      {indicator.ready && (
+        <motion.div 
+          layout 
+          className="absolute inset-y-1 rounded-full" 
+          style={{ 
+            left: indicator.left, 
+            width: indicator.width, 
+            backgroundColor: theme.colors.accent,
+            boxShadow: DESIGN_TOKENS.shadows.sm
+          }} 
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }} 
+        />
+      )}
       {tabs.map((t, i) => {
-        const selected = t.key === active; return (
-          <button key={t.key} ref={el => btnRefs.current[i] = el} onClick={() => onChange(selected ? null : t.key)} className="flex-1 flex items-center justify-center gap-2 h-12 font-semibold text-sm tracking-wide" style={{ color: selected ? theme.colors.textPrimary : theme.colors.textSecondary }}>
-            <t.Icon className="w-4 h-4" style={{ color: selected ? theme.colors.accent : theme.colors.textSecondary }} />{t.label}
+        const selected = t.key === active;
+        return (
+          <button 
+            key={t.key} 
+            ref={el => btnRefs.current[i] = el} 
+            onClick={() => onChange(selected ? null : t.key)} 
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 font-semibold text-[13px] tracking-wide rounded-full relative z-10 transition-colors"
+            style={{ 
+              color: selected ? '#FFF' : theme.colors.textSecondary 
+            }}
+          >
+            <t.Icon className="w-4 h-4" />
+            <span className="hidden sm:inline">{t.label}</span>
+            <span className="sm:hidden">{t.key === 'ranking' ? 'Leaderboard' : 'Rewards'}</span>
           </button>
         );
       })}
@@ -43,79 +87,275 @@ const SegmentedTabs = ({ theme, active, onChange }) => {
   );
 };
 
+// Improved Monthly Bar Chart with better styling
 const MonthlyBarChart = ({ data, theme, onMonthSelect, dataType = 'bookings' }) => {
   const max = Math.max(...data.map(d => dataType === 'bookings' ? d.bookings : d.sales));
+  
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {data.map((m, idx) => {
-        const val = dataType === 'bookings' ? m.bookings : m.sales; const pct = Math.min(99.4, (val / max) * 100); return (
-          <div key={m.month} className="grid grid-cols-[3rem,1fr,auto] items-center gap-x-4 text-sm">
-            <span className="font-semibold" style={{ color: theme.colors.textSecondary }}>{m.month}</span>
-            <div className="h-3 rounded-full relative overflow-hidden" style={{ backgroundColor: theme.colors.border }}>
-              <motion.div className="absolute inset-y-0 left-0 rounded-full" initial={{ width: 0 }} animate={{ width: pct + '%' }} transition={{ duration: 0.5, delay: idx * 0.03, ease: [0.4, 0, 0.2, 1] }} style={{ backgroundColor: theme.colors.accent }} />
+        const val = dataType === 'bookings' ? m.bookings : m.sales;
+        const pct = Math.min(99.4, (val / max) * 100);
+        const isCurrentMonth = new Date().toLocaleString('en-US', { month: 'short' }) === m.month;
+        
+        return (
+          <button
+            key={m.month}
+            onClick={() => onMonthSelect(m)}
+            className="w-full grid grid-cols-[3rem,1fr,auto] items-center gap-x-4 text-sm py-1.5 rounded-lg transition-all hover:bg-black/[0.03] active:scale-[0.99] group"
+          >
+            <span 
+              className="font-semibold text-left" 
+              style={{ 
+                color: isCurrentMonth ? theme.colors.accent : theme.colors.textSecondary,
+                fontWeight: isCurrentMonth ? 700 : 500
+              }}
+            >
+              {m.month}
+            </span>
+            <div 
+              className="h-4 rounded-full relative overflow-hidden" 
+              style={{ backgroundColor: `${theme.colors.border}60` }}
+            >
+              <motion.div 
+                className="absolute inset-y-0 left-0 rounded-full" 
+                initial={{ width: 0 }} 
+                animate={{ width: pct + '%' }} 
+                transition={{ duration: 0.5, delay: idx * 0.03, ease: [0.4, 0, 0.2, 1] }} 
+                style={{ 
+                  backgroundColor: isCurrentMonth ? theme.colors.accent : `${theme.colors.accent}90`
+                }} 
+              />
             </div>
-            <button onClick={() => onMonthSelect(m)} className="font-semibold text-right hover:underline" style={{ color: theme.colors.textPrimary }}>${val.toLocaleString()}</button>
-          </div>
+            <span 
+              className="font-semibold text-right min-w-[5.5rem] group-hover:text-opacity-80 transition-colors" 
+              style={{ color: theme.colors.textPrimary }}
+            >
+              ${val.toLocaleString()}
+            </span>
+          </button>
         );
       })}
     </div>
   );
 };
 
+// Table view for monthly data
 const MonthlyTable = ({ data, theme, onMonthSelect }) => (
-  <div className="text-sm" style={{ color: theme.colors.textPrimary }}>
-    <div className="grid grid-cols-3 font-bold border-b" style={{ borderColor: theme.colors.border }}>
-      <div className="p-2">Month</div><div className="p-2 text-right">Bookings</div><div className="p-2 text-right">Sales</div>
+  <div className="text-sm overflow-hidden rounded-xl" style={{ border: `1px solid ${theme.colors.border}` }}>
+    <div 
+      className="grid grid-cols-3 font-bold text-[11px] uppercase tracking-wider" 
+      style={{ 
+        backgroundColor: `${theme.colors.subtle}50`,
+        borderBottom: `1px solid ${theme.colors.border}`
+      }}
+    >
+      <div className="p-3" style={{ color: theme.colors.textSecondary }}>Month</div>
+      <div className="p-3 text-right" style={{ color: theme.colors.textSecondary }}>Bookings</div>
+      <div className="p-3 text-right" style={{ color: theme.colors.textSecondary }}>Sales</div>
     </div>
-    {data.map(m => (
-      <div key={m.month} className="grid grid-cols-3 border-b cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors" style={{ borderColor: theme.colors.subtle }} onClick={() => onMonthSelect(m)}>
-        <div className="p-2 font-semibold">{m.month}</div>
-        <div className="p-2 text-right">${m.bookings.toLocaleString()}</div>
-        <div className="p-2 text-right">${m.sales.toLocaleString()}</div>
+    {data.map((m, i) => (
+      <div 
+        key={m.month} 
+        className="grid grid-cols-3 cursor-pointer hover:bg-black/[0.03] transition-colors" 
+        style={{ borderBottom: i < data.length - 1 ? `1px solid ${theme.colors.border}30` : 'none' }}
+        onClick={() => onMonthSelect(m)}
+      >
+        <div className="p-3 font-semibold" style={{ color: theme.colors.textPrimary }}>{m.month}</div>
+        <div className="p-3 text-right font-medium" style={{ color: theme.colors.textPrimary }}>${m.bookings.toLocaleString()}</div>
+        <div className="p-3 text-right font-medium" style={{ color: theme.colors.textPrimary }}>${m.sales.toLocaleString()}</div>
       </div>
     ))}
   </div>
 );
 
+// Customer breakdown for selected month
 const CustomerMonthlyBreakdown = ({ monthData, orders, theme, onBack }) => {
-  const monthlyOrders = useMemo(() => { const num = monthNameToNumber[monthData.month]; if (num === undefined) return []; return orders.filter(o => new Date(o.date).getMonth() === num); }, [monthData, orders]);
-  const customerData = useMemo(() => { const map = {}; monthlyOrders.forEach(o => { if (!map[o.company]) map[o.company] = { company: o.company, bookings: 0 }; map[o.company].bookings += o.net; }); return Object.values(map).sort((a, b) => b.bookings - a.bookings); }, [monthlyOrders]);
+  const monthlyOrders = useMemo(() => {
+    const num = monthNameToNumber[monthData.month];
+    if (num === undefined) return [];
+    return orders.filter(o => new Date(o.date).getMonth() === num);
+  }, [monthData, orders]);
+  
+  const customerData = useMemo(() => {
+    const map = {};
+    monthlyOrders.forEach(o => {
+      if (!map[o.company]) map[o.company] = { company: o.company, bookings: 0, orders: 0 };
+      map[o.company].bookings += o.net;
+      map[o.company].orders += 1;
+    });
+    return Object.values(map).sort((a, b) => b.bookings - a.bookings);
+  }, [monthlyOrders]);
+  
+  const total = customerData.reduce((sum, c) => sum + c.bookings, 0);
+  
   return (
     <div>
-      <button onClick={onBack} className="flex items-center space-x-2 text-sm font-semibold mb-4" style={{ color: theme.colors.textSecondary }}>Back to Monthly Overview</button>
-      <div className="text-sm" style={{ color: theme.colors.textPrimary }}>
-        <div className="grid grid-cols-2 font-bold border-b" style={{ borderColor: theme.colors.border }}><div className="p-2">Customer</div><div className="p-2 text-right">Bookings</div></div>
-        {customerData.map(c => (
-          <div key={c.company} className="grid grid-cols-2 border-b" style={{ borderColor: theme.colors.subtle }}>
-            <div className="p-2 font-semibold">{formatCompanyName(c.company)}</div>
-            <div className="p-2 text-right">${c.bookings.toLocaleString()}</div>
-          </div>
-        ))}
+      <button 
+        onClick={onBack} 
+        className="flex items-center gap-2 text-sm font-semibold mb-5 px-3 py-2 rounded-full transition-all hover:bg-black/[0.05]" 
+        style={{ color: theme.colors.accent }}
+      >
+        <ChevronRight className="w-4 h-4 rotate-180" />
+        Back to Overview
+      </button>
+      
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="font-bold text-lg" style={{ color: theme.colors.textPrimary }}>
+          {monthData.month} Breakdown
+        </h4>
+        <span className="text-sm font-semibold" style={{ color: theme.colors.textSecondary }}>
+          ${total.toLocaleString()}
+        </span>
+      </div>
+      
+      <div className="space-y-2">
+        {customerData.map((c, i) => {
+          const pct = (c.bookings / total) * 100;
+          return (
+            <div 
+              key={c.company} 
+              className="flex items-center gap-3 p-3 rounded-xl transition-all hover:bg-black/[0.03]"
+              style={{ backgroundColor: i === 0 ? `${theme.colors.accent}08` : 'transparent' }}
+            >
+              <div 
+                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                style={{ 
+                  backgroundColor: i === 0 ? theme.colors.accent : theme.colors.subtle,
+                  color: i === 0 ? '#FFF' : theme.colors.textSecondary
+                }}
+              >
+                {i + 1}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm truncate" style={{ color: theme.colors.textPrimary }}>
+                  {formatCompanyName(c.company)}
+                </p>
+                <p className="text-xs" style={{ color: theme.colors.textSecondary }}>
+                  {c.orders} order{c.orders !== 1 ? 's' : ''} • {pct.toFixed(1)}%
+                </p>
+              </div>
+              <span className="font-bold text-sm" style={{ color: theme.colors.textPrimary }}>
+                ${c.bookings.toLocaleString()}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 };
 
+// Order detail modal
 const OrderModal = ({ order, onClose, theme }) => {
   if (!order) return null;
   return (
     <Modal show={!!order} onClose={onClose} title={`PO #${order.po}`} theme={theme}>
       <div className="space-y-4 text-sm" style={{ color: theme.colors.textPrimary }}>
-        <div><h3 className="font-bold">{formatCompanyName(order.company)}</h3><p style={{ color: theme.colors.textSecondary }}>{order.details}</p></div>
-        <div className="grid grid-cols-2 gap-4">
-          <div><div className="font-semibold" style={{ color: theme.colors.textSecondary }}>Order Date</div><div>{new Date(order.date).toLocaleDateString()}</div></div>
-          <div><div className="font-semibold" style={{ color: theme.colors.textSecondary }}>Ship Date</div><div>{new Date(order.shipDate).toLocaleDateString()}</div></div>
-          <div><div className="font-semibold" style={{ color: theme.colors.textSecondary }}>Net Amount</div><div className="font-bold" style={{ color: theme.colors.accent }}>${order.net.toLocaleString()}</div></div>
-          <div><div className="font-semibold" style={{ color: theme.colors.textSecondary }}>Status</div><span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ backgroundColor: (STATUS_COLORS[order.status] || theme.colors.secondary) + '20', color: STATUS_COLORS[order.status] || theme.colors.secondary }}>{order.status}</span></div>
-        </div>
         <div>
-          <h4 className="font-bold border-t pt-3 mt-3" style={{ borderColor: theme.colors.subtle }}>Line Items</h4>
-          <div className="space-y-2 mt-2">{order.lineItems?.map(li => (
-            <div key={li.line} className="flex justify-between"><span>{li.quantity}x {li.name}</span><span className="font-semibold">${li.extNet.toLocaleString()}</span></div>
-          ))}</div>
+          <h3 className="font-bold">{formatCompanyName(order.company)}</h3>
+          <p style={{ color: theme.colors.textSecondary }}>{order.details}</p>
         </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <div className="font-semibold text-xs uppercase tracking-wider mb-1" style={{ color: theme.colors.textSecondary }}>Order Date</div>
+            <div>{new Date(order.date).toLocaleDateString()}</div>
+          </div>
+          <div>
+            <div className="font-semibold text-xs uppercase tracking-wider mb-1" style={{ color: theme.colors.textSecondary }}>Ship Date</div>
+            <div>{new Date(order.shipDate).toLocaleDateString()}</div>
+          </div>
+          <div>
+            <div className="font-semibold text-xs uppercase tracking-wider mb-1" style={{ color: theme.colors.textSecondary }}>Net Amount</div>
+            <div className="font-bold" style={{ color: theme.colors.accent }}>${order.net.toLocaleString()}</div>
+          </div>
+          <div>
+            <div className="font-semibold text-xs uppercase tracking-wider mb-1" style={{ color: theme.colors.textSecondary }}>Status</div>
+            <span 
+              className="text-xs font-semibold px-2 py-1 rounded-full" 
+              style={{ 
+                backgroundColor: (STATUS_COLORS[order.status] || theme.colors.secondary) + '20', 
+                color: STATUS_COLORS[order.status] || theme.colors.secondary 
+              }}
+            >
+              {order.status}
+            </span>
+          </div>
+        </div>
+        {order.lineItems?.length > 0 && (
+          <div>
+            <h4 className="font-bold border-t pt-3 mt-3" style={{ borderColor: theme.colors.subtle }}>Line Items</h4>
+            <div className="space-y-2 mt-2">
+              {order.lineItems.map(li => (
+                <div key={li.line} className="flex justify-between">
+                  <span>{li.quantity}x {li.name}</span>
+                  <span className="font-semibold">${li.extNet.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </Modal>
+  );
+};
+
+// Compact Progress to Goal component
+const ProgressToGoalCompact = ({ theme, totalBookings, goal, percentToGoal, yearProgressPercent, aheadOfPace, deltaLabel }) => {
+  const prefersReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  
+  return (
+    <div 
+      className="flex items-center gap-4 p-4 rounded-2xl"
+      style={{ 
+        backgroundColor: `${theme.colors.subtle}40`,
+        border: `1px solid ${theme.colors.border}30`
+      }}
+    >
+      <div 
+        className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ backgroundColor: `${theme.colors.accent}12` }}
+      >
+        <Target className="w-6 h-6" style={{ color: theme.colors.accent }} />
+      </div>
+      
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="text-sm font-medium" style={{ color: theme.colors.textSecondary }}>
+            Progress to Goal
+          </span>
+          <span 
+            className="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5"
+            style={aheadOfPace 
+              ? { background: '#34D39920', color: '#059669' } 
+              : { background: '#F8717120', color: '#DC2626' }
+            }
+          >
+            {aheadOfPace ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />}
+            {deltaLabel}
+          </span>
+        </div>
+        
+        <div className="relative w-full h-2 rounded-full overflow-hidden" style={{ backgroundColor: theme.colors.border }}>
+          <motion.div 
+            className="h-full rounded-full" 
+            initial={{ width: 0 }} 
+            animate={{ width: percentToGoal + '%' }} 
+            transition={prefersReduced ? { duration: 0 } : { type: 'spring', stiffness: 140, damping: 22 }} 
+            style={{ backgroundColor: theme.colors.accent }} 
+          />
+        </div>
+      </div>
+      
+      <div className="text-right flex-shrink-0">
+        <p className="text-xl font-bold leading-none" style={{ color: theme.colors.textPrimary }}>
+          {percentToGoal.toFixed(1)}%
+        </p>
+        <p className="text-[10px] font-medium mt-0.5" style={{ color: theme.colors.textSecondary }}>
+          ${(totalBookings / 1000000).toFixed(1)}M / ${(goal / 1000000).toFixed(0)}M
+        </p>
+      </div>
+    </div>
   );
 };
 
@@ -125,15 +365,7 @@ export const SalesScreen = ({ theme, onNavigate }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [numRecentOrders, setNumRecentOrders] = useState(3);
   const [selectedMonth, setSelectedMonth] = useState(null);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [topTab, setTopTab] = useState(null);
-  const [showTrendInfo, setShowTrendInfo] = useState(false);
-  const [trendPos, setTrendPos] = useState({ top: 0, right: 0 });
-  const trendButtonRef = useRef(null);
-  const popoverRef = useRef(null);
-  const scrollRef = useRef(null);
-
-  const handleScroll = useCallback(() => { if (scrollRef.current) setIsScrolled(scrollRef.current.scrollTop > 10); }, []);
 
   const { totalBookings, totalSales } = useMemo(() => ({
     totalBookings: MONTHLY_SALES_DATA.reduce((a, m) => a + m.bookings, 0),
@@ -142,30 +374,44 @@ export const SalesScreen = ({ theme, onNavigate }) => {
 
   const { yearProgressPercent, percentToGoal, deltaLabel, aheadOfPace } = useMemo(() => {
     const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 1); const next = new Date(now.getFullYear() + 1, 0, 1);
-    const totalDays = (next - start) / 86400000; const dayOfYear = Math.floor((now - start) / 86400000) + 1;
+    const start = new Date(now.getFullYear(), 0, 1);
+    const next = new Date(now.getFullYear() + 1, 0, 1);
+    const totalDays = (next - start) / 86400000;
+    const dayOfYear = Math.floor((now - start) / 86400000) + 1;
     const yearPct = (dayOfYear / totalDays) * 100;
     const goalPct = (MONTHLY_SALES_DATA.reduce((a, m) => a + m.bookings, 0) / 7000000) * 100;
-    const delta = goalPct - yearPct; // positive ahead
-    return { yearProgressPercent: yearPct, percentToGoal: goalPct, deltaLabel: `${Math.abs(delta).toFixed(1)}%`, aheadOfPace: delta >= 0 };
+    const delta = goalPct - yearPct;
+    return { 
+      yearProgressPercent: yearPct, 
+      percentToGoal: goalPct, 
+      deltaLabel: `${Math.abs(delta).toFixed(1)}%`, 
+      aheadOfPace: delta >= 0 
+    };
   }, []);
 
-  const salesByVertical = useMemo(() => (SALES_VERTICALS_DATA?.length ? SALES_VERTICALS_DATA.map(v => ({ name: v.label || v.vertical, value: v.value, color: v.color })) : []), []);
-  const allRecentOrders = useMemo(() => ORDER_DATA.filter(o => o.date && o.net).sort((a, b) => new Date(b.date) - new Date(a.date)), []);
+  const salesByVertical = useMemo(() => (
+    SALES_VERTICALS_DATA?.length 
+      ? SALES_VERTICALS_DATA.map(v => ({ name: v.label || v.vertical, value: v.value, color: v.color })) 
+      : []
+  ), []);
+  
+  const allRecentOrders = useMemo(() => 
+    ORDER_DATA.filter(o => o.date && o.net).sort((a, b) => new Date(b.date) - new Date(a.date)), 
+  []);
+  
   const displayedRecent = useMemo(() => allRecentOrders.slice(0, numRecentOrders), [allRecentOrders, numRecentOrders]);
   const goal = 7000000;
 
-  const handleTabChange = useCallback(k => { setTopTab(k); if (k === 'rewards') onNavigate('incentive-rewards'); if (k === 'ranking') onNavigate('customer-rank'); }, [onNavigate]);
+  const handleTabChange = useCallback(k => { 
+    setTopTab(k); 
+    if (k === 'rewards') onNavigate('incentive-rewards'); 
+    if (k === 'ranking') onNavigate('customer-rank'); 
+  }, [onNavigate]);
+  
   const showMoreOrders = () => setNumRecentOrders(n => Math.min(allRecentOrders.length, n === 3 ? 8 : n + 5));
 
-  const openTrend = useCallback((e) => { const el = e?.currentTarget || trendButtonRef.current; if (!el) return; const r = el.getBoundingClientRect(); setTrendPos({ top: r.bottom + 8, right: Math.max(8, window.innerWidth - r.right) }); setShowTrendInfo(true); }, []);
-
-  useEffect(() => { if (!showTrendInfo) return; const handler = (e) => { const inBtn = trendButtonRef.current && trendButtonRef.current.contains(e.target); const inPop = popoverRef.current && popoverRef.current.contains(e.target); if (!inBtn && !inPop) setShowTrendInfo(false); }; window.addEventListener('mousedown', handler); window.addEventListener('touchstart', handler); return () => { window.removeEventListener('mousedown', handler); window.removeEventListener('touchstart', handler); }; }, [showTrendInfo]);
-
-  const prefersReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  const header = (
-    <div className="flex flex-col w-full">
+  const header = ({ isScrolled }) => (
+    <div className="py-4">
       <SegmentedTabs theme={theme} active={topTab} onChange={handleTabChange} />
     </div>
   );
@@ -178,86 +424,191 @@ export const SalesScreen = ({ theme, onNavigate }) => {
       padding={true}
       paddingBottom="8rem"
     >
-      <GlassCard theme={theme} className="p-6 mt-5" variant="elevated">
-        <div className="flex justify-between items-start mb-3">
-          <h3 className="font-bold text-xl" style={{ color: theme.colors.textPrimary }}>Progress to Goal</h3>
-          <button ref={trendButtonRef} type="button" className="flex items-center gap-1 px-3 py-1 rounded-full cursor-pointer select-none font-semibold text-xs shadow-sm focus:outline-none focus:ring" onClick={e => showTrendInfo ? setShowTrendInfo(false) : openTrend(e)} style={aheadOfPace ? { background: '#34D399', color: '#064E3B' } : { background: '#F87171', color: '#7F1D1D' }}>
-            {aheadOfPace ? <ArrowUp className="w-3 h-3" /> : <ArrowDown className="w-3 h-3" />}
-            <span>{deltaLabel}</span>
-          </button>
-        </div>
-        <div className="flex items-end gap-3 mb-3">
-          <p className="text-5xl leading-none font-bold" style={{ color: theme.colors.accent }}><CountUp value={percentToGoal} decimals={1} suffix="%" /></p>
-        </div>
-        <div className="relative w-full h-6 rounded-full mb-2" style={{ backgroundColor: theme.colors.border }}>
-          <motion.div className="h-full rounded-full" initial={{ width: 0 }} animate={{ width: percentToGoal + '%' }} transition={prefersReduced ? { duration: 0 } : { type: 'spring', stiffness: 140, damping: 22 }} style={{ backgroundColor: theme.colors.accent }} />
-          {(() => {
-            const current = (totalBookings / 1000000).toFixed(1); const goalM = (goal / 1000000).toFixed(1); const safe = Math.max(percentToGoal, 5); return (<>
-              <span className="absolute top-1/2 -translate-y-1/2 font-bold text-sm px-1" style={{ left: `${safe}%`, transform: 'translate(-100%, -50%)', color: JSI_COLORS.white }}>${current}M</span>
-              <span className="absolute top-1/2 -translate-y-1/2 font-semibold text-sm" style={{ right: '2%', color: theme.colors.textSecondary }}>${goalM}M</span>
-            </>);
-          })()}
-        </div>
-        <p className="text-[11px] font-medium" style={{ color: theme.colors.textSecondary }}>Year elapsed: {yearProgressPercent.toFixed(1)}%</p>
-      </GlassCard>
-
-      <GlassCard theme={theme} className="p-6" variant="elevated">
+      {/* Primary: Monthly Performance Chart */}
+      <GlassCard theme={theme} className="p-5" variant="elevated">
         {selectedMonth ? (
-          <CustomerMonthlyBreakdown monthData={selectedMonth} orders={ORDER_DATA} theme={theme} onBack={() => setSelectedMonth(null)} />
+          <CustomerMonthlyBreakdown 
+            monthData={selectedMonth} 
+            orders={ORDER_DATA} 
+            theme={theme} 
+            onBack={() => setSelectedMonth(null)} 
+          />
         ) : (
           <>
-            <div className="flex justify-between items-start gap-4 flex-wrap">
-              <div className="flex items-center bg-transparent rounded-full border overflow-hidden" style={{ borderColor: theme.colors.border }}>
-                <button onClick={() => setChartDataType('bookings')} className="px-4 py-2 text-sm font-semibold" style={{ backgroundColor: chartDataType === 'bookings' ? theme.colors.accent : 'transparent', color: chartDataType === 'bookings' ? JSI_COLORS.white : theme.colors.textSecondary }}>Bookings</button>
-                <button onClick={() => setChartDataType('sales')} className="px-4 py-2 text-sm font-semibold" style={{ backgroundColor: chartDataType === 'sales' ? theme.colors.accent : 'transparent', color: chartDataType === 'sales' ? JSI_COLORS.white : theme.colors.textSecondary }}>Sales</button>
-              </div>
-              <div className="flex items-start gap-2">
-                <button onClick={() => setMonthlyView(v => v === 'chart' ? 'table' : 'chart')} className="p-3 rounded-full shadow-sm" style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textPrimary, border: `1px solid ${theme.colors.border}` }} aria-label={monthlyView === 'chart' ? 'Show table view' : 'Show chart view'}>
-                  {monthlyView === 'chart' ? <Table className="w-5 h-5" /> : <BarChart className="w-5 h-5" />}
+            {/* Header with toggle and view switch */}
+            <div className="flex items-center justify-between mb-5">
+              <div 
+                className="inline-flex items-center rounded-full p-1 gap-1" 
+                style={{ 
+                  backgroundColor: theme.colors.surface,
+                  border: `1px solid ${theme.colors.border}`,
+                  boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)'
+                }}
+              >
+                <button 
+                  onClick={() => setChartDataType('bookings')} 
+                  className="px-4 py-2 rounded-full text-[13px] font-semibold transition-all"
+                  style={{ 
+                    backgroundColor: chartDataType === 'bookings' ? theme.colors.accent : 'transparent', 
+                    color: chartDataType === 'bookings' ? '#FFF' : theme.colors.textSecondary,
+                    boxShadow: chartDataType === 'bookings' ? DESIGN_TOKENS.shadows.sm : 'none'
+                  }}
+                >
+                  Bookings
+                </button>
+                <button 
+                  onClick={() => setChartDataType('sales')} 
+                  className="px-4 py-2 rounded-full text-[13px] font-semibold transition-all"
+                  style={{ 
+                    backgroundColor: chartDataType === 'sales' ? theme.colors.accent : 'transparent', 
+                    color: chartDataType === 'sales' ? '#FFF' : theme.colors.textSecondary,
+                    boxShadow: chartDataType === 'sales' ? DESIGN_TOKENS.shadows.sm : 'none'
+                  }}
+                >
+                  Sales
                 </button>
               </div>
+              
+              <button 
+                onClick={() => setMonthlyView(v => v === 'chart' ? 'table' : 'chart')} 
+                className="w-10 h-10 rounded-full flex items-center justify-center transition-all active:scale-95" 
+                style={{ 
+                  backgroundColor: theme.colors.surface, 
+                  border: `1px solid ${theme.colors.border}`,
+                  boxShadow: DESIGN_TOKENS.shadows.sm
+                }}
+                aria-label={monthlyView === 'chart' ? 'Show table view' : 'Show chart view'}
+              >
+                {monthlyView === 'chart' 
+                  ? <Table className="w-4 h-4" style={{ color: theme.colors.textSecondary }} /> 
+                  : <BarChart className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
+                }
+              </button>
             </div>
-            <div className="mt-6">
-              {monthlyView === 'chart' ? <MonthlyBarChart data={MONTHLY_SALES_DATA} theme={theme} onMonthSelect={setSelectedMonth} dataType={chartDataType} /> : <MonthlyTable data={MONTHLY_SALES_DATA} theme={theme} onMonthSelect={setSelectedMonth} />}
-            </div>
-            <div className="mt-5 flex justify-end">
-              <p className="text-sm font-semibold" style={{ color: theme.colors.textSecondary }}>
-                {chartDataType === 'bookings' ? 'Total Bookings: ' : 'Total Sales: '}<span style={{ color: theme.colors.textPrimary }}>${(chartDataType === 'bookings' ? totalBookings : totalSales).toLocaleString()}</span>
-              </p>
+            
+            {/* Chart or Table */}
+            {monthlyView === 'chart' 
+              ? <MonthlyBarChart data={MONTHLY_SALES_DATA} theme={theme} onMonthSelect={setSelectedMonth} dataType={chartDataType} /> 
+              : <MonthlyTable data={MONTHLY_SALES_DATA} theme={theme} onMonthSelect={setSelectedMonth} />
+            }
+            
+            {/* Total summary */}
+            <div 
+              className="mt-5 pt-4 flex items-center justify-between"
+              style={{ borderTop: `1px solid ${theme.colors.border}30` }}
+            >
+              <span className="text-sm font-medium" style={{ color: theme.colors.textSecondary }}>
+                Total {chartDataType === 'bookings' ? 'Bookings' : 'Sales'}
+              </span>
+              <span className="text-lg font-bold" style={{ color: theme.colors.textPrimary }}>
+                ${(chartDataType === 'bookings' ? totalBookings : totalSales).toLocaleString()}
+              </span>
             </div>
           </>
         )}
       </GlassCard>
 
-      <GlassCard theme={theme} className="p-6 space-y-4" variant="elevated">
-        <h3 className="font-bold text-xl" style={{ color: theme.colors.textPrimary }}>Recent Orders</h3>
-        <div>
-          {displayedRecent.map((order, i) => (
-            <motion.div key={order.orderNumber} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: i * 0.04, ease: [0.4, 0, 0.2, 1] }} className="py-4 border-b last:border-b-0 cursor-pointer hover:bg-black/5 dark:hover:bg-white/10 px-1 rounded-lg transition-colors" style={{ borderColor: theme.colors.subtle }} onClick={() => setSelectedOrder(order)}>
-              <div className="flex items-center justify-between mb-1"><span className="text-xs font-medium" style={{ color: theme.colors.textSecondary }}>{new Date(order.date).toLocaleDateString()}</span><span className="text-base font-bold" style={{ color: theme.colors.accent }}>${order.net.toLocaleString()}</span></div>
-              <p className="font-semibold text-sm mb-2 truncate" style={{ color: theme.colors.textPrimary }}>{formatCompanyName(order.company)}</p>
-              <span className="px-2 py-1 rounded-full text-[10px] font-medium" style={{ backgroundColor: (STATUS_COLORS[order.status] || theme.colors.secondary) + '20', color: STATUS_COLORS[order.status] || theme.colors.secondary }}>{order.status}</span>
-            </motion.div>
-          ))}
-          {numRecentOrders < allRecentOrders.length && <button onClick={showMoreOrders} className="w-full text-center text-xs font-semibold mt-2 py-3 hover:underline" style={{ color: theme.colors.accent }}>Show 5 More</button>}
+      {/* Progress to Goal - Compact version below chart */}
+      <ProgressToGoalCompact 
+        theme={theme}
+        totalBookings={totalBookings}
+        goal={goal}
+        percentToGoal={percentToGoal}
+        yearProgressPercent={yearProgressPercent}
+        aheadOfPace={aheadOfPace}
+        deltaLabel={deltaLabel}
+      />
+
+      {/* Recent Orders */}
+      <GlassCard theme={theme} className="p-5" variant="elevated">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-bold text-base" style={{ color: theme.colors.textPrimary }}>
+            Recent Orders
+          </h3>
+          <button 
+            onClick={() => onNavigate('orders')}
+            className="text-xs font-semibold flex items-center gap-1 transition-all hover:opacity-80"
+            style={{ color: theme.colors.accent }}
+          >
+            View All
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
         </div>
+        
+        <div className="space-y-1">
+          {displayedRecent.map((order, i) => (
+            <motion.button
+              key={order.orderNumber}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: i * 0.04, ease: [0.4, 0, 0.2, 1] }}
+              className="w-full flex items-center gap-3 py-3 px-3 rounded-xl transition-all hover:bg-black/[0.03] active:scale-[0.99] text-left"
+              onClick={() => setSelectedOrder(order)}
+            >
+              <div 
+                className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ backgroundColor: `${theme.colors.accent}10` }}
+              >
+                <span className="text-xs font-bold" style={{ color: theme.colors.accent }}>
+                  {new Date(order.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).split(' ')[1]}
+                </span>
+              </div>
+              
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm truncate" style={{ color: theme.colors.textPrimary }}>
+                  {formatCompanyName(order.company)}
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[11px]" style={{ color: theme.colors.textSecondary }}>
+                    {new Date(order.date).toLocaleDateString('en-US', { month: 'short' })}
+                  </span>
+                  <span 
+                    className="px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase"
+                    style={{ 
+                      backgroundColor: (STATUS_COLORS[order.status] || theme.colors.secondary) + '15', 
+                      color: STATUS_COLORS[order.status] || theme.colors.secondary 
+                    }}
+                  >
+                    {order.status}
+                  </span>
+                </div>
+              </div>
+              
+              <span className="font-bold text-sm flex-shrink-0" style={{ color: theme.colors.textPrimary }}>
+                ${order.net.toLocaleString()}
+              </span>
+            </motion.button>
+          ))}
+        </div>
+        
+        {numRecentOrders < allRecentOrders.length && (
+          <button 
+            onClick={showMoreOrders} 
+            className="w-full text-center text-xs font-semibold mt-3 py-3 rounded-xl transition-all hover:bg-black/[0.03]" 
+            style={{ color: theme.colors.accent }}
+          >
+            Show More Orders
+          </button>
+        )}
       </GlassCard>
 
-      <GlassCard theme={theme} className="p-6" variant="elevated">
-        <h3 className="font-bold text-xl mb-4" style={{ color: theme.colors.textPrimary }}>Sales by Vertical (YTD)</h3>
-        <SalesByVerticalBreakdown data={salesByVertical} theme={theme} showOverview palette={['#55A868', '#C44E52', '#8172B2', '#CCB04C', '#4C72B0', '#8C8C8C']} />
-      </GlassCard>
+      {/* Sales by Vertical */}
+      {salesByVertical.length > 0 && (
+        <GlassCard theme={theme} className="p-5" variant="elevated">
+          <h3 className="font-bold text-base mb-4" style={{ color: theme.colors.textPrimary }}>
+            Sales by Vertical (YTD)
+          </h3>
+          <SalesByVerticalBreakdown 
+            data={salesByVertical} 
+            theme={theme} 
+            showOverview 
+            palette={['#55A868', '#C44E52', '#8172B2', '#CCB04C', '#4C72B0', '#8C8C8C']} 
+          />
+        </GlassCard>
+      )}
 
+      {/* Order detail modal */}
       <OrderModal order={selectedOrder} onClose={() => setSelectedOrder(null)} theme={theme} />
-
-      <AnimatePresence>
-        {showTrendInfo && createPortal(
-          <motion.div ref={popoverRef} initial={{ opacity: 0, scale: 0.96, y: 4 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.96, y: 4 }} transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }} className="rounded-2xl shadow-xl text-[11px]" style={{ position: 'fixed', top: trendPos.top, right: trendPos.right, width: 240, zIndex: 9999, backgroundColor: theme.colors.background, border: `1px solid ${theme.colors.border}`, padding: 16 }}>
-            <p className="font-semibold mb-1" style={{ color: aheadOfPace ? '#065F46' : '#7F1D1D' }}>{aheadOfPace ? 'Ahead of linear pace' : 'Behind linear pace'} {deltaLabel}</p>
-            <p style={{ color: theme.colors.textSecondary, lineHeight: '1.25rem' }}>Progress: {percentToGoal.toFixed(1)}%<br />Time Elapsed: {yearProgressPercent.toFixed(1)}%</p>
-          </motion.div>, document.body)
-        }
-      </AnimatePresence>
     </ScreenLayout>
   );
 };
