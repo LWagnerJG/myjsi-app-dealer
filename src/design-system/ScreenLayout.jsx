@@ -32,22 +32,21 @@ export const ScreenLayout = ({
         onScrollChange?.(scrolled, scrollRef.current.scrollTop);
     }, [onScrollChange]);
     
-    // Responsive max-width mapping
+    // Max-width values
     const widthMap = {
-        sm: '480px',
-        md: '560px',
-        lg: '640px',
-        default: '720px',
-        wide: '960px',
-        full: '100%',
+        sm: 480,
+        md: 560,
+        lg: 640,
+        default: 720,
+        wide: 960,
+        full: null,
     };
     
-    const contentMaxWidth = widthMap[maxWidth] || widthMap.default;
-    const shouldConstrain = maxWidth !== 'full';
+    const maxWidthValue = widthMap[maxWidth];
     
     const bgColor = theme?.colors?.background || JSI_COLORS.warmBeige;
     
-    const headerStyles = stickyHeader ? {
+    const headerWrapperStyles = stickyHeader ? {
         position: 'sticky',
         top: 0,
         zIndex: DESIGN_TOKENS.zIndex.sticky,
@@ -58,21 +57,27 @@ export const ScreenLayout = ({
         WebkitBackdropFilter: isScrolled && headerBlur ? DESIGN_TOKENS.blur.light : 'none',
         borderBottom: `1px solid ${isScrolled ? JSI_COLORS.stone : 'transparent'}`,
         transition: DESIGN_TOKENS.transitions.fast,
-    } : {};
+        // Flex centering for header content
+        display: 'flex',
+        justifyContent: 'center',
+        width: '100%',
+    } : {
+        display: 'flex',
+        justifyContent: 'center',
+        width: '100%',
+    };
 
     // Responsive horizontal padding
     const horizontalPadding = padding 
-        ? (isDesktop ? '1.5rem' : '1rem')
-        : '0';
+        ? (isDesktop ? 24 : 16)
+        : 0;
     
-    // Shared content wrapper styles - ALWAYS centered with max-width
-    const contentWrapperStyles = {
+    // Inner container styles with max-width
+    const innerContainerStyle = {
         width: '100%',
-        maxWidth: shouldConstrain ? contentMaxWidth : '100%',
-        marginLeft: 'auto',
-        marginRight: 'auto',
-        paddingLeft: horizontalPadding,
-        paddingRight: horizontalPadding,
+        maxWidth: maxWidthValue ? `${maxWidthValue}px` : 'none',
+        paddingLeft: `${horizontalPadding}px`,
+        paddingRight: `${horizontalPadding}px`,
         boxSizing: 'border-box',
     };
     
@@ -84,14 +89,11 @@ export const ScreenLayout = ({
                 fontFamily: JSI_TYPOGRAPHY.fontFamily,
             }}
         >
-            {/* Sticky Header Area */}
+            {/* Sticky Header Area - Using flex centering */}
             {header && (
-                <div style={headerStyles}>
-                    {/* Centering wrapper for header */}
-                    <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-                        <div style={contentWrapperStyles}>
-                            {typeof header === 'function' ? header({ isScrolled, isDesktop }) : header}
-                        </div>
+                <div style={headerWrapperStyles}>
+                    <div style={innerContainerStyle}>
+                        {typeof header === 'function' ? header({ isScrolled, isDesktop }) : header}
                     </div>
                 </div>
             )}
@@ -102,13 +104,13 @@ export const ScreenLayout = ({
                 onScroll={handleScroll}
                 className="flex-1 overflow-y-auto scrollbar-hide"
             >
-                {/* Centering wrapper for content */}
+                {/* Flex centering wrapper */}
                 <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
                     <div 
                         className="flex flex-col"
                         style={{
-                            ...contentWrapperStyles,
-                            paddingTop: padding ? '1rem' : 0,
+                            ...innerContainerStyle,
+                            paddingTop: padding ? 16 : 0,
                             paddingBottom: paddingBottom,
                             gap: gap,
                         }}
