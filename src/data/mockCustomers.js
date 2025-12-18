@@ -172,12 +172,12 @@ export const MOCK_CUSTOMERS = [
     },
     orders: {
       current: [
-        { id: 'ord-001', orderNumber: 'SO-458920', type: 'SO', status: 'In Production', amount: 45000, eta: '2024-02-15', createdAt: '2024-01-20' },
-        { id: 'ord-002', orderNumber: 'SO-458945', type: 'SO', status: 'Acknowledged', amount: 12500, eta: '2024-02-28', createdAt: '2024-01-25' }
+        { id: 'ord-001', orderNumber: '450080-00', type: 'SO', status: 'In Production', amount: 112000, eta: '2025-09-15', createdAt: '2025-06-10' },
+        { id: 'ord-002', orderNumber: '449518-00', type: 'SO', status: 'Acknowledged', amount: 500, eta: '2025-09-02', createdAt: '2025-06-11' }
       ],
       history: [
-        { id: 'ord-003', orderNumber: 'SO-445120', type: 'SO', status: 'Installed', amount: 78000, completedAt: '2023-11-15', ackPdfUrl: '#', invoicePdfUrl: '#' },
-        { id: 'ord-004', orderNumber: 'SO-442890', type: 'SO', status: 'Installed', amount: 32000, completedAt: '2023-09-20', ackPdfUrl: '#', invoicePdfUrl: '#' }
+        { id: 'ord-003', orderNumber: '442365-00', type: 'SO', status: 'Shipped', amount: 950, completedAt: '2025-06-12', ackPdfUrl: '#', invoicePdfUrl: '#' },
+        { id: 'ord-004', orderNumber: '444353-00', type: 'SO', status: 'In Production', amount: 31250, completedAt: null, ackPdfUrl: '#', invoicePdfUrl: '#' }
       ]
     },
     installs: [

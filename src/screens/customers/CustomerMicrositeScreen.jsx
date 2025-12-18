@@ -501,7 +501,7 @@ export const CustomerMicrositeScreen = ({ customerId, theme, onNavigate, onBack 
                       key={order.id} 
                       order={order} 
                       theme={theme}
-                      onClick={() => onNavigate(`orders/${order.id}`)}
+                      onClick={() => onNavigate(`orders/${order.orderNumber}`)}
                     />
                   ))
                 ) : (

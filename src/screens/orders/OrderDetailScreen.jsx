@@ -12,14 +12,35 @@ import { motion, AnimatePresence } from 'framer-motion';
 const currency = (n) => `$${Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const titleCase = (s) => s ? s.toLowerCase().replace(/\b\w/g, l => l.toUpperCase()) : '';
 
-// Mock Data
-const PRODUCTION_STEPS = [
-    { label: 'Raw Materials', completed: true, date: 'Jun 15' },
-    { label: 'Machining', completed: true, date: 'Jun 16', video: true },
-    { label: 'Assembly', completed: true, date: 'Today', video: true },
-    { label: 'Finishing', completed: false },
-    { label: 'Quality Control', completed: false }
-];
+// Production steps - dynamically generated based on order status
+const getProductionSteps = (status) => {
+    // Only show real progress for orders "In Production" or later
+    if (status === 'In Production') {
+        return [
+            { label: 'Raw Materials', completed: true, date: 'Jun 15' },
+            { label: 'Machining', completed: true, date: 'Jun 16', video: true },
+            { label: 'Assembly', completed: true, date: 'Today', video: true },
+            { label: 'Finishing', completed: false },
+            { label: 'Quality Control', completed: false }
+        ];
+    } else if (status === 'Shipping' || status === 'Delivered') {
+        return [
+            { label: 'Raw Materials', completed: true, date: 'Jun 15' },
+            { label: 'Machining', completed: true, date: 'Jun 16', video: true },
+            { label: 'Assembly', completed: true, date: 'Jun 18', video: true },
+            { label: 'Finishing', completed: true, date: 'Jun 20' },
+            { label: 'Quality Control', completed: true, date: 'Jun 21' }
+        ];
+    }
+    // For earlier stages, return placeholder structure (won't be displayed)
+    return [
+        { label: 'Raw Materials', completed: false },
+        { label: 'Machining', completed: false },
+        { label: 'Assembly', completed: false },
+        { label: 'Finishing', completed: false },
+        { label: 'Quality Control', completed: false }
+    ];
+};
 
 const ORDER_ENTRY_LOG = [
     { type: 'question', text: 'Clarification Needed: Confirm finish for Table.', date: 'Jun 12', author: 'JSI Entry' },
@@ -152,9 +173,9 @@ const LineItemTile = ({ item, index, theme }) => {
     );
 };
 
-export const OrderDetailScreen = ({ theme, onNavigate, route, currentScreen }) => {
-    const effectiveRoute = route || currentScreen;
-    const orderNumber = typeof effectiveRoute === 'string' ? effectiveRoute.split('/')[1] : null;
+export const OrderDetailScreen = ({ theme, onNavigate, orderNumber: orderNumberProp, route, currentScreen }) => {
+    // Use the orderNumber prop directly if provided, otherwise fall back to extracting from route
+    const orderNumber = orderNumberProp || (typeof (route || currentScreen) === 'string' ? (route || currentScreen).split('/')[1] : null);
     const order = useMemo(() => ORDER_DATA.find(o => o.orderNumber === orderNumber), [orderNumber]);
 
     // Derived State
@@ -244,14 +265,14 @@ export const OrderDetailScreen = ({ theme, onNavigate, route, currentScreen }) =
                                     </div>
                                 )}
 
-                                {step.id === 'production' && (
+                                {step.id === 'production' && currentStepIndex >= 3 && (
                                     <div className="bg-white/5 p-4 space-y-4">
                                         <div className="text-[10px] font-bold uppercase tracking-wider opacity-60">Factory Updates</div>
-                                        {PRODUCTION_STEPS.map((s, i) => (
+                                        {getProductionSteps(order.status).map((s, i) => (
                                             <div key={i} className="flex gap-3 items-center">
                                                 <div className={`w-2 h-2 rounded-full ${s.completed ? '' : 'border border-dashed'}`} style={{ backgroundColor: s.completed ? theme.colors.success : 'transparent', borderColor: theme.colors.textSecondary }} />
                                                 <div className={`text-sm flex-1 ${s.completed ? '' : 'opacity-50'}`}>{s.label}</div>
-                                                {s.video && (
+                                                {s.video && s.completed && (
                                                     <div className="px-2 py-0.5 rounded bg-red-500/10 text-red-500 flex items-center gap-1 cursor-pointer hover:bg-red-500/20">
                                                         <Play className="w-3 h-3 fill-current" />
                                                         <span className="text-[10px] font-bold">CLIP</span>

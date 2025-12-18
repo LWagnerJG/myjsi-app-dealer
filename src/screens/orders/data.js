@@ -13,6 +13,7 @@ export const ORDER_DATA = [
         discount: '18.40%',
         ackDate: '2025-06-12T11:20:00Z',
         ackUrl: 'https://webresources.jsifurniture.com/production/uploads/documents/JSI-BrandDoc-COMCOLOrderForm-0321.pdf',
+        customerId: 'cust-001', // Acme Corp HQ
         lineItems: [
             { line: '001', name: 'VISION CONFERENCE TABLE', model: 'VCT12048', quantity: 5, net: 8000.00, extNet: 40000.00, specs: [{ label: 'FINISH', value: 'MOCHA LAMINATE' }, { label: 'BASE', value: 'TRUSS LEG - BLACK' }] },
             { line: '002', name: 'ARWYN SWIVEL CHAIR', model: 'AW6007C', quantity: 40, net: 1800.00, extNet: 72000.00, specs: [{ label: 'UPHOLSTERY', value: 'MAHARAM, MODE, GLACIER' }] }
@@ -84,6 +85,7 @@ export const ORDER_DATA = [
         discount: '22.34%',
         ackDate: '2025-06-13T16:45:00Z',
         ackUrl: 'https://webresources.jsifurniture.com/production/uploads/documents/JSI-BrandDoc-COMCOLOrderForm-0321.pdf',
+        customerId: 'cust-001', // Acme Corp HQ
         lineItems: [
             { line: '001', name: 'WINK GUEST CHAIR', model: 'WK4501A', quantity: 1, net: 500.00, extNet: 500.00, specs: [{ label: 'SHELL', value: 'KIWI GREEN' }] }
         ]
@@ -101,6 +103,7 @@ export const ORDER_DATA = [
         discount: '24.03%',
         ackDate: '2025-06-14T10:15:00Z',
         ackUrl: 'https://webresources.jsifurniture.com/production/uploads/documents/JSI-BrandDoc-COMCOLOrderForm-0321.pdf',
+        customerId: 'cust-001', // Acme Corp HQ
         lineItems: [
             { line: '001', name: 'SIDE TABLE', model: 'SIDETBL-SM', quantity: 2, net: 475.00, extNet: 950.00, specs: [] }
         ]
@@ -118,6 +121,7 @@ export const ORDER_DATA = [
         discount: '61.20%',
         ackDate: '2025-06-14T14:30:00Z',
         ackUrl: 'https://webresources.jsifurniture.com/production/uploads/documents/JSI-BrandDoc-COMCOLOrderForm-0321.pdf',
+        customerId: 'cust-001', // Acme Corp HQ
         lineItems: [
             { line: '001', name: 'CROSSOVER SWIVEL CONFERENCE', model: 'AW6007C', quantity: 8, net: 902.10, extNet: 7216.80, specs: [{ label: 'MIDBACK-SWIVELBASE', value: 'ARWYNSERIES-MODELAW6007C' }] }
         ]
