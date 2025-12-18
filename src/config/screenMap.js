@@ -6,6 +6,7 @@ import { ResourcesScreen } from '../screens/resources/ResourcesScreen.jsx'; // R
 import { ProjectsScreen, NewLeadScreen, AddNewInstallScreen } from '../screens/projects/index.js';
 import { CommunityScreen, CreateContentModal } from '../screens/community/index.js';
 import { ReplacementsScreen } from '../screens/replacements/ReplacementsScreen.jsx';
+import { SamplesScreen } from '../screens/samples/index.js';
 import { FeedbackScreen } from '../screens/feedback/index.js';
 import { MembersScreen } from '../screens/members/index.js';
 import { HelpScreen } from '../screens/help/HelpScreen.jsx';
@@ -29,6 +30,7 @@ export const SCREEN_MAP = {
   'projects': ProjectsScreen,
   'community': CommunityLibraryLayout, // swapped to new layout providing Community + Library toggle
   'replacements': ReplacementsScreen,
+  'samples': SamplesScreen,
   'incentive-rewards': IncentiveRewardsScreen,
   'customer-rank': CustomerRankingScreen,
   'settings': SettingsScreen,
@@ -55,4 +57,5 @@ export {
   IncentiveRewardsScreen,
   CommunityScreen,
   CreateContentModal,
+  SamplesScreen,
 };
