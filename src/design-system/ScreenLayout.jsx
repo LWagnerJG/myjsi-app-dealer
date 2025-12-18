@@ -73,8 +73,10 @@ export const ScreenLayout = ({
         : 0;
     
     // Inner container styles with max-width
+    // Using flex: '0 1 auto' with maxWidth to properly constrain content
     const innerContainerStyle = {
-        width: '100%',
+        flex: '1 1 auto',
+        width: maxWidthValue ? `min(100%, ${maxWidthValue}px)` : '100%',
         maxWidth: maxWidthValue ? `${maxWidthValue}px` : 'none',
         paddingLeft: `${horizontalPadding}px`,
         paddingRight: `${horizontalPadding}px`,

@@ -278,10 +278,8 @@ const CustomerCard = ({ customer, theme, onClick }) => {
 // New Project/Customer Modal Component
 const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCustomer }) => {
   const { openModal, closeModal } = useModalState();
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
-  const mobileNavHeight = 80;
-  const safeAreaBottom = typeof window !== 'undefined' ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom') || '0', 10) : 0;
-  const bottomPadding = isMobile ? mobileNavHeight + safeAreaBottom + 24 : 0;
+  const isDesktop = useIsDesktop();
+  const isMobile = !isDesktop;
 
   useEffect(() => {
     if (isOpen) {
@@ -867,7 +865,7 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
         )}
         {projectsTab === 'customers' && (
           filteredCustomers.length ? (
-            <div className={isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-3'}>
+            <div className={isDesktop ? 'grid grid-cols-2 gap-5' : 'space-y-3'}>
               {filteredCustomers.map(customer => (
                 <CustomerCard
                   key={customer.id}

@@ -344,6 +344,7 @@ function App() {
         onAddInstall: handleAddInstall,
         projectsInitialTab: projectsTabOverride,
         clearProjectsInitialTab: () => setProjectsTabOverride(null),
+        setProjectsTabOverride,
         homeApps,
         onUpdateHomeApps: handleUpdateHomeApps,
         orders: ORDER_DATA
