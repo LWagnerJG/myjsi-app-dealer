@@ -32,6 +32,17 @@ export const NavigationShell = ({ currentScreen, onNavigate, theme, customNavIte
 
     return (
         <>
+            {/* Gradient blur background behind nav */}
+            <div 
+                className={`fixed left-0 right-0 pointer-events-none transition-opacity duration-300 ${isModalOpen ? 'opacity-0' : 'opacity-100'}`}
+                style={{ 
+                    bottom: 0,
+                    height: '120px',
+                    background: 'linear-gradient(to top, rgba(247,245,242,0.95) 0%, rgba(247,245,242,0.8) 40%, rgba(247,245,242,0) 100%)',
+                    zIndex: DESIGN_TOKENS.zIndex.navigation - 1,
+                }}
+            />
+            
             {/* Bottom Navigation Bar - Used on all screen sizes */}
             <div 
                 className={`fixed left-4 right-4 transition-all duration-300 ${isModalOpen ? 'opacity-0 pointer-events-none translate-y-8' : ''}`}
