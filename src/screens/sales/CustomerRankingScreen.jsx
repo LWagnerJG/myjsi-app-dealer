@@ -4,7 +4,7 @@ import { Modal } from '../../components/common/Modal';
 import { Building2, TrendingUp } from 'lucide-react';
 import { CUSTOMER_RANK_DATA } from './data.js';
 import { motion } from 'framer-motion';
-import { DESIGN_TOKENS, JSI_COLORS } from '../../design-system/tokens.js';
+import { JSI_COLORS } from '../../design-system/tokens.js';
 
 // Customer Leaderboard - shows PROJECT NAMES ranked by Ordered/Invoiced
 
@@ -62,48 +62,48 @@ export const CustomerRankingScreen = ({ theme, onNavigate }) => {
         
         return (
             <motion.button
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25, delay: index * 0.02 }}
+                transition={{ duration: 0.2, delay: index * 0.015 }}
                 onClick={() => open(project)}
                 className="w-full text-left"
             >
                 <div 
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl transition-all hover:bg-black/[0.02] active:scale-[0.99]"
+                    className="flex items-center gap-2.5 px-2.5 py-2.5 rounded-xl transition-all hover:bg-black/[0.02] active:scale-[0.99]"
                 >
                     <div 
-                        className="h-8 w-8 rounded-full text-[11px] font-bold flex items-center justify-center flex-shrink-0" 
+                        className="h-7 w-7 rounded-full text-[10px] font-bold flex items-center justify-center flex-shrink-0" 
                         style={medalStyle(project.rank)}
                     >
                         {project.rank}
                     </div>
                     
                     <div className="flex-1 min-w-0">
-                        <div className="font-medium text-[13px] truncate" style={{ color: theme.colors.textPrimary }}>
+                        <div className="font-medium text-[12px] truncate" style={{ color: theme.colors.textPrimary }}>
                             {project.projectName}
                         </div>
                         <div className="flex items-center gap-1 mt-0.5">
-                            <Building2 className="w-3 h-3" style={{ color: theme.colors.textSecondary }} />
-                            <span className="text-[11px] truncate" style={{ color: theme.colors.textSecondary }}>
+                            <Building2 className="w-2.5 h-2.5" style={{ color: theme.colors.textSecondary }} />
+                            <span className="text-[10px] truncate" style={{ color: theme.colors.textSecondary }}>
                                 {project.customerName}
                             </span>
                         </div>
-                        <div className="mt-1.5 h-1 rounded-full overflow-hidden" style={{ backgroundColor: theme.colors.subtle }}>
+                        <div className="mt-1 h-1 rounded-full overflow-hidden" style={{ backgroundColor: theme.colors.subtle }}>
                             <motion.div 
                                 className="h-full rounded-full" 
                                 initial={{ width: 0 }}
                                 animate={{ width: `${pct}%` }}
-                                transition={{ duration: 0.4, delay: index * 0.02 }}
+                                transition={{ duration: 0.35, delay: index * 0.015 }}
                                 style={{ backgroundColor: isTop3 ? theme.colors.accent : `${theme.colors.accent}70` }} 
                             />
                         </div>
                     </div>
                     
                     <div className="pl-2 text-right flex-shrink-0">
-                        <div className="text-[15px] font-bold tabular-nums" style={{ color: theme.colors.accent }}>
+                        <div className="text-[13px] font-bold tabular-nums" style={{ color: theme.colors.accent }}>
                             ${Number(project[tab] || 0).toLocaleString()}
                         </div>
-                        <div className="text-[10px] font-medium" style={{ color: theme.colors.textSecondary }}>
+                        <div className="text-[9px] font-medium" style={{ color: theme.colors.textSecondary }}>
                             {tab === 'sales' ? 'Invoiced' : 'Ordered'}
                         </div>
                     </div>
@@ -118,6 +118,7 @@ export const CustomerRankingScreen = ({ theme, onNavigate }) => {
             maxWidth="content"
             padding={true}
             paddingBottom="8rem"
+            gap="0.75rem"
         >
             {/* Toggle: Invoiced / Ordered */}
             <div 
@@ -126,7 +127,7 @@ export const CustomerRankingScreen = ({ theme, onNavigate }) => {
             >
                 <button
                     onClick={() => setTab('sales')}
-                    className="flex-1 py-2.5 px-4 rounded-full text-[13px] font-semibold transition-all"
+                    className="flex-1 py-2 px-4 rounded-full text-[12px] font-semibold transition-all"
                     style={{ 
                         backgroundColor: tab === 'sales' ? '#FFF' : 'transparent',
                         color: tab === 'sales' ? theme.colors.textPrimary : theme.colors.textSecondary,
@@ -137,7 +138,7 @@ export const CustomerRankingScreen = ({ theme, onNavigate }) => {
                 </button>
                 <button
                     onClick={() => setTab('bookings')}
-                    className="flex-1 py-2.5 px-4 rounded-full text-[13px] font-semibold transition-all"
+                    className="flex-1 py-2 px-4 rounded-full text-[12px] font-semibold transition-all"
                     style={{ 
                         backgroundColor: tab === 'bookings' ? '#FFF' : 'transparent',
                         color: tab === 'bookings' ? theme.colors.textPrimary : theme.colors.textSecondary,
@@ -149,14 +150,14 @@ export const CustomerRankingScreen = ({ theme, onNavigate }) => {
             </div>
 
             {/* Project Rankings */}
-            <GlassCard theme={theme} className="p-2" variant="elevated">
+            <GlassCard theme={theme} className="p-1.5" variant="elevated">
                 {projectRows.map((project, i) => (
                     <Row key={project.id} project={project} index={i} />
                 ))}
                 
                 {projectRows.length === 0 && (
                     <div className="p-8 text-center">
-                        <p className="text-[13px]" style={{ color: theme.colors.textSecondary }}>
+                        <p className="text-[12px]" style={{ color: theme.colors.textSecondary }}>
                             No project data available
                         </p>
                     </div>
@@ -166,42 +167,42 @@ export const CustomerRankingScreen = ({ theme, onNavigate }) => {
             {/* Project Detail Modal */}
             <Modal show={!!modalData} onClose={close} title={modalData?.projectName || ''} theme={theme}>
                 {!!modalData && (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {/* Customer info */}
                         <div 
-                            className="flex items-center gap-3 p-3 rounded-xl"
+                            className="flex items-center gap-2.5 p-2.5 rounded-xl"
                             style={{ backgroundColor: theme.colors.subtle }}
                         >
                             <Building2 className="w-4 h-4" style={{ color: theme.colors.accent }} />
                             <div>
-                                <p className="text-[11px]" style={{ color: theme.colors.textSecondary }}>Customer</p>
-                                <p className="font-medium text-[13px]" style={{ color: theme.colors.textPrimary }}>
+                                <p className="text-[10px]" style={{ color: theme.colors.textSecondary }}>Customer</p>
+                                <p className="font-medium text-[12px]" style={{ color: theme.colors.textPrimary }}>
                                     {modalData.customerName}
                                 </p>
                             </div>
                         </div>
                         
                         {/* Stats grid */}
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-2.5">
                             <div 
-                                className="rounded-xl p-3 text-center" 
+                                className="rounded-xl p-2.5 text-center" 
                                 style={{ backgroundColor: `${theme.colors.accent}08` }}
                             >
-                                <div className="text-[11px] font-medium mb-1" style={{ color: theme.colors.textSecondary }}>
+                                <div className="text-[10px] font-medium mb-0.5" style={{ color: theme.colors.textSecondary }}>
                                     Invoiced
                                 </div>
-                                <div className="text-xl font-bold tabular-nums" style={{ color: theme.colors.accent }}>
+                                <div className="text-lg font-bold tabular-nums" style={{ color: theme.colors.accent }}>
                                     ${Number(modalData.sales || 0).toLocaleString()}
                                 </div>
                             </div>
                             <div 
-                                className="rounded-xl p-3 text-center" 
+                                className="rounded-xl p-2.5 text-center" 
                                 style={{ backgroundColor: theme.colors.subtle }}
                             >
-                                <div className="text-[11px] font-medium mb-1" style={{ color: theme.colors.textSecondary }}>
+                                <div className="text-[10px] font-medium mb-0.5" style={{ color: theme.colors.textSecondary }}>
                                     Ordered
                                 </div>
-                                <div className="text-xl font-bold tabular-nums" style={{ color: theme.colors.textPrimary }}>
+                                <div className="text-lg font-bold tabular-nums" style={{ color: theme.colors.textPrimary }}>
                                     ${Number(modalData.bookings || 0).toLocaleString()}
                                 </div>
                             </div>
@@ -209,17 +210,17 @@ export const CustomerRankingScreen = ({ theme, onNavigate }) => {
                         
                         {/* Ranking */}
                         <div 
-                            className="flex items-center justify-between p-3 rounded-xl"
+                            className="flex items-center justify-between p-2.5 rounded-xl"
                             style={{ backgroundColor: theme.colors.subtle }}
                         >
                             <div className="flex items-center gap-2">
-                                <TrendingUp className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
-                                <span className="text-[13px] font-medium" style={{ color: theme.colors.textSecondary }}>
+                                <TrendingUp className="w-3.5 h-3.5" style={{ color: theme.colors.textSecondary }} />
+                                <span className="text-[12px] font-medium" style={{ color: theme.colors.textSecondary }}>
                                     Current Rank
                                 </span>
                             </div>
                             <div 
-                                className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold"
+                                className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold"
                                 style={medalStyle(modalData.rank)}
                             >
                                 {modalData.rank}

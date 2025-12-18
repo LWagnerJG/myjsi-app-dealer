@@ -16,6 +16,7 @@ export const ScreenLayout = ({
     maxWidth = 'lg', // 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full'
     padding = true,
     paddingBottom = '6rem', // Extra space for bottom navigation/FAB
+    gap = '1rem', // Gap between children
     // Scroll behavior
     onScrollChange,
     className = '',
@@ -31,7 +32,7 @@ export const ScreenLayout = ({
         onScrollChange?.(scrolled, scrollRef.current.scrollTop);
     }, [onScrollChange]);
     
-    // Max-width mapping
+    // Max-width mapping - more reasonable content widths
     const maxWidthMap = {
         sm: '480px',
         md: '640px',
@@ -40,15 +41,13 @@ export const ScreenLayout = ({
         '2xl': '1024px',
         '3xl': '1152px',
         '4xl': '1280px',
-        '5xl': '1440px',
-        '6xl': '1680px',
-        '7xl': '1920px',
-        content: '1440px',
+        content: '640px', // Tighter content width for better readability
+        wide: '768px',    // Slightly wider
         full: '100%',
     };
     
     const contentMaxWidth = maxWidthMap[maxWidth] || maxWidthMap.lg;
-    const shouldConstrainWidth = isDesktop && maxWidth !== 'full';
+    const shouldConstrainWidth = maxWidth !== 'full';
     
     const bgColor = theme?.colors?.background || JSI_COLORS.warmBeige;
     
@@ -63,20 +62,12 @@ export const ScreenLayout = ({
         WebkitBackdropFilter: isScrolled && headerBlur ? DESIGN_TOKENS.blur.light : 'none',
         borderBottom: `1px solid ${isScrolled ? JSI_COLORS.stone : 'transparent'}`,
         transition: DESIGN_TOKENS.transitions.fast,
-        boxShadow: isScrolled ? shadow('sm', theme) : 'none',
-    } : {};
-    
-    const contentWrapperStyle = shouldConstrainWidth ? {
-        maxWidth: contentMaxWidth,
-        marginLeft: 'auto',
-        marginRight: 'auto',
-        width: '100%',
     } : {};
 
-    const responsivePadding = padding ? {
-        paddingLeft: isDesktop ? '1.5rem' : '1rem',
-        paddingRight: isDesktop ? '1.5rem' : '1rem',
-    } : {};
+    // Responsive horizontal padding
+    const horizontalPadding = padding 
+        ? (isDesktop ? '1.5rem' : '1rem')
+        : '0';
     
     return (
         <div 
@@ -91,8 +82,12 @@ export const ScreenLayout = ({
                 <div style={headerStyles}>
                     <div 
                         style={{
-                            ...contentWrapperStyle,
-                            ...responsivePadding,
+                            maxWidth: contentMaxWidth,
+                            marginLeft: 'auto',
+                            marginRight: 'auto',
+                            width: '100%',
+                            paddingLeft: horizontalPadding,
+                            paddingRight: horizontalPadding,
                         }}
                     >
                         {typeof header === 'function' ? header({ isScrolled, isDesktop }) : header}
@@ -107,11 +102,17 @@ export const ScreenLayout = ({
                 className="flex-1 overflow-y-auto scrollbar-hide"
             >
                 <div 
+                    className="flex flex-col"
                     style={{
-                        ...contentWrapperStyle,
-                        ...responsivePadding,
+                        maxWidth: shouldConstrainWidth ? contentMaxWidth : '100%',
+                        marginLeft: 'auto',
+                        marginRight: 'auto',
+                        width: '100%',
+                        paddingLeft: horizontalPadding,
+                        paddingRight: horizontalPadding,
                         paddingTop: padding ? '1rem' : 0,
                         paddingBottom: paddingBottom,
+                        gap: gap,
                     }}
                 >
                     {children}

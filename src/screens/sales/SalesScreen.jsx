@@ -1,12 +1,11 @@
 import React, { useMemo, useState, useCallback } from 'react';
 import { Modal } from '../../components/common/Modal';
-import { ArrowUp, ArrowDown, BarChart3, Table2, Target, ChevronRight, Trophy, Award } from 'lucide-react';
+import { ArrowUp, ArrowDown, BarChart3, Table2, Target, ChevronRight, Trophy, Gift } from 'lucide-react';
 import { MONTHLY_SALES_DATA, SALES_VERTICALS_DATA } from './data.js';
 import { ORDER_DATA, STATUS_COLORS } from '../orders/data.js';
 import { SalesByVerticalBreakdown } from './components/SalesByVerticalBreakdown.jsx';
 import { motion } from 'framer-motion';
 import { GlassCard, ScreenLayout } from '../../design-system/index.js';
-import { DESIGN_TOKENS } from '../../design-system/tokens.js';
 
 const formatCompanyName = (name = '') => name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 const monthNameToNumber = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
@@ -14,10 +13,9 @@ const monthNameToNumber = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul:
 // Monthly Bar Chart - shows one metric at a time with toggle
 const MonthlyBarChart = ({ data, theme, onMonthSelect, dataType = 'bookings' }) => {
   const max = Math.max(...data.map(d => dataType === 'bookings' ? d.bookings : d.sales));
-  const label = dataType === 'bookings' ? 'Ordered' : 'Invoiced';
   
   return (
-    <div className="space-y-2.5">
+    <div className="space-y-2">
       {data.map((m, idx) => {
         const val = dataType === 'bookings' ? m.bookings : m.sales;
         const pct = Math.min(99, (val / max) * 100);
@@ -27,10 +25,10 @@ const MonthlyBarChart = ({ data, theme, onMonthSelect, dataType = 'bookings' }) 
           <button
             key={m.month}
             onClick={() => onMonthSelect(m)}
-            className="w-full grid grid-cols-[2.5rem,1fr,auto] items-center gap-3 py-1 rounded-lg transition-all hover:bg-black/[0.02] active:scale-[0.995]"
+            className="w-full grid grid-cols-[2rem,1fr,auto] items-center gap-3 py-0.5 rounded-lg transition-all hover:bg-black/[0.02] active:scale-[0.99]"
           >
             <span 
-              className="text-[13px] font-medium text-left" 
+              className="text-[12px] font-medium text-left" 
               style={{ 
                 color: isCurrentMonth ? theme.colors.accent : theme.colors.textSecondary
               }}
@@ -38,7 +36,7 @@ const MonthlyBarChart = ({ data, theme, onMonthSelect, dataType = 'bookings' }) 
               {m.month}
             </span>
             <div 
-              className="h-3 rounded-full relative overflow-hidden" 
+              className="h-2.5 rounded-full relative overflow-hidden" 
               style={{ backgroundColor: theme.colors.subtle }}
             >
               <motion.div 
@@ -50,7 +48,7 @@ const MonthlyBarChart = ({ data, theme, onMonthSelect, dataType = 'bookings' }) 
               />
             </div>
             <span 
-              className="text-[13px] font-semibold text-right min-w-[5rem] tabular-nums" 
+              className="text-[12px] font-semibold text-right min-w-[4.5rem] tabular-nums" 
               style={{ color: theme.colors.textPrimary }}
             >
               ${val.toLocaleString()}
@@ -64,17 +62,17 @@ const MonthlyBarChart = ({ data, theme, onMonthSelect, dataType = 'bookings' }) 
 
 // Table view - shows both Ordered and Invoiced columns
 const MonthlyTable = ({ data, theme, onMonthSelect }) => (
-  <div className="text-[13px] overflow-hidden rounded-xl" style={{ border: `1px solid ${theme.colors.border}` }}>
+  <div className="text-[12px] overflow-hidden rounded-xl" style={{ border: `1px solid ${theme.colors.border}` }}>
     <div 
-      className="grid grid-cols-3 font-semibold text-[11px] uppercase tracking-wider" 
+      className="grid grid-cols-3 font-semibold text-[10px] uppercase tracking-wider" 
       style={{ 
         backgroundColor: theme.colors.subtle,
         borderBottom: `1px solid ${theme.colors.border}`
       }}
     >
-      <div className="px-3 py-2.5" style={{ color: theme.colors.textSecondary }}>Month</div>
-      <div className="px-3 py-2.5 text-right" style={{ color: theme.colors.textSecondary }}>Ordered</div>
-      <div className="px-3 py-2.5 text-right" style={{ color: theme.colors.textSecondary }}>Invoiced</div>
+      <div className="px-3 py-2" style={{ color: theme.colors.textSecondary }}>Month</div>
+      <div className="px-3 py-2 text-right" style={{ color: theme.colors.textSecondary }}>Ordered</div>
+      <div className="px-3 py-2 text-right" style={{ color: theme.colors.textSecondary }}>Invoiced</div>
     </div>
     {data.map((m, i) => (
       <button 
@@ -83,9 +81,9 @@ const MonthlyTable = ({ data, theme, onMonthSelect }) => (
         style={{ borderBottom: i < data.length - 1 ? `1px solid ${theme.colors.border}20` : 'none' }}
         onClick={() => onMonthSelect(m)}
       >
-        <div className="px-3 py-2.5 font-medium" style={{ color: theme.colors.textPrimary }}>{m.month}</div>
-        <div className="px-3 py-2.5 text-right tabular-nums" style={{ color: theme.colors.textPrimary }}>${m.bookings.toLocaleString()}</div>
-        <div className="px-3 py-2.5 text-right tabular-nums" style={{ color: theme.colors.textPrimary }}>${m.sales.toLocaleString()}</div>
+        <div className="px-3 py-2 font-medium" style={{ color: theme.colors.textPrimary }}>{m.month}</div>
+        <div className="px-3 py-2 text-right tabular-nums" style={{ color: theme.colors.textPrimary }}>${m.bookings.toLocaleString()}</div>
+        <div className="px-3 py-2 text-right tabular-nums" style={{ color: theme.colors.textPrimary }}>${m.sales.toLocaleString()}</div>
       </button>
     ))}
   </div>
@@ -115,32 +113,32 @@ const CustomerMonthlyBreakdown = ({ monthData, orders, theme, onBack }) => {
     <div>
       <button 
         onClick={onBack} 
-        className="flex items-center gap-1.5 text-[13px] font-semibold mb-4 transition-all hover:opacity-70" 
+        className="flex items-center gap-1 text-[12px] font-semibold mb-3 transition-all hover:opacity-70" 
         style={{ color: theme.colors.accent }}
       >
-        <ChevronRight className="w-4 h-4 rotate-180" />
+        <ChevronRight className="w-3.5 h-3.5 rotate-180" />
         Back
       </button>
       
-      <div className="flex items-center justify-between mb-3">
-        <h4 className="font-semibold text-[15px]" style={{ color: theme.colors.textPrimary }}>
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="font-semibold text-[14px]" style={{ color: theme.colors.textPrimary }}>
           {monthData.month} Breakdown
         </h4>
-        <span className="text-[13px] font-medium tabular-nums" style={{ color: theme.colors.textSecondary }}>
+        <span className="text-[12px] font-medium tabular-nums" style={{ color: theme.colors.textSecondary }}>
           ${total.toLocaleString()}
         </span>
       </div>
       
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {customerData.map((c, i) => {
           const pct = (c.bookings / total) * 100;
           return (
             <div 
               key={c.company} 
-              className="flex items-center gap-3 p-2.5 rounded-xl transition-all hover:bg-black/[0.02]"
+              className="flex items-center gap-2.5 p-2 rounded-xl transition-all hover:bg-black/[0.02]"
             >
               <div 
-                className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold flex-shrink-0"
+                className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
                 style={{ 
                   backgroundColor: i === 0 ? theme.colors.accent : theme.colors.subtle,
                   color: i === 0 ? '#FFF' : theme.colors.textSecondary
@@ -149,14 +147,14 @@ const CustomerMonthlyBreakdown = ({ monthData, orders, theme, onBack }) => {
                 {i + 1}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-[13px] truncate" style={{ color: theme.colors.textPrimary }}>
+                <p className="font-medium text-[12px] truncate" style={{ color: theme.colors.textPrimary }}>
                   {formatCompanyName(c.company)}
                 </p>
-                <p className="text-[11px]" style={{ color: theme.colors.textSecondary }}>
+                <p className="text-[10px]" style={{ color: theme.colors.textSecondary }}>
                   {c.orders} order{c.orders !== 1 ? 's' : ''} • {pct.toFixed(1)}%
                 </p>
               </div>
-              <span className="font-semibold text-[13px] tabular-nums" style={{ color: theme.colors.textPrimary }}>
+              <span className="font-semibold text-[12px] tabular-nums" style={{ color: theme.colors.textPrimary }}>
                 ${c.bookings.toLocaleString()}
               </span>
             </div>
@@ -257,42 +255,39 @@ export const SalesScreen = ({ theme, onNavigate }) => {
       maxWidth="content"
       padding={true}
       paddingBottom="8rem"
+      gap="0.75rem"
     >
-      {/* Navigation Cards - Customer Leaderboard & Sales Rewards */}
-      <div className="grid grid-cols-2 gap-3">
-        <button
+      {/* Navigation Cards - Leaderboard & Rewards */}
+      <div className="grid grid-cols-2 gap-2.5">
+        <GlassCard
+          as="button"
+          theme={theme}
           onClick={() => onNavigate('customer-rank')}
-          className="flex items-center gap-3 p-4 rounded-2xl transition-all hover:scale-[1.01] active:scale-[0.99] text-left"
-          style={{ 
-            backgroundColor: theme.colors.surface,
-            border: `1px solid ${theme.colors.border}`,
-          }}
+          className="flex items-center gap-2.5 p-3 active:scale-[0.98] transition-transform"
         >
-          <Trophy className="w-5 h-5 flex-shrink-0" style={{ color: theme.colors.accent }} />
-          <span className="font-semibold text-[13px]" style={{ color: theme.colors.textPrimary }}>
+          <Trophy className="w-4 h-4 flex-shrink-0" style={{ color: theme.colors.accent }} />
+          <span className="font-semibold text-[12px]" style={{ color: theme.colors.textPrimary }}>
             Leaderboard
           </span>
-          <ChevronRight className="w-4 h-4 ml-auto flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
-        </button>
+          <ChevronRight className="w-3.5 h-3.5 ml-auto flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
+        </GlassCard>
         
-        <button
+        <GlassCard
+          as="button"
+          theme={theme}
           onClick={() => onNavigate('incentive-rewards')}
-          className="flex items-center gap-3 p-4 rounded-2xl transition-all hover:scale-[1.01] active:scale-[0.99] text-left"
-          style={{ 
-            backgroundColor: theme.colors.surface,
-            border: `1px solid ${theme.colors.border}`,
-          }}
+          className="flex items-center gap-2.5 p-3 active:scale-[0.98] transition-transform"
         >
-          <Award className="w-5 h-5 flex-shrink-0" style={{ color: theme.colors.accent }} />
-          <span className="font-semibold text-[13px]" style={{ color: theme.colors.textPrimary }}>
+          <Gift className="w-4 h-4 flex-shrink-0" style={{ color: theme.colors.accent }} />
+          <span className="font-semibold text-[12px]" style={{ color: theme.colors.textPrimary }}>
             Rewards
           </span>
-          <ChevronRight className="w-4 h-4 ml-auto flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
-        </button>
+          <ChevronRight className="w-3.5 h-3.5 ml-auto flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
+        </GlassCard>
       </div>
 
       {/* Monthly Performance Card with Progress to Goal inside */}
-      <GlassCard theme={theme} className="p-4" variant="elevated">
+      <GlassCard theme={theme} className="p-3.5" variant="elevated">
         {selectedMonth ? (
           <CustomerMonthlyBreakdown 
             monthData={selectedMonth} 
@@ -303,17 +298,17 @@ export const SalesScreen = ({ theme, onNavigate }) => {
         ) : (
           <>
             {/* Header: Total + Controls */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3">
               <div>
-                <p className="text-[11px] font-medium uppercase tracking-wider" style={{ color: theme.colors.textSecondary }}>
+                <p className="text-[10px] font-medium uppercase tracking-wider" style={{ color: theme.colors.textSecondary }}>
                   {monthlyView === 'chart' ? (chartDataType === 'bookings' ? 'Total Ordered' : 'Total Invoiced') : 'YTD Summary'}
                 </p>
-                <p className="text-2xl font-bold tabular-nums" style={{ color: theme.colors.textPrimary }}>
+                <p className="text-xl font-bold tabular-nums" style={{ color: theme.colors.textPrimary }}>
                   ${(monthlyView === 'chart' ? (chartDataType === 'bookings' ? totalBookings : totalSales) : totalBookings).toLocaleString()}
                 </p>
               </div>
               
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 {/* Toggle only shows in chart view */}
                 {monthlyView === 'chart' && (
                   <div 
@@ -322,7 +317,7 @@ export const SalesScreen = ({ theme, onNavigate }) => {
                   >
                     <button 
                       onClick={() => setChartDataType('bookings')} 
-                      className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
+                      className="px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all"
                       style={{ 
                         backgroundColor: chartDataType === 'bookings' ? '#FFF' : 'transparent', 
                         color: chartDataType === 'bookings' ? theme.colors.textPrimary : theme.colors.textSecondary,
@@ -333,7 +328,7 @@ export const SalesScreen = ({ theme, onNavigate }) => {
                     </button>
                     <button 
                       onClick={() => setChartDataType('sales')} 
-                      className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
+                      className="px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all"
                       style={{ 
                         backgroundColor: chartDataType === 'sales' ? '#FFF' : 'transparent', 
                         color: chartDataType === 'sales' ? theme.colors.textPrimary : theme.colors.textSecondary,
@@ -348,12 +343,12 @@ export const SalesScreen = ({ theme, onNavigate }) => {
                 {/* View toggle */}
                 <button 
                   onClick={() => setMonthlyView(v => v === 'chart' ? 'table' : 'chart')} 
-                  className="w-8 h-8 rounded-full flex items-center justify-center transition-all active:scale-95" 
+                  className="w-7 h-7 rounded-full flex items-center justify-center transition-all active:scale-95" 
                   style={{ backgroundColor: theme.colors.subtle }}
                 >
                   {monthlyView === 'chart' 
-                    ? <Table2 className="w-4 h-4" style={{ color: theme.colors.textSecondary }} /> 
-                    : <BarChart3 className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
+                    ? <Table2 className="w-3.5 h-3.5" style={{ color: theme.colors.textSecondary }} /> 
+                    : <BarChart3 className="w-3.5 h-3.5" style={{ color: theme.colors.textSecondary }} />
                   }
                 </button>
               </div>
@@ -367,32 +362,32 @@ export const SalesScreen = ({ theme, onNavigate }) => {
             
             {/* Progress to Goal - inside the card */}
             <div 
-              className="mt-4 pt-4 flex items-center gap-3"
+              className="mt-3 pt-3 flex items-center gap-2.5"
               style={{ borderTop: `1px solid ${theme.colors.border}20` }}
             >
-              <Target className="w-4 h-4 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
+              <Target className="w-3.5 h-3.5 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
               <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] font-medium" style={{ color: theme.colors.textSecondary }}>
+                <div className="flex items-center justify-between mb-0.5">
+                  <span className="text-[10px] font-medium" style={{ color: theme.colors.textSecondary }}>
                     Progress to Goal
                   </span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <span 
-                      className="text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5"
+                      className="text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5"
                       style={aheadOfPace 
                         ? { background: '#34D39915', color: '#059669' } 
                         : { background: '#F8717115', color: '#DC2626' }
                       }
                     >
-                      {aheadOfPace ? <ArrowUp className="w-2.5 h-2.5" /> : <ArrowDown className="w-2.5 h-2.5" />}
+                      {aheadOfPace ? <ArrowUp className="w-2 h-2" /> : <ArrowDown className="w-2 h-2" />}
                       {deltaLabel}
                     </span>
-                    <span className="text-[13px] font-bold tabular-nums" style={{ color: theme.colors.textPrimary }}>
+                    <span className="text-[12px] font-bold tabular-nums" style={{ color: theme.colors.textPrimary }}>
                       {percentToGoal.toFixed(1)}%
                     </span>
                   </div>
                 </div>
-                <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: theme.colors.subtle }}>
+                <div className="h-1 rounded-full overflow-hidden" style={{ backgroundColor: theme.colors.subtle }}>
                   <motion.div 
                     className="h-full rounded-full" 
                     initial={{ width: 0 }} 
@@ -408,18 +403,18 @@ export const SalesScreen = ({ theme, onNavigate }) => {
       </GlassCard>
 
       {/* Recent Orders */}
-      <GlassCard theme={theme} className="p-4" variant="elevated">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-[15px]" style={{ color: theme.colors.textPrimary }}>
+      <GlassCard theme={theme} className="p-3.5" variant="elevated">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-semibold text-[13px]" style={{ color: theme.colors.textPrimary }}>
             Recent Orders
           </h3>
           <button 
             onClick={() => onNavigate('orders')}
-            className="text-[12px] font-semibold flex items-center gap-0.5 transition-all hover:opacity-70"
+            className="text-[11px] font-semibold flex items-center gap-0.5 transition-all hover:opacity-70"
             style={{ color: theme.colors.accent }}
           >
             View All
-            <ChevronRight className="w-3.5 h-3.5" />
+            <ChevronRight className="w-3 h-3" />
           </button>
         </div>
         
@@ -427,31 +422,31 @@ export const SalesScreen = ({ theme, onNavigate }) => {
           {displayedRecent.map((order, i) => (
             <motion.button
               key={order.orderNumber}
-              initial={{ opacity: 0, y: 6 }}
+              initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25, delay: i * 0.03 }}
-              className="w-full flex items-center gap-3 py-2.5 px-2 rounded-xl transition-all hover:bg-black/[0.02] active:scale-[0.99] text-left"
+              transition={{ duration: 0.2, delay: i * 0.02 }}
+              className="w-full flex items-center gap-2.5 py-2 px-1.5 rounded-xl transition-all hover:bg-black/[0.02] active:scale-[0.99] text-left"
               onClick={() => setSelectedOrder(order)}
             >
               <div 
-                className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+                className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: theme.colors.subtle }}
               >
-                <span className="text-[11px] font-bold" style={{ color: theme.colors.accent }}>
+                <span className="text-[10px] font-bold" style={{ color: theme.colors.accent }}>
                   {new Date(order.date).getDate()}
                 </span>
               </div>
               
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-[13px] truncate" style={{ color: theme.colors.textPrimary }}>
+                <p className="font-medium text-[12px] truncate" style={{ color: theme.colors.textPrimary }}>
                   {formatCompanyName(order.company)}
                 </p>
-                <div className="flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[11px]" style={{ color: theme.colors.textSecondary }}>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <span className="text-[10px]" style={{ color: theme.colors.textSecondary }}>
                     {new Date(order.date).toLocaleDateString('en-US', { month: 'short' })}
                   </span>
                   <span 
-                    className="px-1.5 py-0.5 rounded text-[9px] font-semibold uppercase"
+                    className="px-1.5 py-0.5 rounded text-[8px] font-semibold uppercase"
                     style={{ 
                       backgroundColor: (STATUS_COLORS[order.status] || theme.colors.secondary) + '12', 
                       color: STATUS_COLORS[order.status] || theme.colors.secondary 
@@ -462,7 +457,7 @@ export const SalesScreen = ({ theme, onNavigate }) => {
                 </div>
               </div>
               
-              <span className="font-semibold text-[13px] tabular-nums flex-shrink-0" style={{ color: theme.colors.textPrimary }}>
+              <span className="font-semibold text-[12px] tabular-nums flex-shrink-0" style={{ color: theme.colors.textPrimary }}>
                 ${order.net.toLocaleString()}
               </span>
             </motion.button>
@@ -472,7 +467,7 @@ export const SalesScreen = ({ theme, onNavigate }) => {
         {numRecentOrders < allRecentOrders.length && (
           <button 
             onClick={showMoreOrders} 
-            className="w-full text-center text-[12px] font-semibold mt-2 py-2 rounded-xl transition-all hover:bg-black/[0.02]" 
+            className="w-full text-center text-[11px] font-semibold mt-1.5 py-1.5 rounded-xl transition-all hover:bg-black/[0.02]" 
             style={{ color: theme.colors.accent }}
           >
             Show More
@@ -482,8 +477,8 @@ export const SalesScreen = ({ theme, onNavigate }) => {
 
       {/* Sales by Vertical */}
       {salesByVertical.length > 0 && (
-        <GlassCard theme={theme} className="p-4" variant="elevated">
-          <h3 className="font-semibold text-[15px] mb-3" style={{ color: theme.colors.textPrimary }}>
+        <GlassCard theme={theme} className="p-3.5" variant="elevated">
+          <h3 className="font-semibold text-[13px] mb-2" style={{ color: theme.colors.textPrimary }}>
             Invoiced by Vertical
           </h3>
           <SalesByVerticalBreakdown 

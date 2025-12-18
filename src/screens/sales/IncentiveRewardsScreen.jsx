@@ -69,13 +69,13 @@ export const IncentiveRewardsScreen = ({ theme, onNavigate }) => {
         
         return (
             <motion.div
-                initial={{ opacity: 0, y: 6 }}
+                initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.25, delay: index * 0.03 }}
-                className="flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all hover:bg-black/[0.02]"
+                transition={{ duration: 0.2, delay: index * 0.02 }}
+                className="flex items-center gap-2.5 py-2 px-2.5 rounded-xl transition-all hover:bg-black/[0.02]"
             >
                 <div 
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0"
                     style={{ 
                         backgroundColor: index === 0 ? `${JSI_COLORS.gold}20` : theme.colors.subtle,
                         color: index === 0 ? JSI_COLORS.gold : theme.colors.textSecondary,
@@ -85,21 +85,21 @@ export const IncentiveRewardsScreen = ({ theme, onNavigate }) => {
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                    <p className="font-medium text-[13px] truncate" style={{ color: theme.colors.textPrimary }}>
+                    <p className="font-medium text-[12px] truncate" style={{ color: theme.colors.textPrimary }}>
                         {person.name}
                     </p>
-                    <div className="mt-1 h-1 rounded-full overflow-hidden" style={{ backgroundColor: theme.colors.subtle }}>
+                    <div className="mt-0.5 h-1 rounded-full overflow-hidden" style={{ backgroundColor: theme.colors.subtle }}>
                         <motion.div 
                             className="h-full rounded-full" 
                             initial={{ width: 0 }}
                             animate={{ width: `${pct}%` }}
-                            transition={{ duration: 0.4, delay: index * 0.03 }}
+                            transition={{ duration: 0.35, delay: index * 0.02 }}
                             style={{ backgroundColor: theme.colors.accent }} 
                         />
                     </div>
                 </div>
                 
-                <span className="font-semibold text-[13px] tabular-nums flex-shrink-0" style={{ color: theme.colors.accent }}>
+                <span className="font-semibold text-[12px] tabular-nums flex-shrink-0" style={{ color: theme.colors.accent }}>
                     ${person.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </span>
             </motion.div>
@@ -107,8 +107,8 @@ export const IncentiveRewardsScreen = ({ theme, onNavigate }) => {
     };
 
     const EmptyState = ({ type }) => (
-        <div className="py-8 text-center">
-            <p className="text-[13px]" style={{ color: theme.colors.textSecondary }}>
+        <div className="py-6 text-center">
+            <p className="text-[12px]" style={{ color: theme.colors.textSecondary }}>
                 No {type} rewards for this period
             </p>
         </div>
@@ -120,10 +120,11 @@ export const IncentiveRewardsScreen = ({ theme, onNavigate }) => {
             maxWidth="content"
             padding={true}
             paddingBottom="8rem"
+            gap="0.75rem"
         >
             {/* Controls */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="w-36">
+            <div className="flex flex-wrap items-center justify-between gap-2.5">
+                <div className="w-32">
                     <PortalNativeSelect
                         value={selectedPeriod}
                         onChange={e => setSelectedPeriod(e.target.value)}
@@ -138,7 +139,7 @@ export const IncentiveRewardsScreen = ({ theme, onNavigate }) => {
                 >
                     <button
                         onClick={() => setViewFilter('all')}
-                        className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
+                        className="px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all"
                         style={{
                             backgroundColor: viewFilter === 'all' ? '#FFF' : 'transparent',
                             color: viewFilter === 'all' ? theme.colors.textPrimary : theme.colors.textSecondary,
@@ -149,7 +150,7 @@ export const IncentiveRewardsScreen = ({ theme, onNavigate }) => {
                     </button>
                     <button
                         onClick={() => setViewFilter('sales')}
-                        className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
+                        className="px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all"
                         style={{
                             backgroundColor: viewFilter === 'sales' ? '#FFF' : 'transparent',
                             color: viewFilter === 'sales' ? theme.colors.textPrimary : theme.colors.textSecondary,
@@ -160,7 +161,7 @@ export const IncentiveRewardsScreen = ({ theme, onNavigate }) => {
                     </button>
                     <button
                         onClick={() => setViewFilter('designers')}
-                        className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
+                        className="px-2.5 py-1 rounded-full text-[10px] font-semibold transition-all"
                         style={{
                             backgroundColor: viewFilter === 'designers' ? '#FFF' : 'transparent',
                             color: viewFilter === 'designers' ? theme.colors.textPrimary : theme.colors.textSecondary,
@@ -173,47 +174,41 @@ export const IncentiveRewardsScreen = ({ theme, onNavigate }) => {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 gap-3">
-                <div 
-                    className="p-3 rounded-2xl"
-                    style={{ backgroundColor: `${theme.colors.accent}06` }}
-                >
-                    <div className="flex items-center gap-1.5 mb-1">
-                        <DollarSign className="w-3.5 h-3.5" style={{ color: theme.colors.accent }} />
-                        <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: theme.colors.textSecondary }}>
+            <div className="grid grid-cols-2 gap-2.5">
+                <GlassCard theme={theme} className="p-2.5">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                        <DollarSign className="w-3 h-3" style={{ color: theme.colors.accent }} />
+                        <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.colors.textSecondary }}>
                             Sales
                         </span>
                     </div>
-                    <p className="text-lg font-bold tabular-nums" style={{ color: theme.colors.accent }}>
+                    <p className="text-base font-bold tabular-nums" style={{ color: theme.colors.accent }}>
                         ${totalSalesRewards.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </p>
-                </div>
+                </GlassCard>
                 
-                <div 
-                    className="p-3 rounded-2xl"
-                    style={{ backgroundColor: theme.colors.subtle }}
-                >
-                    <div className="flex items-center gap-1.5 mb-1">
-                        <Users className="w-3.5 h-3.5" style={{ color: theme.colors.textSecondary }} />
-                        <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: theme.colors.textSecondary }}>
+                <GlassCard theme={theme} className="p-2.5">
+                    <div className="flex items-center gap-1.5 mb-0.5">
+                        <Users className="w-3 h-3" style={{ color: theme.colors.textSecondary }} />
+                        <span className="text-[9px] font-medium uppercase tracking-wider" style={{ color: theme.colors.textSecondary }}>
                             Design
                         </span>
                     </div>
-                    <p className="text-lg font-bold tabular-nums" style={{ color: theme.colors.textPrimary }}>
+                    <p className="text-base font-bold tabular-nums" style={{ color: theme.colors.textPrimary }}>
                         ${totalDesignerRewards.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </p>
-                </div>
+                </GlassCard>
             </div>
 
             {/* Sales Rewards */}
             {(viewFilter === 'all' || viewFilter === 'sales') && (
-                <GlassCard theme={theme} className="p-3" variant="elevated">
-                    <div className="flex items-center gap-2 px-2 mb-2">
-                        <DollarSign className="w-4 h-4" style={{ color: theme.colors.accent }} />
-                        <h3 className="font-semibold text-[14px]" style={{ color: theme.colors.textPrimary }}>
+                <GlassCard theme={theme} className="p-2.5" variant="elevated">
+                    <div className="flex items-center gap-2 px-1.5 mb-1.5">
+                        <DollarSign className="w-3.5 h-3.5" style={{ color: theme.colors.accent }} />
+                        <h3 className="font-semibold text-[13px]" style={{ color: theme.colors.textPrimary }}>
                             Sales Rewards
                         </h3>
-                        <span className="text-[11px] ml-auto" style={{ color: theme.colors.textSecondary }}>
+                        <span className="text-[10px] ml-auto" style={{ color: theme.colors.textSecondary }}>
                             {sortedSales.length} {sortedSales.length === 1 ? 'person' : 'people'}
                         </span>
                     </div>
@@ -229,13 +224,13 @@ export const IncentiveRewardsScreen = ({ theme, onNavigate }) => {
 
             {/* Designer Rewards */}
             {(viewFilter === 'all' || viewFilter === 'designers') && (
-                <GlassCard theme={theme} className="p-3" variant="elevated">
-                    <div className="flex items-center gap-2 px-2 mb-2">
-                        <Users className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
-                        <h3 className="font-semibold text-[14px]" style={{ color: theme.colors.textPrimary }}>
+                <GlassCard theme={theme} className="p-2.5" variant="elevated">
+                    <div className="flex items-center gap-2 px-1.5 mb-1.5">
+                        <Users className="w-3.5 h-3.5" style={{ color: theme.colors.textSecondary }} />
+                        <h3 className="font-semibold text-[13px]" style={{ color: theme.colors.textPrimary }}>
                             Designer Rewards
                         </h3>
-                        <span className="text-[11px] ml-auto" style={{ color: theme.colors.textSecondary }}>
+                        <span className="text-[10px] ml-auto" style={{ color: theme.colors.textSecondary }}>
                             {sortedDesigners.length} {sortedDesigners.length === 1 ? 'person' : 'people'}
                         </span>
                     </div>

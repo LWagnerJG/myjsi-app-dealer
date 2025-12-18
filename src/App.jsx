@@ -1,4 +1,5 @@
 ﻿import React, { useState, useMemo, useCallback, useEffect, useRef, Suspense } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { lightTheme, darkTheme } from './data/index.js';
 import { DEFAULT_HOME_APPS, allApps } from './data.jsx';
 import { INITIAL_OPPORTUNITIES, MY_PROJECTS_DATA, INITIAL_DESIGN_FIRMS, EMPTY_LEAD, STAGES } from './screens/projects/data.js';
@@ -79,6 +80,18 @@ const RESOURCE_FEATURE_SCREENS = {
     'comcol-request': ComColRequest
 };
 
+// URL path <-> screen key mapping
+const screenToPath = (screenKey) => {
+    if (!screenKey || screenKey === 'home') return '/';
+    return '/' + screenKey.replace(/\//g, '/');
+};
+
+const pathToScreen = (pathname) => {
+    if (!pathname || pathname === '/') return 'home';
+    // Remove leading slash and return
+    return pathname.slice(1);
+};
+
 const ScreenRouter = ({ screenKey, projectsScreenRef, SuspenseFallback, ...rest }) => {
 if (!screenKey) return null;
 const parts = screenKey.split('/');
@@ -98,52 +111,39 @@ if (base === 'customers') {
         return <CustomerMicrositeScreen customerId={customerId} {...rest} />;
     }
     // Redirect to projects/customers tab if just /customers
-    return <ProjectsScreen ref={projectsScreenRef} projectsInitialTab="customers" {...rest} />;
+    return <ProjectsScreen ref={projectsScreenRef} {...rest} />;
 }
     
-// Alias: /installations redirects to /customers (for backward compatibility)
-if (base === 'installations') {
-    return <ProjectsScreen ref={projectsScreenRef} projectsInitialTab="customers" {...rest} />;
-}
-
-// Samples routes (cart first)
-if (screenKey === 'samples/cart') return <SamplesScreen {...rest} initialCartOpen />;
-if (base === 'samples') return <SamplesScreen {...rest} />;
-
-    // Feature screens (lazy) inside Suspense to isolate fallback flicker per screen
-    const lazyWrap = (Comp) => (
-        <Suspense fallback={SuspenseFallback}> <Comp {...rest} /> </Suspense>
-    );
-
-    // Resource route normalization (support legacy underscore routes)
-    if (base === 'resources') {
-        const slug = parts.slice(1).join('/');
-        const firstSegment = slug.split('/')[0];
-        const normalizedFirst = normalizeResourceSlug(firstSegment);
-        const normalized = [normalizedFirst, ...slug.split('/').slice(1)].join('/');
-
-        // Direct feature screen match (single segment feature slugs only)
-        if (RESOURCE_FEATURE_SCREENS[normalized]) {
-            return lazyWrap(RESOURCE_FEATURE_SCREENS[normalized]);
+// Resource feature routes
+if (base === 'resources') {
+    // Extract the sub-path after "resources/"
+    const subPath = screenKey.slice('resources/'.length);
+    const normalizedSlug = normalizeResourceSlug(subPath.split('/')[0]);
+    
+    // Handle COM/COL request flow within search-fabrics
+    if (subPath.startsWith('search-fabrics/')) {
+        const subResource = subPath.slice('search-fabrics/'.length);
+        if (subResource === 'comcol-request') {
+            const ComColRequestScreen = RESOURCE_FEATURE_SCREENS['comcol-request'];
+            return <Suspense fallback={SuspenseFallback}><ComColRequestScreen {...rest} /></Suspense>;
         }
     }
+    
+    const FeatureScreen = RESOURCE_FEATURE_SCREENS[normalizedSlug];
+    if (FeatureScreen) return <Suspense fallback={SuspenseFallback}><FeatureScreen {...rest} /></Suspense>;
+    
+    // Fall back to ResourceDetailScreen for other slugs
+    if (parts.length > 1) return <ResourceDetailScreen {...rest} />;
+}
 
-    if (base === 'products' && parts[1] === 'category' && parts.length === 3) {
-        return <ProductComparisonScreen {...rest} categoryId={parts[2]} />;
-    }
-    if (base === 'products' && parts[1] === 'category' && (parts[2] === 'competition' || parts[3] === 'competition')) {
-        const productId = parts[3] === 'competition' && parts[4] ? parts[4] : null;
-        return <CompetitiveAnalysisScreen {...rest} categoryId={parts[2]} productId={productId} />;
-    }
-
-    if (base === 'orders' && parts.length > 1) return <OrderDetailScreen {...rest} />;
-    if (base === 'resources' && parts.length > 1) return <ResourceDetailScreen {...rest} />;
-
-    const ScreenComponent = SCREEN_MAP[base] || SalesScreen;
-    return <ScreenComponent {...rest} />;
+const ScreenComponent = SCREEN_MAP[base] || SalesScreen;
+return <ScreenComponent {...rest} />;
 };
 
 function App() {
+    const location = useLocation();
+    const navigate = useNavigate();
+    
     // Persistent preferences / cart
     const [isDarkMode, setIsDarkMode] = usePersistentState('pref.darkMode', false);
     const [cart, setCart] = usePersistentState('samples.cart', {});
@@ -157,9 +157,21 @@ function App() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Navigation / UI state
-    const [navigationHistory, setNavigationHistory] = useState(['home']);
+    // Navigation state - derive current screen from URL
+    const currentScreen = useMemo(() => pathToScreen(location.pathname), [location.pathname]);
     const [lastNavigationDirection, setLastNavigationDirection] = useState('forward');
+    const [navigationHistoryLength, setNavigationHistoryLength] = useState(1);
+    
+    // Track navigation history length for back button visibility
+    useEffect(() => {
+        const handlePopState = () => {
+            setLastNavigationDirection('backward');
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    // UI state
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [voiceMessage, setVoiceMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
@@ -188,7 +200,6 @@ function App() {
     const [customNavItems, setCustomNavItems] = usePersistentState('nav.customItems', ['home', 'projects', 'orders', 'sales', 'resources/dealer-directory']);
 
     const projectsScreenRef = useRef(null);
-    const currentScreen = navigationHistory[navigationHistory.length - 1];
 
     const currentTheme = useMemo(() => (isDarkMode ? darkTheme : lightTheme), [isDarkMode]);
 
@@ -206,21 +217,28 @@ function App() {
 
     useEffect(() => { document.body.style.backgroundColor = currentTheme.colors.background; }, [currentTheme.colors.background]);
 
+    // Navigation handlers - now using URL
     const handleNavigate = useCallback((screen) => {
         setLastNavigationDirection('forward');
-        setNavigationHistory((prev) => [...prev, screen]);
-    }, []);
+        setNavigationHistoryLength(prev => prev + 1);
+        navigate(screenToPath(screen));
+    }, [navigate]);
 
     const handleBack = useCallback(() => {
         if (currentScreen === 'projects' && projectsScreenRef.current?.clearSelection) {
             const handled = projectsScreenRef.current.clearSelection();
             if (handled) return;
         }
-        setNavigationHistory((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
         setLastNavigationDirection('backward');
-    }, [currentScreen]);
+        setNavigationHistoryLength(prev => Math.max(1, prev - 1));
+        navigate(-1);
+    }, [currentScreen, navigate]);
 
-    const handleHome = useCallback(() => { setNavigationHistory(['home']); setLastNavigationDirection('backward'); }, []);
+    const handleHome = useCallback(() => { 
+        setNavigationHistoryLength(1);
+        setLastNavigationDirection('backward'); 
+        navigate('/');
+    }, [navigate]);
 
     const handleVoiceActivate = useCallback((message) => { setVoiceMessage(message); setTimeout(() => setVoiceMessage(''), 1500); }, []);
     const handleAskAI = useCallback((query) => { setVoiceMessage(`AI Search: ${query}`); setTimeout(() => setVoiceMessage(''), 2500); }, []);
@@ -352,6 +370,9 @@ function App() {
         }
     }, []);
 
+    // Check if we should show back button (not on home, and has history)
+    const showBackButton = currentScreen !== 'home' && navigationHistoryLength > 1;
+
     return (
         <ToastHost theme={currentTheme}>
             {/* Status bar tap area for scroll-to-top */}
@@ -370,7 +391,7 @@ function App() {
                 <AppHeader
                     theme={currentTheme}
                     userName={userSettings.firstName}
-                    showBack={navigationHistory.length > 1}
+                    showBack={showBackButton}
                     handleBack={handleBack}
                     onHomeClick={handleHome}
                     onProfileClick={() => setShowProfileMenu(p => !p)}
@@ -386,7 +407,7 @@ function App() {
                 />
 
                 <div className="flex-1 pt-[76px] overflow-hidden" style={{ backgroundColor: currentTheme.colors.background }}>
-                    <AnimatedScreenWrapper screenKey={currentScreen} direction={lastNavigationDirection} onSwipeBack={navigationHistory.length > 1 ? handleBack : null}>
+                    <AnimatedScreenWrapper screenKey={currentScreen} direction={lastNavigationDirection} onSwipeBack={showBackButton ? handleBack : null}>
                         <ScreenRouter screenKey={currentScreen} projectsScreenRef={projectsScreenRef} SuspenseFallback={suspenseFallback} {...screenProps} />
                     </AnimatedScreenWrapper>
                 </div>
