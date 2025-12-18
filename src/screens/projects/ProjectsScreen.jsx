@@ -16,22 +16,88 @@ import { useModalState } from '../../hooks/useModalState.js';
 // currency util
 const fmtCurrency = (v) => typeof v === 'string' ? (v.startsWith('$') ? v : '$' + v) : (v ?? 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 
-// Suggest input pill (inline tag adder w/ suggestions)
-const SuggestInputPill = ({ placeholder, suggestions, onAdd, theme }) => {
-  const [q, setQ] = useState(''); const [open, setOpen] = useState(false); const ref = useRef(null); const menu = useRef(null);
-  const filtered = useMemo(() => suggestions.filter(s => s.toLowerCase().includes(q.toLowerCase()) && s.toLowerCase() !== q.toLowerCase()).slice(0, 12), [q, suggestions]);
-  useEffect(() => { if (!open) return; const close = e => { if (ref.current && !ref.current.contains(e.target) && menu.current && !menu.current.contains(e.target)) setOpen(false); }; window.addEventListener('mousedown', close); return () => window.removeEventListener('mousedown', close); }, [open]);
-  const commit = (val) => { if (val) { onAdd(val); setQ(''); } setOpen(false); };
-  return <div className="relative" ref={ref} style={{ minWidth: 140 }}>
-    <input value={q} onChange={e => { setQ(e.target.value); setOpen(true); }} onFocus={() => setOpen(true)} onKeyDown={e => { if (e.key === 'Enter') { commit(q.trim()); } if (e.key === 'Escape') { setOpen(false); } }} placeholder={placeholder} className="h-8 px-3 rounded-full text-xs font-medium outline-none border w-full" style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }} />
-    {open && filtered.length > 0 && (
-      <div ref={menu} className="absolute z-50 mt-1 rounded-xl border shadow-lg overflow-hidden" style={{ background: theme.colors.surface, borderColor: theme.colors.border, maxHeight: 220, width: '100%' }}>
-        <div className="overflow-y-auto" style={{ maxHeight: 220 }}>
-          {filtered.map(s => <button key={s} onClick={() => commit(s)} className="w-full text-left px-3 py-2 text-xs hover:bg-black/5" style={{ color: theme.colors.textPrimary }}>{s}</button>)}
+// Suggest input pill (inline tag adder w/ suggestions) - allows adding custom values
+const SuggestInputPill = ({ placeholder, suggestions, onAdd, theme, onAddNew }) => {
+  const [q, setQ] = useState('');
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const menu = useRef(null);
+  
+  const filtered = useMemo(() => 
+    suggestions.filter(s => s.toLowerCase().includes(q.toLowerCase()) && s.toLowerCase() !== q.toLowerCase()).slice(0, 8), 
+    [q, suggestions]
+  );
+  
+  // Check if typed value is custom (not in suggestions)
+  const isCustomValue = q.trim() && !suggestions.some(s => s.toLowerCase() === q.trim().toLowerCase());
+  
+  useEffect(() => { 
+    if (!open) return; 
+    const close = e => { 
+      if (ref.current && !ref.current.contains(e.target) && menu.current && !menu.current.contains(e.target)) 
+        setOpen(false); 
+    }; 
+    window.addEventListener('mousedown', close); 
+    return () => window.removeEventListener('mousedown', close); 
+  }, [open]);
+  
+  const commit = (val) => { 
+    if (val) { 
+      onAdd(val);
+      // If it's a custom value, also call onAddNew to persist to backend data
+      if (onAddNew && !suggestions.some(s => s.toLowerCase() === val.toLowerCase())) {
+        onAddNew(val);
+      }
+      setQ(''); 
+    } 
+    setOpen(false); 
+  };
+  
+  const showDropdown = open && (filtered.length > 0 || isCustomValue);
+  
+  return (
+    <div className="relative" ref={ref} style={{ minWidth: 140 }}>
+      <input 
+        value={q} 
+        onChange={e => { setQ(e.target.value); setOpen(true); }} 
+        onFocus={() => setOpen(true)} 
+        onKeyDown={e => { 
+          if (e.key === 'Enter') { commit(q.trim()); } 
+          if (e.key === 'Escape') { setOpen(false); } 
+        }} 
+        placeholder={placeholder} 
+        className="h-8 px-3 rounded-lg text-xs font-medium outline-none border w-full" 
+        style={{ backgroundColor: theme.colors.subtle, borderColor: theme.colors.border, color: theme.colors.textPrimary }} 
+      />
+      {showDropdown && (
+        <div ref={menu} className="absolute z-50 mt-1 rounded-xl border shadow-lg overflow-hidden" style={{ background: theme.colors.surface, borderColor: theme.colors.border, maxHeight: 220, minWidth: '100%' }}>
+          <div className="overflow-y-auto" style={{ maxHeight: 220 }}>
+            {/* Show "Add new" option for custom values */}
+            {isCustomValue && (
+              <button 
+                onClick={() => commit(q.trim())} 
+                className="w-full text-left px-3 py-2.5 text-xs font-semibold hover:bg-black/5 flex items-center gap-2"
+                style={{ color: theme.colors.accent }}
+              >
+                <Plus className="w-3 h-3" />
+                Add "{q.trim()}"
+              </button>
+            )}
+            {filtered.map(s => (
+              <button 
+                key={s} 
+                onClick={() => commit(s)} 
+                className="w-full text-left px-3 py-2 text-xs hover:bg-black/5" 
+                style={{ color: theme.colors.textPrimary }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-    )}
-  </div>;
+      )}
+    </div>
+  );
 };
 
 // Helper label / inputs
@@ -44,29 +110,19 @@ const CurrencyInput = ({ value, onChange, theme }) => {
   return <input inputMode="numeric" value={raw} onChange={e => { const val = e.target.value.replace(/[^0-9]/g, ''); onChange(val ? ('$' + parseInt(val, 10).toLocaleString()) : ''); }} className="bg-transparent outline-none px-0 py-1 text-sm font-semibold border-b border-transparent focus:border-[currentColor] w-32" style={{ color: theme.colors.textPrimary }} />;
 };
 
-// Collapsible Section Card for OpportunityDetail
-const SectionCard = ({ title, icon: Icon, children, theme, defaultOpen = true, className = '' }) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
+// Simple Section Card for OpportunityDetail - not collapsible, cleaner look
+const SectionCard = ({ title, icon: Icon, children, theme, className = '' }) => {
   return (
     <div className={`rounded-2xl overflow-hidden ${className}`} style={{ backgroundColor: theme.colors.surface, border: `1px solid ${theme.colors.border}` }}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-black/[0.02] transition-colors"
-      >
-        <div className="flex items-center gap-2.5">
+      {title && (
+        <div className="px-4 pt-4 pb-2 flex items-center gap-2">
           {Icon && <Icon className="w-4 h-4" style={{ color: theme.colors.accent }} />}
           <span className="text-[13px] font-semibold" style={{ color: theme.colors.textPrimary }}>{title}</span>
         </div>
-        <ChevronRight 
-          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} 
-          style={{ color: theme.colors.textSecondary }} 
-        />
-      </button>
-      {isOpen && (
-        <div className="px-4 pb-4 pt-1">
-          {children}
-        </div>
       )}
+      <div className="px-4 pb-4">
+        {children}
+      </div>
     </div>
   );
 };
@@ -112,11 +168,17 @@ const StageTimeline = ({ stages, currentStage, onStageChange, theme }) => {
 };
 
 // Opportunity Detail - Redesigned with proper categorization
-const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
+const OpportunityDetail = ({ opp, theme, onBack, onUpdate, customDesignFirms = [], onAddCustomDesignFirm }) => {
   const [draft, setDraft] = useState(opp);
   const dirty = useRef(false);
   const saveRef = useRef(null);
   const isDesktop = useIsDesktop();
+  
+  // Combine default design firms with custom ones
+  const allDesignFirms = useMemo(() => {
+    const combined = [...INITIAL_DESIGN_FIRMS, ...customDesignFirms];
+    return [...new Set(combined)]; // Remove duplicates
+  }, [customDesignFirms]);
   
   useEffect(() => { setDraft(opp); }, [opp.id]);
   
@@ -191,51 +253,44 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
       paddingBottom="8rem"
       gap="0.75rem"
     >
-      {/* Hero Header */}
-      <div className="rounded-2xl p-5 relative overflow-hidden" style={{ backgroundColor: theme.colors.surface, border: `1px solid ${theme.colors.border}` }}>
-        {/* Background accent */}
-        <div className="absolute top-0 right-0 w-32 h-32 opacity-10 rounded-full -translate-y-1/2 translate-x-1/2" style={{ backgroundColor: theme.colors.accent }} />
-        
-        <div className="relative">
-          {/* Project Name & Customer */}
-          <div className="mb-4">
-            <input
-              value={draft.project || draft.name || ''}
-              onChange={e => update('project', e.target.value)}
-              className="text-xl font-bold bg-transparent outline-none w-full border-b border-transparent focus:border-current transition-colors"
-              style={{ color: theme.colors.textPrimary }}
-              placeholder="Project Name"
-            />
-            <input
-              value={draft.company || ''}
-              onChange={e => update('company', e.target.value)}
-              className="text-sm font-medium bg-transparent outline-none w-full mt-1"
-              style={{ color: theme.colors.textSecondary }}
-              placeholder="Customer"
-            />
-          </div>
+      {/* Hero Header - Clean, no decorative elements */}
+      <div className="rounded-2xl p-5" style={{ backgroundColor: theme.colors.surface, border: `1px solid ${theme.colors.border}` }}>
+        {/* Project Name & Customer */}
+        <div className="mb-4">
+          <input
+            value={draft.project || draft.name || ''}
+            onChange={e => update('project', e.target.value)}
+            className="text-xl font-bold bg-transparent outline-none w-full"
+            style={{ color: theme.colors.textPrimary }}
+            placeholder="Project Name"
+          />
+          <input
+            value={draft.company || ''}
+            onChange={e => update('company', e.target.value)}
+            className="text-sm font-medium bg-transparent outline-none w-full mt-1"
+            style={{ color: theme.colors.textSecondary }}
+            placeholder="Customer"
+          />
+        </div>
 
-          {/* Key Metrics Row */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ backgroundColor: `${theme.colors.accent}15` }}>
-              <span className="text-lg font-bold" style={{ color: theme.colors.accent }}>${formattedValue}</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ backgroundColor: theme.colors.subtle }}>
-              <span className="text-xs font-semibold" style={{ color: theme.colors.textSecondary }}>Win</span>
-              <span className="text-sm font-bold" style={{ color: theme.colors.textPrimary }}>{draft.winProbability || 0}%</span>
-            </div>
-            <button
-              ref={discBtn}
-              onClick={() => discountOpen ? setDiscountOpen(false) : openDiscount()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors hover:bg-black/5"
-              style={{ backgroundColor: theme.colors.subtle }}
-            >
-              <span className="text-xs font-semibold" style={{ color: theme.colors.textPrimary }}>
-                {draft.discount || 'Set Discount'}
-              </span>
-              <ChevronRight className={`w-3 h-3 transition-transform ${discountOpen ? 'rotate-90' : ''}`} style={{ color: theme.colors.textSecondary }} />
-            </button>
+        {/* Key Metrics Row */}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="px-3 py-1.5 rounded-lg" style={{ backgroundColor: `${theme.colors.accent}15` }}>
+            <span className="text-lg font-bold" style={{ color: theme.colors.accent }}>${formattedValue}</span>
           </div>
+          <div className="px-3 py-1.5 rounded-lg" style={{ backgroundColor: theme.colors.subtle }}>
+            <span className="text-sm font-semibold" style={{ color: theme.colors.textPrimary }}>{draft.winProbability || 0}% Win</span>
+          </div>
+          <button
+            ref={discBtn}
+            onClick={() => discountOpen ? setDiscountOpen(false) : openDiscount()}
+            className="px-3 py-1.5 rounded-lg transition-colors hover:bg-black/5"
+            style={{ backgroundColor: theme.colors.subtle }}
+          >
+            <span className="text-sm font-semibold" style={{ color: theme.colors.textPrimary }}>
+              {draft.discount || 'Set Discount'}
+            </span>
+          </button>
         </div>
       </div>
 
@@ -350,7 +405,7 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
       </SectionCard>
 
       {/* Competition Analysis */}
-      <SectionCard title="Competition" icon={Users} theme={theme} defaultOpen={!!draft.competitionPresent}>
+      <SectionCard title="Competition" icon={Users} theme={theme}>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-sm" style={{ color: theme.colors.textSecondary }}>Competing against other manufacturers?</span>
@@ -425,14 +480,20 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
                   <X className="w-3 h-3 opacity-60" />
                 </button>
               ))}
-              <SuggestInputPill placeholder="Add firm" suggestions={INITIAL_DESIGN_FIRMS} onAdd={v => addUnique('designFirms', v)} theme={theme} />
+              <SuggestInputPill 
+                placeholder="Add firm" 
+                suggestions={allDesignFirms} 
+                onAdd={v => addUnique('designFirms', v)} 
+                onAddNew={onAddCustomDesignFirm}
+                theme={theme} 
+              />
             </div>
           </div>
         </div>
       </SectionCard>
 
       {/* Notes & Documents */}
-      <SectionCard title="Notes & Documents" icon={FileText} theme={theme} defaultOpen={!!(draft.notes || draft.quotes?.length)}>
+      <SectionCard title="Notes & Documents" icon={FileText} theme={theme}>
         <div className="space-y-4">
           <div>
             <textarea
@@ -1031,10 +1092,19 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
   const [customerSearch, setCustomerSearch] = useState('');
   const [showNewModal, setShowNewModal] = useState(false);
   const [localCustomers, setLocalCustomers] = useState(MOCK_CUSTOMERS);
+  const [customDesignFirms, setCustomDesignFirms] = useState([]); // Track custom design firms added by user
 
   // Handler to add new customer
   const handleAddCustomer = useCallback((newCustomer) => {
     setLocalCustomers(prev => [newCustomer, ...prev]);
+  }, []);
+
+  // Handler to add new custom design firm to the suggestions list
+  const handleAddCustomDesignFirm = useCallback((firmName) => {
+    setCustomDesignFirms(prev => {
+      if (prev.includes(firmName)) return prev;
+      return [...prev, firmName];
+    });
   }, []);
 
   useImperativeHandle(ref, () => ({ clearSelection: () => { let cleared = false; if (selectedOpportunity) { setSelectedOpportunity(null); cleared = true; } if (selectedInstall) { setSelectedInstall(null); cleared = true; } return cleared; } }));
@@ -1081,7 +1151,16 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
 
   const stageOptions = STAGES.map(stage => ({ key: stage, label: stage }));
 
-  if (selectedOpportunity) return <OpportunityDetail opp={selectedOpportunity} theme={theme} onBack={() => setSelectedOpportunity(null)} onUpdate={u => { updateOpportunity(u); setSelectedOpportunity(u); }} />;
+  if (selectedOpportunity) return (
+    <OpportunityDetail 
+      opp={selectedOpportunity} 
+      theme={theme} 
+      onBack={() => setSelectedOpportunity(null)} 
+      onUpdate={u => { updateOpportunity(u); setSelectedOpportunity(u); }}
+      customDesignFirms={customDesignFirms}
+      onAddCustomDesignFirm={handleAddCustomDesignFirm}
+    />
+  );
   if (selectedInstall) return <InstallationDetail project={selectedInstall} theme={theme} onAddPhotoFiles={addInstallPhotos} />;
 
   const header = (
