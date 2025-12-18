@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { LibraryGrid } from '../library/LibraryGrid.jsx';
 import { CommunityScreen } from '../community/CommunityScreen.jsx';
 import StandardSearchBar from '../../components/common/StandardSearchBar.jsx';
 import { TabToggle } from '../../design-system/SegmentedToggle.jsx';
+import { ScreenLayout } from '../../design-system/ScreenLayout.jsx';
 
 export const CommunityLibraryLayout = ({
   theme,
@@ -11,32 +12,12 @@ export const CommunityLibraryLayout = ({
 }) => {
   const [activeTab, setActiveTab] = useState('community');
   const [query, setQuery] = useState('');
-  const scrollPositions = useRef({ community: 0, library: 0 });
-  const containerRef = useRef(null);
-  const headerRef = useRef(null);
-  const [isScrolled, setIsScrolled] = useState(false);
   const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  const handleScroll = useCallback(() => { if (containerRef.current) setIsScrolled(containerRef.current.scrollTop > 10); }, []);
 
   const switchTab = useCallback((tab) => {
     if (tab === activeTab) return;
-    if (containerRef.current) scrollPositions.current[activeTab] = containerRef.current.scrollTop;
     setActiveTab(tab);
-    requestAnimationFrame(()=> { if (containerRef.current) containerRef.current.scrollTop = scrollPositions.current[tab] || 0; });
   }, [activeTab]);
-
-  // Keyboard shortcuts (left/right, ctrl+/ focus search)
-  useEffect(() => {
-    const handler = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === '/') { e.preventDefault(); document.getElementById('community-main-search')?.querySelector('input')?.focus(); }
-      if (e.key === 'ArrowLeft') switchTab('community');
-      if (e.key === 'ArrowRight') switchTab('library');
-    }; window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler);
-  }, [switchTab]);
-
-  // Animation helper styles
-  const paneTransition = prefersReducedMotion ? 'none' : 'opacity 240ms ease, transform 240ms ease';
   
   // Toggle options
   const tabOptions = [
@@ -44,90 +25,100 @@ export const CommunityLibraryLayout = ({
     { key: 'library', label: 'Library' },
   ];
 
-  return (
-    <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
-      <div ref={headerRef} className={`sticky top-0 z-10 transition-all ${isScrolled ? 'shadow-md':''}`} style={{ backgroundColor: isScrolled? `${theme.colors.background}e8`: theme.colors.background, backdropFilter: isScrolled? 'blur(12px)':'none', borderBottom:`1px solid ${isScrolled? theme.colors.border+'40':'transparent'}`, WebkitBackdropFilter: isScrolled? 'blur(12px)':'none' }}>
-        {/* Segmented toggle + Post CTA */}
-        <div className="px-4 pt-4 pb-1 w-full">
-          <div className="flex w-full gap-3 items-center">
-            {/* JSI Unified Toggle */}
-            <div className="flex-grow max-w-xs">
-              <TabToggle
-                options={tabOptions}
-                value={activeTab}
-                onChange={switchTab}
-                theme={theme}
-                size="md"
-              />
-            </div>
-            <button onClick={openCreateContentModal} className="h-11 inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-sm px-5" style={{ backgroundColor: theme.colors.accent, color:'#fff', boxShadow:'0 4px 14px rgba(0,0,0,0.08)' }}>
-              + Post
-            </button>
-          </div>
-        </div>
-        {/* Search bar */}
-        <div className="px-4 mt-3 mb-3">
-          <StandardSearchBar
-            id="community-main-search"
-            value={query}
-            onChange={setQuery}
-            placeholder={activeTab==='community'? 'Search posts, people, tags...':'Search library'}
-            theme={{...theme, colors:{...theme.colors, surface:'#ffffff'}}}
+  // Animation helper styles
+  const paneTransition = prefersReducedMotion ? 'none' : 'opacity 240ms ease, transform 240ms ease';
+
+  // Header content - will be passed to ScreenLayout
+  const header = (
+    <div className="py-3 space-y-3">
+      {/* Segmented toggle + Post CTA */}
+      <div className="flex gap-3 items-center">
+        {/* JSI Unified Toggle */}
+        <div className="flex-grow max-w-xs">
+          <TabToggle
+            options={tabOptions}
+            value={activeTab}
+            onChange={switchTab}
+            theme={theme}
+            size="md"
           />
         </div>
+        <button 
+          onClick={openCreateContentModal} 
+          className="h-11 inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-sm px-5" 
+          style={{ backgroundColor: theme.colors.accent, color:'#fff', boxShadow:'0 4px 14px rgba(0,0,0,0.08)' }}
+        >
+          + Post
+        </button>
       </div>
-      <div ref={containerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-4 pb-mobile-nav-safe pt-3 space-y-4 scrollbar-hide">
-        <div className="mx-auto w-full" style={{ maxWidth: '100%', position:'relative' }}>
-          {/* Active pane remains in normal flow so container height = active content height. Inactive pane is absolutely positioned overlay to allow animation without cutting off scroll height. */}
-          <div style={{ position:'relative' }}>
-            {/* Community Pane */}
-            <div style={ activeTab==='community' ? {
-                position:'relative',
-                opacity:1,
-                transform:'translateX(0)',
-                transition:paneTransition,
-                pointerEvents:'auto'
-              } : {
-                position:'absolute', inset:0,
-                opacity:0,
-                transform:'translateX(12px)',
-                transition:paneTransition,
-                pointerEvents:'none'
-              }}>
-              <CommunityScreen
-                theme={theme}
-                posts={posts}
-                polls={polls}
-                likedPosts={likedPosts}
-                pollChoices={pollChoices}
-                onToggleLike={onToggleLike}
-                onPollVote={onPollVote}
-                onAddComment={onAddComment}
-                openCreateContentModal={openCreateContentModal}
-                embedMode
-                externalQuery={query}
-              />
-            </div>
-            {/* Library Pane */}
-            <div style={ activeTab==='library' ? {
-                position:'relative',
-                opacity:1,
-                transform:'translateX(0)',
-                transition:paneTransition,
-                pointerEvents:'auto'
-              } : {
-                position:'absolute', inset:0,
-                opacity:0,
-                transform:'translateX(-12px)',
-                transition:paneTransition,
-                pointerEvents:'none'
-              }}>
-              <LibraryGrid theme={theme} query={query} onQueryChange={setQuery} parentHeaderRef={headerRef} />
-            </div>
-          </div>
+      {/* Search bar */}
+      <StandardSearchBar
+        id="community-main-search"
+        value={query}
+        onChange={setQuery}
+        placeholder={activeTab === 'community' ? 'Search posts, people, tags...' : 'Search library'}
+        theme={{...theme, colors:{...theme.colors, surface:'#ffffff'}}}
+      />
+    </div>
+  );
+
+  return (
+    <ScreenLayout
+      theme={theme}
+      header={header}
+      maxWidth="default"
+      padding={true}
+      paddingBottom="8rem"
+      gap="0"
+    >
+      {/* Active pane with animation */}
+      <div style={{ position: 'relative' }}>
+        {/* Community Pane */}
+        <div style={ activeTab === 'community' ? {
+            position: 'relative',
+            opacity: 1,
+            transform: 'translateX(0)',
+            transition: paneTransition,
+            pointerEvents: 'auto'
+          } : {
+            position: 'absolute', inset: 0,
+            opacity: 0,
+            transform: 'translateX(12px)',
+            transition: paneTransition,
+            pointerEvents: 'none'
+          }}>
+          <CommunityScreen
+            theme={theme}
+            posts={posts}
+            polls={polls}
+            likedPosts={likedPosts}
+            pollChoices={pollChoices}
+            onToggleLike={onToggleLike}
+            onPollVote={onPollVote}
+            onAddComment={onAddComment}
+            openCreateContentModal={openCreateContentModal}
+            embedMode
+            externalQuery={query}
+          />
+        </div>
+        {/* Library Pane */}
+        <div style={ activeTab === 'library' ? {
+            position: 'relative',
+            opacity: 1,
+            transform: 'translateX(0)',
+            transition: paneTransition,
+            pointerEvents: 'auto'
+          } : {
+            position: 'absolute', inset: 0,
+            opacity: 0,
+            transform: 'translateX(-12px)',
+            transition: paneTransition,
+            pointerEvents: 'none'
+          }}>
+          <LibraryGrid theme={theme} query={query} onQueryChange={setQuery} />
         </div>
       </div>
-    </div>
+    </ScreenLayout>
   );
 };
 

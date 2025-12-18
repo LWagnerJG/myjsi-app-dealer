@@ -1,5 +1,6 @@
 // JSI ScreenLayout - Consistent page structure wrapper
 // Handles: responsive max-width, sticky header, scroll detection, padding
+// ARCHITECTURE: Single scrollable area with header and content sharing the same max-width
 import React, { useState, useRef, useCallback } from 'react';
 import { useIsDesktop } from '../hooks/useResponsive.js';
 import { DESIGN_TOKENS, JSI_COLORS, JSI_TYPOGRAPHY } from './tokens.js';
@@ -31,14 +32,6 @@ export const ScreenLayout = ({
         onScrollChange?.(scrolled, scrollRef.current.scrollTop);
     }, [onScrollChange]);
     
-    const bgColor = theme?.colors?.background || JSI_COLORS.warmBeige;
-    
-    // Responsive horizontal padding
-    const horizontalPadding = padding ? (isDesktop ? '24px' : '16px') : '0';
-    
-    // Container class for centering - max-width applied via inline style
-    const containerClass = 'mx-auto';
-    
     // Max-width values in pixels
     const maxWidthMap = {
         sm: 448,
@@ -50,7 +43,24 @@ export const ScreenLayout = ({
     };
     const maxWidthPx = maxWidthMap[maxWidth];
     
-    const headerWrapperStyles = stickyHeader ? {
+    const bgColor = theme?.colors?.background || JSI_COLORS.warmBeige;
+    
+    // Responsive horizontal padding
+    const horizontalPadding = padding ? (isDesktop ? 24 : 16) : 0;
+    
+    // Common container styles for centering
+    const containerStyles = {
+        maxWidth: maxWidthPx ? `${maxWidthPx}px` : 'none',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        width: '100%',
+        paddingLeft: `${horizontalPadding}px`,
+        paddingRight: `${horizontalPadding}px`,
+        boxSizing: 'border-box',
+    };
+    
+    // Sticky header wrapper styles  
+    const stickyWrapperStyles = stickyHeader ? {
         position: 'sticky',
         top: 0,
         zIndex: DESIGN_TOKENS.zIndex.sticky,
@@ -69,36 +79,26 @@ export const ScreenLayout = ({
                 fontFamily: JSI_TYPOGRAPHY.fontFamily,
             }}
         >
-            {/* Sticky Header Area */}
-            {header && (
-                <div style={headerWrapperStyles}>
-                    <div 
-                        className={containerClass}
-                        style={{
-                            width: '100%',
-                            maxWidth: maxWidthPx ? `${maxWidthPx}px` : 'none',
-                            paddingLeft: horizontalPadding,
-                            paddingRight: horizontalPadding,
-                        }}
-                    >
-                        {typeof header === 'function' ? header({ isScrolled, isDesktop }) : header}
-                    </div>
-                </div>
-            )}
-            
-            {/* Scrollable Content Area */}
+            {/* Single scrollable area */}
             <div 
                 ref={scrollRef}
                 onScroll={handleScroll}
                 className="flex-1 overflow-y-auto scrollbar-hide"
             >
+                {/* Sticky Header - Full width background, centered content */}
+                {header && (
+                    <div style={stickyWrapperStyles}>
+                        <div style={containerStyles}>
+                            {typeof header === 'function' ? header({ isScrolled, isDesktop }) : header}
+                        </div>
+                    </div>
+                )}
+                
+                {/* Main Content - Centered */}
                 <div 
-                    className={`flex flex-col ${containerClass}`}
+                    className="flex flex-col"
                     style={{
-                        width: '100%',
-                        maxWidth: maxWidthPx ? `${maxWidthPx}px` : 'none',
-                        paddingLeft: horizontalPadding,
-                        paddingRight: horizontalPadding,
+                        ...containerStyles,
                         paddingTop: padding ? '16px' : 0,
                         paddingBottom: paddingBottom,
                         gap: gap,
