@@ -481,9 +481,11 @@ const RecentActivityFeed = React.memo(({ theme, opportunities = [], orders = [],
 RecentActivityFeed.displayName = 'RecentActivityFeed';
 
 // Smart Search Component - Optimized with match header banner design
+// Includes file attachment for AI/RFP assistant
 const SmartSearch = React.memo(({ theme, onNavigate, onAskAI, onVoiceActivate }) => {
     const [query, setQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
+    const [attachedFiles, setAttachedFiles] = useState([]);
     const anchorRef = useRef(null);
     const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
 
@@ -494,11 +496,20 @@ const SmartSearch = React.memo(({ theme, onNavigate, onAskAI, onVoiceActivate })
     }, [query]);
 
     const submit = useCallback((q) => {
-        if (q.trim()) {
-            onAskAI(q);
+        if (q.trim() || attachedFiles.length > 0) {
+            // Include file info in the AI query for future RFP processing
+            const fileInfo = attachedFiles.length > 0 
+                ? ` [${attachedFiles.length} file(s) attached: ${attachedFiles.map(f => f.name).join(', ')}]` 
+                : '';
+            onAskAI(q + fileInfo);
             setQuery('');
+            setAttachedFiles([]);
         }
-    }, [onAskAI]);
+    }, [onAskAI, attachedFiles]);
+
+    const handleFileAdd = useCallback((files) => {
+        setAttachedFiles(prev => [...prev, ...files]);
+    }, []);
 
     const updatePos = useCallback(() => {
         if (!anchorRef.current) return;
@@ -537,8 +548,44 @@ const SmartSearch = React.memo(({ theme, onNavigate, onAskAI, onVoiceActivate })
                     border: `1px solid ${theme.colors.border}`
                 }}
             >
-                <HomeSearchInput onSubmit={submit} value={query} onChange={setQuery} onFocus={handleFocus} onBlur={handleBlur} onVoiceClick={() => onVoiceActivate('Voice Activated')} theme={theme} className="w-full" />
+                <HomeSearchInput 
+                    onSubmit={submit} 
+                    value={query} 
+                    onChange={setQuery} 
+                    onFocus={handleFocus} 
+                    onBlur={handleBlur} 
+                    onVoiceClick={() => onVoiceActivate('Voice Activated')} 
+                    onFileAdd={handleFileAdd}
+                    attachedFiles={attachedFiles}
+                    theme={theme} 
+                    className="w-full" 
+                />
             </GlassCard>
+            
+            {/* Show attached files indicator below search bar */}
+            {attachedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2 px-2">
+                    {attachedFiles.map((file, i) => (
+                        <div 
+                            key={i}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium"
+                            style={{ 
+                                backgroundColor: `${theme.colors.accent}15`, 
+                                color: theme.colors.accent 
+                            }}
+                        >
+                            <span className="truncate max-w-[120px]">{file.name}</span>
+                            <button
+                                onClick={() => setAttachedFiles(prev => prev.filter((_, idx) => idx !== i))}
+                                className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-black/10 transition-colors"
+                            >
+                                <X className="w-3 h-3" />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
+            
             {isFocused && filtered.length > 0 && (
                 <DropdownPortal>
                     <div className="absolute" style={{ top: pos.top, left: pos.left, width: pos.width, zIndex: 10000 }}>

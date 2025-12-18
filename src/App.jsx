@@ -98,6 +98,12 @@ const parts = screenKey.split('/');
 const base = parts[0];
 
 if (base === 'projects') return <ProjectsScreen ref={projectsScreenRef} {...rest} />;
+
+// Order detail routes: orders/:orderNumber
+if (base === 'orders' && parts[1]) {
+    const orderNumber = parts[1];
+    return <OrderDetailScreen orderNumber={orderNumber} {...rest} />;
+}
     
 // Customer microsite routes
 if (base === 'customers') {

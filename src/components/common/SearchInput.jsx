@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import { Search, Mic } from 'lucide-react';
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { Search, Mic, Plus } from 'lucide-react';
 import { DESIGN_TOKENS } from '../../design-system/tokens.js';
 
 // Constants moved outside component to prevent recreation
@@ -58,6 +58,8 @@ export const HomeSearchInput = React.memo(function HomeSearchInput({
     onChange,
     onSubmit,
     onVoiceClick,
+    onFileAdd,
+    attachedFiles = [],
     className = '',
     onFocus,
     onBlur,
@@ -65,6 +67,7 @@ export const HomeSearchInput = React.memo(function HomeSearchInput({
     const [focused, setFocused] = useState(false);
     const [tick, setTick] = useState(0);
     const [prevText, setPrevText] = useState(null);
+    const fileInputRef = useRef(null);
     
     const phraseFor = useCallback((i) => PHRASES[i % PHRASES.length], []);
     
@@ -103,6 +106,19 @@ export const HomeSearchInput = React.memo(function HomeSearchInput({
     const handleChange = useCallback((e) => {
         onChange?.(e.target.value);
     }, [onChange]);
+    
+    const handleFileClick = useCallback(() => {
+        fileInputRef.current?.click();
+    }, []);
+    
+    const handleFileChange = useCallback((e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length > 0 && onFileAdd) {
+            onFileAdd(files);
+        }
+        // Reset input so same file can be selected again
+        e.target.value = '';
+    }, [onFileAdd]);
     
     // Memoize style objects
     const inputStyles = useMemo(() => createInputStyles(theme), [theme.colors.textPrimary]);
@@ -161,10 +177,42 @@ export const HomeSearchInput = React.memo(function HomeSearchInput({
                 )}
             </div>
 
+            {/* Hidden file input */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg"
+                onChange={handleFileChange}
+                className="hidden"
+            />
+
+            {/* File attachment button */}
+            <button
+                type="button"
+                onClick={handleFileClick}
+                className="ml-2 w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-black/5 dark:hover:bg-white/5 active:scale-95"
+                style={{ 
+                    color: attachedFiles.length > 0 ? theme.colors.accent : iconColor,
+                    backgroundColor: attachedFiles.length > 0 ? `${theme.colors.accent}15` : 'transparent'
+                }}
+                aria-label="Attach files"
+            >
+                <Plus className="w-5 h-5" />
+                {attachedFiles.length > 0 && (
+                    <span 
+                        className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center"
+                        style={{ backgroundColor: theme.colors.accent, color: '#fff' }}
+                    >
+                        {attachedFiles.length}
+                    </span>
+                )}
+            </button>
+
             <button
                 type="button"
                 onClick={onVoiceClick}
-                className="ml-3 w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                className="ml-1 w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                 style={{ color: iconColor }}
                 aria-label="Voice input"
             >
@@ -177,7 +225,8 @@ export const HomeSearchInput = React.memo(function HomeSearchInput({
     return (
         prevProps.value === nextProps.value &&
         prevProps.theme === nextProps.theme &&
-        prevProps.className === nextProps.className
+        prevProps.className === nextProps.className &&
+        prevProps.attachedFiles?.length === nextProps.attachedFiles?.length
     );
 });
 
