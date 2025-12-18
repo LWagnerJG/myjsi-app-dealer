@@ -44,140 +44,472 @@ const CurrencyInput = ({ value, onChange, theme }) => {
   return <input inputMode="numeric" value={raw} onChange={e => { const val = e.target.value.replace(/[^0-9]/g, ''); onChange(val ? ('$' + parseInt(val, 10).toLocaleString()) : ''); }} className="bg-transparent outline-none px-0 py-1 text-sm font-semibold border-b border-transparent focus:border-[currentColor] w-32" style={{ color: theme.colors.textPrimary }} />;
 };
 
-// Opportunity Detail
-const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
-  const [draft, setDraft] = useState(opp); const dirty = useRef(false); const saveRef = useRef(null);
-  useEffect(() => { setDraft(opp); }, [opp.id]);
-  const update = (k, v) => setDraft(p => { const n = { ...p, [k]: v }; dirty.current = true; return n; });
-  useEffect(() => { if (!dirty.current) return; clearTimeout(saveRef.current); saveRef.current = setTimeout(() => { onUpdate(draft); dirty.current = false; }, 500); return () => clearTimeout(saveRef.current); }, [draft, onUpdate]);
-
-  const [discountOpen, setDiscountOpen] = useState(false); const discBtn = useRef(null); const discMenu = useRef(null); const [discPos, setDiscPos] = useState({ top: 0, left: 0, width: 0 });
-  const openDiscount = () => { if (discBtn.current) { const r = discBtn.current.getBoundingClientRect(); setDiscPos({ top: r.bottom + 8 + window.scrollY, left: r.left + window.scrollX, width: r.width }); } setDiscountOpen(true); };
-  useEffect(() => { if (!discountOpen) return; const handler = e => { if (discMenu.current && !discMenu.current.contains(e.target) && !discBtn.current.contains(e.target)) setDiscountOpen(false); }; window.addEventListener('mousedown', handler); window.addEventListener('resize', () => setDiscountOpen(false)); return () => window.removeEventListener('mousedown', handler); }, [discountOpen]);
-
-  const removeFrom = (key, val) => update(key, (draft[key] || []).filter(x => x !== val));
-  const addUnique = (key, val) => { if (!val) return; const list = draft[key] || []; if (!list.includes(val)) update(key, [...list, val]); };
-  const addProductSeries = (series) => { if (!series) return; const list = draft.products || []; if (!list.some(p => p.series === series)) update('products', [...list, { series }]); };
-  const removeProductSeries = (series) => update('products', (draft.products || []).filter(p => p.series !== series));
-
+// Collapsible Section Card for OpportunityDetail
+const SectionCard = ({ title, icon: Icon, children, theme, defaultOpen = true, className = '' }) => {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
   return (
-    <div className="flex flex-col h-full" style={{ background: theme.colors.background }}>
-      <div className="px-4 pt-5 pb-mobile-nav-safe overflow-y-auto scrollbar-hide">
-        <GlassCard theme={theme} className="p-6 rounded-3xl space-y-8" variant="elevated">
-          <div className="space-y-1">
-            <InlineTextInput value={draft.project || draft.name} onChange={v => update('project', v)} theme={theme} className="text-[20px] leading-tight" />
-            <InlineTextInput value={draft.company} onChange={v => update('company', v)} theme={theme} placeholder="Company" className="text-sm font-medium opacity-80" />
-          </div>
-
-          <div className="flex flex-col gap-6">
-            <div>
-              <SoftLabel theme={theme}>Stage</SoftLabel>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {STAGES.map(s => { const active = s === draft.stage; return <button key={s} onClick={() => update('stage', s)} className="px-3 h-8 rounded-full text-[11px] font-medium border transition-colors" style={{ backgroundColor: active ? theme.colors.accent : theme.colors.surface, color: active ? '#fff' : theme.colors.textPrimary, borderColor: active ? theme.colors.accent : theme.colors.border }}>{s}</button>; })}
-              </div>
-            </div>
-            <div className="flex flex-wrap items-end gap-8">
-              <div className="flex flex-col gap-2">
-                <SoftLabel theme={theme}>Discount</SoftLabel>
-                <button ref={discBtn} onClick={() => discountOpen ? setDiscountOpen(false) : openDiscount()} className="px-4 h-9 rounded-full text-xs font-semibold border shadow-sm flex items-center gap-2" style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textPrimary, borderColor: theme.colors.border }}>{draft.discount || 'Undecided'} <span className={`transition-transform ${discountOpen ? 'rotate-180' : ''}`}>?</span></button>
-              </div>
-              <div className="flex flex-col gap-2 min-w-[220px]">
-                <SoftLabel theme={theme}>Vertical</SoftLabel>
-                <div className="flex flex-wrap gap-2 max-w-[380px]">
-                  {VERTICALS.map(v => { const a = v === draft.vertical; return <button key={v} onClick={() => update('vertical', v)} className="px-3 h-8 rounded-full text-[11px] font-medium border transition-colors" style={{ backgroundColor: a ? theme.colors.accent : theme.colors.surface, color: a ? '#fff' : theme.colors.textPrimary, borderColor: a ? theme.colors.accent : theme.colors.border }}>{v}</button>; })}
-                </div>
-              </div>
-              <div className="flex flex-col gap-2">
-                <SoftLabel theme={theme}>PO Timeframe</SoftLabel>
-                <div className="flex flex-wrap gap-2 max-w-[360px]">
-                  {PO_TIMEFRAMES.map(t => { const a = t === draft.poTimeframe; return <button key={t} onClick={() => update('poTimeframe', t)} className="px-3 h-8 rounded-full text-[11px] font-medium border transition-colors" style={{ backgroundColor: a ? theme.colors.accent : theme.colors.surface, color: a ? '#fff' : theme.colors.textPrimary, borderColor: a ? theme.colors.accent : theme.colors.border }}>{t}</button>; })}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-3">
-            <div className="px-3 h-8 flex items-center gap-1 rounded-full border text-[11px] font-semibold" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>$ {draft.value?.toString().replace(/[^0-9]/g, '') || '0'}</div>
-            <div className="px-3 h-8 flex items-center gap-1 rounded-full border text-[11px] font-semibold" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>Win {draft.winProbability || 0}%</div>
-            <div className="px-3 h-8 flex items-center gap-1 rounded-full border text-[11px] font-semibold" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{draft.discount || 'Undecided'}</div>
-          </div>
-
-          <div className="grid gap-8 md:grid-cols-2">
-            <div className="space-y-4">
-              <div className="flex flex-col gap-2">
-                <SoftLabel theme={theme}>Win Probability</SoftLabel>
-                <ProbabilitySlider value={draft.winProbability || 0} onChange={v => update('winProbability', v)} theme={theme} />
-              </div>
-              <div className="flex items-center gap-4">
-                <SoftLabel theme={theme}>Competition?</SoftLabel>
-                <ToggleSwitch checked={!!draft.competitionPresent} onChange={v => update('competitionPresent', v)} theme={theme} />
-              </div>
-              {draft.competitionPresent && (
-                <div className="pt-2">
-                  <SoftLabel theme={theme}>Competitors</SoftLabel>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {COMPETITORS.filter(c => c !== 'None').map(c => {
-                      const on = (draft.competitors || []).includes(c); return (
-                        <button key={c} onClick={() => { const list = draft.competitors || []; update('competitors', on ? list.filter(x => x !== c) : [...list, c]); }} className="px-3 h-8 rounded-full text-[11px] font-medium border transition-colors" style={{ backgroundColor: on ? theme.colors.accent : theme.colors.surface, color: on ? '#fff' : theme.colors.textPrimary, borderColor: on ? theme.colors.accent : theme.colors.border }}>{c}</button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="flex flex-col gap-1"><SoftLabel theme={theme}>Contact</SoftLabel><InlineTextInput value={draft.contact} onChange={v => update('contact', v)} theme={theme} placeholder="Contact" /></div>
-                <div className="flex flex-col gap-1"><SoftLabel theme={theme}>Value</SoftLabel><CurrencyInput value={draft.value} onChange={v => update('value', v)} theme={theme} /></div>
-              </div>
-              <div>
-                <SoftLabel theme={theme}>Products</SoftLabel>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {(draft.products || []).map(p => <button key={p.series} onClick={() => removeProductSeries(p.series)} className="px-3 h-8 rounded-full text-[11px] font-medium flex items-center gap-1 border" style={{ background: theme.colors.subtle, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{p.series}<span className="opacity-60">�</span></button>)}
-                  <SuggestInputPill placeholder="Add series" suggestions={JSI_SERIES} onAdd={addProductSeries} theme={theme} />
-                </div>
-              </div>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <SoftLabel theme={theme}>Design Firms</SoftLabel>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {(draft.designFirms || []).map(f => <button key={f} onClick={() => removeFrom('designFirms', f)} className="px-3 h-8 rounded-full text-[11px] font-medium flex items-center gap-1 border" style={{ background: theme.colors.subtle, borderColor: theme.colors.border, color: theme.colors.textPrimary }}>{f}<span className="opacity-60">�</span></button>)}
-                    <SuggestInputPill placeholder="Add firm" suggestions={INITIAL_DESIGN_FIRMS} onAdd={v => addUnique('designFirms', v)} theme={theme} />
-                  </div>
-                </div>
-                <div>
-                  <SoftLabel theme={theme}>Customer</SoftLabel>
-                  <div className="flex flex-col gap-1">
-                    <InlineTextInput value={draft.customer || draft.company} onChange={v => { update('customer', v); update('company', v); }} theme={theme} placeholder="Customer name" className="text-sm font-medium" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <SoftLabel theme={theme}>Notes</SoftLabel>
-            <textarea value={draft.notes || ''} onChange={e => update('notes', e.target.value)} rows={4} className="w-full mt-2 resize-none rounded-xl p-3 text-sm outline-none border" style={{ background: theme.colors.surface, borderColor: theme.colors.border, color: theme.colors.textPrimary }} placeholder="Add project notes..." />
-            {Array.isArray(draft.quotes) && draft.quotes.length > 0 && (
-              <div className="mt-4 space-y-2">
-                <SoftLabel theme={theme}>Quotes</SoftLabel>
-                <div className="flex flex-col gap-2">
-                  {draft.quotes.map(q => <a key={q.id} href={q.url} target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg text-xs font-medium border hover:bg-black/5 transition-colors" style={{ color: theme.colors.textPrimary, borderColor: theme.colors.border }}>{q.fileName}</a>)}
-                </div>
-              </div>
-            )}
-          </div>
-          <p className="text-[11px] italic opacity-70" style={{ color: theme.colors.textSecondary }}>Autosaved</p>
-        </GlassCard>
-      </div>
-      {discountOpen && (
-        <div ref={discMenu} className="fixed z-[9999] rounded-2xl border shadow-2xl overflow-hidden" style={{ top: discPos.top, left: discPos.left, width: discPos.width, background: theme.colors.surface, borderColor: theme.colors.border }}>
-          <div className="max-h-[360px] overflow-y-auto custom-scroll-hide py-1">
-            {DISCOUNT_OPTIONS.map(opt => <button key={opt} onClick={() => { update('discount', opt); setDiscountOpen(false); }} className={`w-full text-left px-3 py-2 text-xs hover:bg-black/5 ${opt === draft.discount ? 'font-semibold' : ''}`} style={{ color: theme.colors.textPrimary }}>{opt}</button>)}
-          </div>
+    <div className={`rounded-2xl overflow-hidden ${className}`} style={{ backgroundColor: theme.colors.surface, border: `1px solid ${theme.colors.border}` }}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-black/[0.02] transition-colors"
+      >
+        <div className="flex items-center gap-2.5">
+          {Icon && <Icon className="w-4 h-4" style={{ color: theme.colors.accent }} />}
+          <span className="text-[13px] font-semibold" style={{ color: theme.colors.textPrimary }}>{title}</span>
+        </div>
+        <ChevronRight 
+          className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} 
+          style={{ color: theme.colors.textSecondary }} 
+        />
+      </button>
+      {isOpen && (
+        <div className="px-4 pb-4 pt-1">
+          {children}
         </div>
       )}
     </div>
+  );
+};
+
+// Stage Timeline - Visual pipeline progress
+const StageTimeline = ({ stages, currentStage, onStageChange, theme }) => {
+  const currentIndex = stages.indexOf(currentStage);
+  return (
+    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+      {stages.map((stage, i) => {
+        const isActive = stage === currentStage;
+        const isPast = i < currentIndex;
+        const isWon = stage === 'Won';
+        const isLost = stage === 'Lost';
+        
+        return (
+          <button
+            key={stage}
+            onClick={() => onStageChange(stage)}
+            className={`flex-shrink-0 px-3 py-2 rounded-xl text-[11px] font-semibold transition-all duration-200 ${
+              isActive ? 'scale-105 shadow-md' : 'hover:scale-102'
+            }`}
+            style={{
+              backgroundColor: isActive 
+                ? (isWon ? '#10B981' : isLost ? '#EF4444' : theme.colors.accent)
+                : isPast 
+                  ? `${theme.colors.accent}20`
+                  : theme.colors.subtle,
+              color: isActive 
+                ? '#fff' 
+                : isPast 
+                  ? theme.colors.accent 
+                  : theme.colors.textSecondary,
+              border: `1px solid ${isActive ? 'transparent' : theme.colors.border}`,
+            }}
+          >
+            {stage}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+// Opportunity Detail - Redesigned with proper categorization
+const OpportunityDetail = ({ opp, theme, onBack, onUpdate }) => {
+  const [draft, setDraft] = useState(opp);
+  const dirty = useRef(false);
+  const saveRef = useRef(null);
+  const isDesktop = useIsDesktop();
+  
+  useEffect(() => { setDraft(opp); }, [opp.id]);
+  
+  const update = (k, v) => setDraft(p => { 
+    const n = { ...p, [k]: v }; 
+    dirty.current = true; 
+    return n; 
+  });
+  
+  useEffect(() => { 
+    if (!dirty.current) return; 
+    clearTimeout(saveRef.current); 
+    saveRef.current = setTimeout(() => { 
+      onUpdate(draft); 
+      dirty.current = false; 
+    }, 500); 
+    return () => clearTimeout(saveRef.current); 
+  }, [draft, onUpdate]);
+
+  // Discount dropdown state
+  const [discountOpen, setDiscountOpen] = useState(false);
+  const discBtn = useRef(null);
+  const discMenu = useRef(null);
+  const [discPos, setDiscPos] = useState({ top: 0, left: 0, width: 0 });
+  
+  const openDiscount = () => { 
+    if (discBtn.current) { 
+      const r = discBtn.current.getBoundingClientRect(); 
+      setDiscPos({ top: r.bottom + 8 + window.scrollY, left: r.left + window.scrollX, width: Math.max(r.width, 200) }); 
+    } 
+    setDiscountOpen(true); 
+  };
+  
+  useEffect(() => { 
+    if (!discountOpen) return; 
+    const handler = e => { 
+      if (discMenu.current && !discMenu.current.contains(e.target) && !discBtn.current.contains(e.target)) 
+        setDiscountOpen(false); 
+    }; 
+    window.addEventListener('mousedown', handler); 
+    window.addEventListener('resize', () => setDiscountOpen(false)); 
+    return () => window.removeEventListener('mousedown', handler); 
+  }, [discountOpen]);
+
+  // Helper functions
+  const removeFrom = (key, val) => update(key, (draft[key] || []).filter(x => x !== val));
+  const addUnique = (key, val) => { 
+    if (!val) return; 
+    const list = draft[key] || []; 
+    if (!list.includes(val)) update(key, [...list, val]); 
+  };
+  const addProductSeries = (series) => { 
+    if (!series) return; 
+    const list = draft.products || []; 
+    if (!list.some(p => p.series === series)) update('products', [...list, { series }]); 
+  };
+  const removeProductSeries = (series) => update('products', (draft.products || []).filter(p => p.series !== series));
+  const toggleCompetitor = (c) => {
+    const list = draft.competitors || [];
+    update('competitors', list.includes(c) ? list.filter(x => x !== c) : [...list, c]);
+  };
+
+  // Format value for display
+  const displayValue = draft.value?.toString().replace(/[^0-9]/g, '') || '0';
+  const formattedValue = parseInt(displayValue).toLocaleString();
+
+  return (
+    <ScreenLayout
+      theme={theme}
+      maxWidth="default"
+      padding={true}
+      paddingBottom="8rem"
+      gap="0.75rem"
+    >
+      {/* Hero Header */}
+      <div className="rounded-2xl p-5 relative overflow-hidden" style={{ backgroundColor: theme.colors.surface, border: `1px solid ${theme.colors.border}` }}>
+        {/* Background accent */}
+        <div className="absolute top-0 right-0 w-32 h-32 opacity-10 rounded-full -translate-y-1/2 translate-x-1/2" style={{ backgroundColor: theme.colors.accent }} />
+        
+        <div className="relative">
+          {/* Project Name & Customer */}
+          <div className="mb-4">
+            <input
+              value={draft.project || draft.name || ''}
+              onChange={e => update('project', e.target.value)}
+              className="text-xl font-bold bg-transparent outline-none w-full border-b border-transparent focus:border-current transition-colors"
+              style={{ color: theme.colors.textPrimary }}
+              placeholder="Project Name"
+            />
+            <input
+              value={draft.company || ''}
+              onChange={e => update('company', e.target.value)}
+              className="text-sm font-medium bg-transparent outline-none w-full mt-1"
+              style={{ color: theme.colors.textSecondary }}
+              placeholder="Customer"
+            />
+          </div>
+
+          {/* Key Metrics Row */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ backgroundColor: `${theme.colors.accent}15` }}>
+              <span className="text-lg font-bold" style={{ color: theme.colors.accent }}>${formattedValue}</span>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{ backgroundColor: theme.colors.subtle }}>
+              <span className="text-xs font-semibold" style={{ color: theme.colors.textSecondary }}>Win</span>
+              <span className="text-sm font-bold" style={{ color: theme.colors.textPrimary }}>{draft.winProbability || 0}%</span>
+            </div>
+            <button
+              ref={discBtn}
+              onClick={() => discountOpen ? setDiscountOpen(false) : openDiscount()}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-colors hover:bg-black/5"
+              style={{ backgroundColor: theme.colors.subtle }}
+            >
+              <span className="text-xs font-semibold" style={{ color: theme.colors.textPrimary }}>
+                {draft.discount || 'Set Discount'}
+              </span>
+              <ChevronRight className={`w-3 h-3 transition-transform ${discountOpen ? 'rotate-90' : ''}`} style={{ color: theme.colors.textSecondary }} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Pipeline Progress */}
+      <SectionCard title="Pipeline Stage" icon={ArrowRight} theme={theme}>
+        <StageTimeline 
+          stages={STAGES} 
+          currentStage={draft.stage} 
+          onStageChange={s => update('stage', s)} 
+          theme={theme} 
+        />
+      </SectionCard>
+
+      {/* Opportunity Details */}
+      <SectionCard title="Opportunity Details" icon={Briefcase} theme={theme}>
+        <div className="space-y-4">
+          {/* Vertical */}
+          <div>
+            <SoftLabel theme={theme}>Industry Vertical</SoftLabel>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {VERTICALS.map(v => {
+                const isActive = v === draft.vertical;
+                return (
+                  <button
+                    key={v}
+                    onClick={() => update('vertical', v)}
+                    className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150"
+                    style={{
+                      backgroundColor: isActive ? theme.colors.accent : 'transparent',
+                      color: isActive ? '#fff' : theme.colors.textPrimary,
+                      border: `1px solid ${isActive ? theme.colors.accent : theme.colors.border}`,
+                    }}
+                  >
+                    {v}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          
+          {/* PO Timeframe */}
+          <div>
+            <SoftLabel theme={theme}>Expected PO Timeframe</SoftLabel>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {PO_TIMEFRAMES.map(t => {
+                const isActive = t === draft.poTimeframe;
+                return (
+                  <button
+                    key={t}
+                    onClick={() => update('poTimeframe', t)}
+                    className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150"
+                    style={{
+                      backgroundColor: isActive ? theme.colors.accent : 'transparent',
+                      color: isActive ? '#fff' : theme.colors.textPrimary,
+                      border: `1px solid ${isActive ? theme.colors.accent : theme.colors.border}`,
+                    }}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          
+          {/* Contact & Value Row */}
+          <div className="grid grid-cols-2 gap-4 pt-2">
+            <div>
+              <SoftLabel theme={theme}>Primary Contact</SoftLabel>
+              <input
+                value={draft.contact || ''}
+                onChange={e => update('contact', e.target.value)}
+                className="w-full mt-1.5 px-3 py-2 rounded-lg text-sm outline-none"
+                style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textPrimary, border: `1px solid ${theme.colors.border}` }}
+                placeholder="Contact name"
+              />
+            </div>
+            <div>
+              <SoftLabel theme={theme}>Estimated Value</SoftLabel>
+              <div className="relative mt-1.5">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium" style={{ color: theme.colors.textSecondary }}>$</span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={displayValue}
+                  onChange={e => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    update('value', val ? '$' + parseInt(val).toLocaleString() : '');
+                  }}
+                  className="w-full pl-7 pr-3 py-2 rounded-lg text-sm font-semibold outline-none"
+                  style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textPrimary, border: `1px solid ${theme.colors.border}` }}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+
+      {/* Win Probability */}
+      <SectionCard title="Win Probability" icon={Shield} theme={theme}>
+        <div className="space-y-1">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium" style={{ color: theme.colors.textSecondary }}>Likelihood to close</span>
+            <span className="text-lg font-bold" style={{ color: theme.colors.accent }}>{draft.winProbability || 0}%</span>
+          </div>
+          <ProbabilitySlider 
+            value={draft.winProbability || 0} 
+            onChange={v => update('winProbability', v)} 
+            theme={theme} 
+          />
+        </div>
+      </SectionCard>
+
+      {/* Competition Analysis */}
+      <SectionCard title="Competition" icon={Users} theme={theme} defaultOpen={!!draft.competitionPresent}>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm" style={{ color: theme.colors.textSecondary }}>Competing against other manufacturers?</span>
+            <ToggleSwitch 
+              checked={!!draft.competitionPresent} 
+              onChange={v => update('competitionPresent', v)} 
+              theme={theme} 
+            />
+          </div>
+          
+          {draft.competitionPresent && (
+            <div className="pt-2">
+              <SoftLabel theme={theme}>Select Competitors</SoftLabel>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {COMPETITORS.filter(c => c !== 'None').map(c => {
+                  const isSelected = (draft.competitors || []).includes(c);
+                  return (
+                    <button
+                      key={c}
+                      onClick={() => toggleCompetitor(c)}
+                      className="px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-150"
+                      style={{
+                        backgroundColor: isSelected ? theme.colors.accent : 'transparent',
+                        color: isSelected ? '#fff' : theme.colors.textPrimary,
+                        border: `1px solid ${isSelected ? theme.colors.accent : theme.colors.border}`,
+                      }}
+                    >
+                      {c}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      </SectionCard>
+
+      {/* Products & Partners */}
+      <SectionCard title="Products & Partners" icon={Package} theme={theme}>
+        <div className="space-y-5">
+          {/* JSI Products */}
+          <div>
+            <SoftLabel theme={theme}>JSI Product Series</SoftLabel>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {(draft.products || []).map(p => (
+                <button 
+                  key={p.series} 
+                  onClick={() => removeProductSeries(p.series)} 
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-medium flex items-center gap-1.5 transition-colors hover:opacity-80"
+                  style={{ backgroundColor: `${theme.colors.accent}15`, color: theme.colors.accent, border: `1px solid ${theme.colors.accent}30` }}
+                >
+                  {p.series}
+                  <X className="w-3 h-3" />
+                </button>
+              ))}
+              <SuggestInputPill placeholder="Add series" suggestions={JSI_SERIES} onAdd={addProductSeries} theme={theme} />
+            </div>
+          </div>
+          
+          {/* Design Firms */}
+          <div>
+            <SoftLabel theme={theme}>Design Firms</SoftLabel>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {(draft.designFirms || []).map(f => (
+                <button 
+                  key={f} 
+                  onClick={() => removeFrom('designFirms', f)} 
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-medium flex items-center gap-1.5 transition-colors hover:opacity-80"
+                  style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textPrimary, border: `1px solid ${theme.colors.border}` }}
+                >
+                  {f}
+                  <X className="w-3 h-3 opacity-60" />
+                </button>
+              ))}
+              <SuggestInputPill placeholder="Add firm" suggestions={INITIAL_DESIGN_FIRMS} onAdd={v => addUnique('designFirms', v)} theme={theme} />
+            </div>
+          </div>
+        </div>
+      </SectionCard>
+
+      {/* Notes & Documents */}
+      <SectionCard title="Notes & Documents" icon={FileText} theme={theme} defaultOpen={!!(draft.notes || draft.quotes?.length)}>
+        <div className="space-y-4">
+          <div>
+            <textarea
+              value={draft.notes || ''}
+              onChange={e => update('notes', e.target.value)}
+              rows={4}
+              className="w-full resize-none rounded-xl p-3 text-sm outline-none transition-colors"
+              style={{ 
+                backgroundColor: theme.colors.subtle, 
+                color: theme.colors.textPrimary, 
+                border: `1px solid ${theme.colors.border}` 
+              }}
+              placeholder="Add project notes, key details, next steps..."
+            />
+          </div>
+          
+          {Array.isArray(draft.quotes) && draft.quotes.length > 0 && (
+            <div>
+              <SoftLabel theme={theme}>Attached Quotes</SoftLabel>
+              <div className="flex flex-col gap-2 mt-2">
+                {draft.quotes.map(q => (
+                  <a 
+                    key={q.id} 
+                    href={q.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium transition-colors hover:bg-black/5"
+                    style={{ color: theme.colors.textPrimary, backgroundColor: theme.colors.subtle, border: `1px solid ${theme.colors.border}` }}
+                  >
+                    <FileText className="w-4 h-4" style={{ color: theme.colors.accent }} />
+                    {q.fileName}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </SectionCard>
+
+      {/* Autosave indicator */}
+      <div className="flex items-center justify-center gap-2 py-2">
+        <CheckCircle className="w-3.5 h-3.5" style={{ color: '#10B981' }} />
+        <span className="text-[11px] font-medium" style={{ color: theme.colors.textSecondary }}>Changes saved automatically</span>
+      </div>
+
+      {/* Discount Dropdown Portal */}
+      {discountOpen && createPortal(
+        <div 
+          ref={discMenu} 
+          className="fixed z-[9999] rounded-2xl shadow-2xl overflow-hidden"
+          style={{ 
+            top: discPos.top, 
+            left: discPos.left, 
+            width: discPos.width, 
+            background: theme.colors.surface, 
+            border: `1px solid ${theme.colors.border}` 
+          }}
+        >
+          <div className="max-h-[320px] overflow-y-auto py-1">
+            {DISCOUNT_OPTIONS.map(opt => (
+              <button 
+                key={opt} 
+                onClick={() => { update('discount', opt); setDiscountOpen(false); }} 
+                className={`w-full text-left px-4 py-2.5 text-xs hover:bg-black/5 transition-colors ${opt === draft.discount ? 'font-bold' : ''}`} 
+                style={{ 
+                  color: opt === draft.discount ? theme.colors.accent : theme.colors.textPrimary,
+                  backgroundColor: opt === draft.discount ? `${theme.colors.accent}10` : 'transparent'
+                }}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        </div>,
+        document.body
+      )}
+    </ScreenLayout>
   );
 };
 
