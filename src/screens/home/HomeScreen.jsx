@@ -394,7 +394,7 @@ const StatusChip = ({ status }) => {
 };
 
 // Recent Activity Feed Component - Memoized for performance
-const RecentActivityFeed = React.memo(({ theme, opportunities = [], orders = [], onNavigate }) => {
+const RecentActivityFeed = React.memo(({ theme, opportunities = [], orders = [], onNavigate, setProjectsInitialProjectId }) => {
     const activities = useMemo(() => {
         const items = [];
         opportunities.slice(0, 3).forEach(opp => {
@@ -406,7 +406,13 @@ const RecentActivityFeed = React.memo(({ theme, opportunities = [], orders = [],
                 subtitle: customerName,
                 status: status,
                 value: opp.value || '$0',
-                action: () => onNavigate('projects'),
+                projectId: opp.id,
+                action: () => {
+                    if (setProjectsInitialProjectId && opp.id) {
+                        setProjectsInitialProjectId(opp.id);
+                    }
+                    onNavigate('projects');
+                },
                 icon: Briefcase,
                 color: theme.colors.accent
             });
@@ -426,7 +432,7 @@ const RecentActivityFeed = React.memo(({ theme, opportunities = [], orders = [],
             });
         });
         return items.slice(0, 5);
-    }, [opportunities, orders, theme.colors.accent, onNavigate]);
+    }, [opportunities, orders, theme.colors.accent, onNavigate, setProjectsInitialProjectId]);
 
     if (activities.length === 0) return null;
 
@@ -628,7 +634,7 @@ const ensureResourcesIncluded = (appIds) => {
 };
 
 // Main HomeScreen Component
-export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opportunities = [], orders = [], customerDirectory = [], cart = {}, posts = [] }) => {
+export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opportunities = [], orders = [], customerDirectory = [], cart = {}, posts = [], setProjectsInitialProjectId }) => {
     const isDesktop = useIsDesktop();
     
     // Track last seen community timestamp in localStorage
@@ -760,7 +766,7 @@ export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opport
                 pendingReplacements={pendingReplacements}
             />
 
-            <RecentActivityFeed theme={theme} opportunities={opportunities} orders={orders} onNavigate={onNavigate} />
+            <RecentActivityFeed theme={theme} opportunities={opportunities} orders={orders} onNavigate={onNavigate} setProjectsInitialProjectId={setProjectsInitialProjectId} />
 
             <CustomizeHomeModal theme={theme} isOpen={isCustomizeOpen} onClose={() => setIsCustomizeOpen(false)} activeAppIds={activeAppIds} onSave={setActiveAppIds} />
         </ScreenLayout>

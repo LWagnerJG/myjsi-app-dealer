@@ -1,12 +1,12 @@
 // CustomerMicrositeScreen - Main microsite view for a single customer
-// Displays Standards Programs, Approved Materials, Orders, Install Gallery, Documents, Contacts
+// Displays Orders, Approved Materials, Standards Programs & Contracts, Install Gallery, Documents, Contacts
+// Updated: section order, inset header, JSI rep contact info
 import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 import { 
   FileText, Package, Image, Users, ChevronRight, Download, Plus, 
-  Clock, CheckCircle, AlertTriangle, X, Send, Building2, MapPin,
-  Calendar, Shield, ExternalLink
+  CheckCircle, X, Send, MapPin, Shield, Phone, Mail
 } from 'lucide-react';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
 import { useModalState } from '../../hooks/useModalState.js';
@@ -15,9 +15,9 @@ import {
   getCustomerById, 
   STATUS_COLORS, 
   MATERIAL_CATEGORIES, 
-  SPACE_TYPES,
-  VIEWER_ROLE 
+  SPACE_TYPES
 } from '../../data/mockCustomers.js';
+import { StandardsProgramDetailModal } from './StandardsProgramDetailScreen.jsx';
 
 // Status badge component
 const StatusBadge = ({ status, size = 'md' }) => {
@@ -79,39 +79,23 @@ const ChipTabs = ({ options, value, onChange, theme }) => (
   </div>
 );
 
-// Material swatch item
-const SwatchItem = ({ material, theme, onProgramClick }) => (
-  <div className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: theme.colors.subtle }}>
+// Material swatch item - simplified
+const SwatchItem = ({ material, theme }) => (
+  <div className="flex items-center gap-3 p-2.5 rounded-lg" style={{ backgroundColor: theme.colors.subtle }}>
     <div 
-      className="w-10 h-10 rounded-lg border flex-shrink-0"
+      className="w-8 h-8 rounded border flex-shrink-0"
       style={{ 
         backgroundColor: material.swatchHex || '#ccc',
         borderColor: theme.colors.border
       }}
     />
     <div className="flex-1 min-w-0">
-      <p className="font-semibold text-sm truncate" style={{ color: theme.colors.textPrimary }}>
+      <p className="font-medium text-sm truncate" style={{ color: theme.colors.textPrimary }}>
         {material.name}
       </p>
       <p className="text-xs" style={{ color: theme.colors.textSecondary }}>
-        {material.code} {material.vendor && `� ${material.vendor}`}
+        {material.code} {material.vendor && `· ${material.vendor}`}
       </p>
-      <div className="flex flex-wrap gap-1 mt-1">
-        {material.usageTags?.slice(0, 2).map(tag => (
-          <span key={tag} className="px-1.5 py-0.5 rounded text-[10px] font-medium" style={{ backgroundColor: theme.colors.surface, color: theme.colors.textSecondary }}>
-            {tag}
-          </span>
-        ))}
-        {material.linkedStandardsProgramCodes?.length > 0 && (
-          <button 
-            onClick={() => onProgramClick?.(material.linkedStandardsProgramCodes[0])}
-            className="px-1.5 py-0.5 rounded text-[10px] font-medium underline"
-            style={{ color: theme.colors.accent }}
-          >
-            {material.linkedStandardsProgramCodes[0]}
-          </button>
-        )}
-      </div>
     </div>
   </div>
 );
@@ -281,6 +265,7 @@ export const CustomerMicrositeScreen = ({ customerId, theme, onNavigate, onBack 
   const [photoFilter, setPhotoFilter] = useState('All');
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [lightboxPhoto, setLightboxPhoto] = useState(null);
+  const [selectedProgramId, setSelectedProgramId] = useState(null);
   const fileInputRef = useRef(null);
 
   const handleScroll = useCallback(() => {
@@ -307,7 +292,6 @@ export const CustomerMicrositeScreen = ({ customerId, theme, onNavigate, onBack 
   const activeStandards = customer.standardsPrograms.filter(p => p.status === 'Active').length;
   const currentOrders = customer.orders.current.length;
   const lastInstall = customer.installs[0]?.date;
-  const hasPurchasingRequired = customer.standardsPrograms.some(p => p.purchasingAwarenessRequired);
   const primaryRep = customer.contacts.find(c => c.visibility === 'dealer' && c.role.includes('JSI'));
 
   // Desktop right rail content
@@ -331,45 +315,59 @@ export const CustomerMicrositeScreen = ({ customerId, theme, onNavigate, onBack 
             </span>
           </div>
         )}
-        {primaryRep && (
-          <div className="flex justify-between items-center">
-            <span className="text-sm" style={{ color: theme.colors.textSecondary }}>Primary Rep</span>
-            <span className="text-sm font-medium" style={{ color: theme.colors.textPrimary }}>{primaryRep.name}</span>
-          </div>
-        )}
-        {hasPurchasingRequired && (
-          <div className="mt-3 p-2 rounded-lg flex items-center gap-2" style={{ backgroundColor: '#FEF3C7' }}>
-            <AlertTriangle className="w-4 h-4" style={{ color: '#D97706' }} />
-            <span className="text-xs font-medium" style={{ color: '#D97706' }}>Purchasing visibility required</span>
-          </div>
-        )}
       </div>
-      <div className="mt-4 pt-4 border-t space-y-2" style={{ borderColor: theme.colors.border }}>
-        <button 
-          onClick={() => setShowRequestModal(true)}
-          className="w-full py-2 rounded-full text-sm font-semibold"
-          style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textPrimary }}
-        >
-          Request Update
-        </button>
-      </div>
+      
+      {/* Your JSI Rep Section */}
+      {primaryRep && (
+        <div className="mt-4 pt-4 border-t" style={{ borderColor: theme.colors.border }}>
+          <h4 className="font-bold text-xs mb-3 uppercase tracking-wide" style={{ color: theme.colors.textSecondary }}>Your JSI Rep</h4>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.colors.accent + '20' }}>
+              <Users className="w-5 h-5" style={{ color: theme.colors.accent }} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm" style={{ color: theme.colors.textPrimary }}>{primaryRep.name}</p>
+              <p className="text-xs" style={{ color: theme.colors.textSecondary }}>{primaryRep.role}</p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {primaryRep.email && (
+              <a 
+                href={`mailto:${primaryRep.email}`}
+                className="flex items-center gap-2 p-2 rounded-lg transition-colors hover:bg-black/5"
+                style={{ backgroundColor: theme.colors.subtle }}
+              >
+                <Mail className="w-4 h-4" style={{ color: theme.colors.accent }} />
+                <span className="text-xs font-medium" style={{ color: theme.colors.textPrimary }}>{primaryRep.email}</span>
+              </a>
+            )}
+            {primaryRep.phone && (
+              <a 
+                href={`tel:${primaryRep.phone}`}
+                className="flex items-center gap-2 p-2 rounded-lg transition-colors hover:bg-black/5"
+                style={{ backgroundColor: theme.colors.subtle }}
+              >
+                <Phone className="w-4 h-4" style={{ color: theme.colors.accent }} />
+                <span className="text-xs font-medium" style={{ color: theme.colors.textPrimary }}>{primaryRep.phone}</span>
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </GlassCard>
   );
 
   return (
     <div className="h-full flex flex-col" style={{ backgroundColor: theme.colors.background }}>
-      {/* Header */}
-      <div 
-        className={`sticky top-0 z-10 transition-all duration-300 ${isScrolled ? 'shadow-lg' : ''}`}
-        style={{ 
-          backgroundColor: isScrolled ? `${theme.colors.background}f5` : theme.colors.background,
-          backdropFilter: isScrolled ? 'blur(16px)' : 'none'
-        }}
-      >
-        <div className="px-4 lg:px-6 py-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <h1 className="text-xl lg:text-2xl font-bold truncate mb-1" style={{ color: theme.colors.textPrimary }}>
+      {/* Content */}
+      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto scrollbar-hide">
+        <div className={`px-4 lg:px-6 ${isDesktop ? 'flex gap-6 max-w-6xl mx-auto pb-8' : 'pb-32'}`}>
+          {/* Main Content Column */}
+          <div className={`space-y-4 ${isDesktop ? 'flex-1' : ''}`}>
+            
+            {/* Customer Header - Simple inset header */}
+            <div className="pt-4 pb-2">
+              <h1 className="text-xl lg:text-2xl font-bold mb-1" style={{ color: theme.colors.textPrimary }}>
                 {customer.name}
               </h1>
               <div className="flex items-center gap-2 flex-wrap">
@@ -384,106 +382,8 @@ export const CustomerMicrositeScreen = ({ customerId, theme, onNavigate, onBack 
                 </span>
               </div>
             </div>
-            {!isDesktop && (
-              <button 
-                onClick={() => setShowRequestModal(true)}
-                className="px-3 py-1.5 rounded-full text-xs font-semibold flex-shrink-0"
-                style={{ backgroundColor: theme.colors.accent, color: '#fff' }}
-              >
-                Request Update
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
 
-      {/* Content */}
-      <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className={`px-4 lg:px-6 pb-mobile-nav ${isDesktop ? 'flex gap-6 max-w-6xl mx-auto' : ''}`}>
-          {/* Main Content Column */}
-          <div className={`space-y-4 ${isDesktop ? 'flex-1' : ''}`}>
-            
-            {/* Standards Programs */}
-            <SectionCard title="Standards Programs" icon={Shield} theme={theme}>
-              {customer.standardsPrograms.length > 0 ? (
-                <div className="space-y-2.5">
-                  {customer.standardsPrograms.map(program => (
-                    <button
-                      key={program.id}
-                      onClick={() => onNavigate(`customers/${customerId}/standards/${program.id}`)}
-                      className="w-full text-left p-3 rounded-xl transition-all hover:shadow-md"
-                      style={{ backgroundColor: theme.colors.subtle }}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <StatusBadge status={program.status} size="sm" />
-                            <CodeChip code={program.code} theme={theme} />
-                          </div>
-                          <p className="font-semibold text-sm mb-1" style={{ color: theme.colors.textPrimary }}>
-                            {program.title}
-                          </p>
-                          <p className="text-xs line-clamp-2 mb-1.5" style={{ color: theme.colors.textSecondary }}>
-                            {program.summary}
-                          </p>
-                          <p className="text-[10px] font-medium mb-0" style={{ color: theme.colors.textSecondary }}>
-                            {new Date(program.startDate).toLocaleDateString()} � {new Date(program.endDate).toLocaleDateString()}
-                          </p>
-                        </div>
-                        <ChevronRight className="w-4 h-4 flex-shrink-0 mt-1" style={{ color: theme.colors.textSecondary }} />
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-center py-4" style={{ color: theme.colors.textSecondary }}>
-                  No standards programs on file
-                </p>
-              )}
-            </SectionCard>
-
-            {/* Approved Materials */}
-            <SectionCard 
-              title="Approved Materials" 
-              icon={FileText} 
-              theme={theme}
-              action={
-                <button className="text-xs font-medium flex items-center gap-1" style={{ color: theme.colors.accent }}>
-                  <Download className="w-3 h-3" /> Schedule
-                </button>
-              }
-            >
-              <ChipTabs 
-                options={MATERIAL_CATEGORIES.filter(cat => {
-                  const mats = customer.approvedMaterials[cat.key];
-                  return mats && mats.length > 0;
-                })}
-                value={materialCategory}
-                onChange={setMaterialCategory}
-                theme={theme}
-              />
-              <div className="mt-4 space-y-2">
-                {materials.length > 0 ? (
-                  materials.map(mat => (
-                    <SwatchItem 
-                      key={mat.id} 
-                      material={mat} 
-                      theme={theme}
-                      onProgramClick={(code) => {
-                        const prog = customer.standardsPrograms.find(p => p.code === code);
-                        if (prog) onNavigate(`customers/${customerId}/standards/${prog.id}`);
-                      }}
-                    />
-                  ))
-                ) : (
-                  <p className="text-sm text-center py-4" style={{ color: theme.colors.textSecondary }}>
-                    No materials in this category
-                  </p>
-                )}
-              </div>
-            </SectionCard>
-
-            {/* Orders */}
+            {/* Orders - FIRST */}
             <SectionCard title="Orders" icon={Package} theme={theme}>
               <ChipTabs 
                 options={[
@@ -510,6 +410,69 @@ export const CustomerMicrositeScreen = ({ customerId, theme, onNavigate, onBack 
                   </p>
                 )}
               </div>
+            </SectionCard>
+
+            {/* Approved Materials - SECOND */}
+            <SectionCard title="Approved Materials" icon={FileText} theme={theme}>
+              <ChipTabs 
+                options={MATERIAL_CATEGORIES.filter(cat => {
+                  const mats = customer.approvedMaterials[cat.key];
+                  return mats && mats.length > 0;
+                })}
+                value={materialCategory}
+                onChange={setMaterialCategory}
+                theme={theme}
+              />
+              <div className="mt-3 space-y-1.5">
+                {materials.length > 0 ? (
+                  materials.map(mat => (
+                    <SwatchItem key={mat.id} material={mat} theme={theme} />
+                  ))
+                ) : (
+                  <p className="text-sm text-center py-4" style={{ color: theme.colors.textSecondary }}>
+                    No materials in this category
+                  </p>
+                )}
+              </div>
+            </SectionCard>
+
+            {/* Standards Programs & Contracts - THIRD */}
+            <SectionCard title="Standards Programs & Contracts" icon={Shield} theme={theme}>
+              {customer.standardsPrograms.length > 0 ? (
+                <div className="space-y-2">
+                  {customer.standardsPrograms.map(program => (
+                    <button
+                      key={program.id}
+                      onClick={() => setSelectedProgramId(program.id)}
+                      className="w-full text-left p-2.5 rounded-lg transition-colors hover:bg-black/5"
+                      style={{ backgroundColor: theme.colors.subtle }}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <CodeChip code={program.code} theme={theme} />
+                            {program.poRequirementText && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold" 
+                                style={{ backgroundColor: theme.colors.accent + '20', color: theme.colors.accent }}>
+                                CONTRACT
+                              </span>
+                            )}
+                            <StatusBadge status={program.status} size="sm" />
+                          </div>
+                          <p className="font-medium text-sm truncate" style={{ color: theme.colors.textPrimary }}>
+                            {program.title}
+                          </p>
+                        </div>
+                        <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-center py-4" style={{ color: theme.colors.textSecondary }}>
+                  No standards programs or contracts on file
+                </p>
+              )}
             </SectionCard>
 
             {/* Install Gallery */}
@@ -650,6 +613,15 @@ export const CustomerMicrositeScreen = ({ customerId, theme, onNavigate, onBack 
           )}
         </div>
       )}
+
+      {/* Standards Program Detail Modal */}
+      <StandardsProgramDetailModal
+        isOpen={!!selectedProgramId}
+        onClose={() => setSelectedProgramId(null)}
+        customerId={customerId}
+        programId={selectedProgramId}
+        theme={theme}
+      />
     </div>
   );
 };

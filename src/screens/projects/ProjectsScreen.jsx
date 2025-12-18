@@ -1078,13 +1078,29 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCu
 };
 
 // Main ProjectsScreen
-export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, setOpportunities, myProjects, setMyProjects, projectsInitialTab, clearProjectsInitialTab }, ref) => {
+export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, setOpportunities, myProjects, setMyProjects, projectsInitialTab, clearProjectsInitialTab, projectsInitialProjectId, clearProjectsInitialProjectId }, ref) => {
   const initial = projectsInitialTab || 'pipeline';
   const [projectsTab, setProjectsTab] = useState(initial);
   const isDesktop = useIsDesktop();
   useEffect(() => { if (projectsInitialTab) clearProjectsInitialTab && clearProjectsInitialTab(); }, [projectsInitialTab, clearProjectsInitialTab]);
   const [selectedPipelineStage, setSelectedPipelineStage] = useState('Discovery');
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
+  
+  // Auto-select project if initial project ID is provided
+  useEffect(() => {
+    if (projectsInitialProjectId && opportunities && opportunities.length > 0) {
+      const project = opportunities.find(opp => opp.id === projectsInitialProjectId);
+      if (project && !selectedOpportunity) {
+        setSelectedOpportunity(project);
+        setProjectsTab('pipeline');
+        // Set the pipeline stage to match the project's stage
+        if (project.stage) {
+          setSelectedPipelineStage(project.stage);
+        }
+        if (clearProjectsInitialProjectId) clearProjectsInitialProjectId();
+      }
+    }
+  }, [projectsInitialProjectId, opportunities, selectedOpportunity, clearProjectsInitialProjectId]);
   const [selectedInstall, setSelectedInstall] = useState(null);
   const scrollContainerRef = useRef(null);
   const [isScrolled, setIsScrolled] = useState(false);

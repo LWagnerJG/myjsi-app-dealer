@@ -188,6 +188,7 @@ function App() {
     const [opportunities, setOpportunities] = useState(INITIAL_OPPORTUNITIES);
     const [myProjects, setMyProjects] = useState(MY_PROJECTS_DATA);
     const [projectsTabOverride, setProjectsTabOverride] = useState(null);
+    const [projectsInitialProjectId, setProjectsInitialProjectId] = useState(null);
     const [selectedProject, setSelectedProject] = useState(null);
     const [members, setMembers] = useState(INITIAL_MEMBERS);
     const [currentUserId] = useState(1);
@@ -351,6 +352,9 @@ function App() {
         projectsInitialTab: projectsTabOverride,
         clearProjectsInitialTab: () => setProjectsTabOverride(null),
         setProjectsTabOverride,
+        projectsInitialProjectId,
+        clearProjectsInitialProjectId: () => setProjectsInitialProjectId(null),
+        setProjectsInitialProjectId,
         homeApps,
         onUpdateHomeApps: handleUpdateHomeApps,
         orders: ORDER_DATA
