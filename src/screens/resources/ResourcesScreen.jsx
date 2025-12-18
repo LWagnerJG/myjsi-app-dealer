@@ -7,22 +7,31 @@ import { RESOURCES_DATA } from './data.js';
 import { GlassCard, ScreenLayout } from '../../design-system/index.js';
 import { DEFAULT_HOME_APPS, allApps } from '../../data.jsx';
 
+// Cleaner, more descriptive sublabels
 const sublabelMap = {
-    'Lead Times': 'Production estimates',
-    'Discontinued Finishes Database': 'Legacy surface archive',
-    'Request COM Yardage': 'Fabric yardage form',
-    'Search Fabrics': 'Textile library',
-    'Commission Rates': 'Rep commission by discount',
-    'Contracts': 'Information and discounts',
-    'Dealer Directory': 'Partner contact finder',
-    'Discounts': 'Dealer sample pricing',
-    'Install Instructions': 'Assembly guidance and videos',
-    'Loaner Pool': 'Search sample chairs',
-    'Request Field Visit': 'Onsite tech scheduling',
-    'Social Media': 'Brand share kit',
-    'Presentations': 'Slide deck library',
-    'Tradeshows': 'Select and view show info',
-    'New Dealer Sign-Up': 'Sign up new dealers'
+    'Lead Times': 'View current production schedules',
+    'Discontinued Finishes Database': 'Search legacy finishes',
+    'Request COM Yardage': 'Submit fabric requirements',
+    'Search Fabrics': 'Browse textile options',
+    'Commission Rates': 'View rep commission rates',
+    'Contracts': 'Pricing and contract info',
+    'Dealer Directory': 'Find dealer contacts',
+    'Customers': 'Customer directory',
+    'Discounts': 'Sample pricing info',
+    'Install Instructions': 'Assembly guides',
+    'Loaner Pool': 'Browse sample furniture',
+    'Request Field Visit': 'Schedule a site visit',
+    'Social Media': 'Marketing assets',
+    'Presentations': 'Sales deck library',
+    'Tradeshows': 'Upcoming events',
+    'New Dealer Sign-Up': 'Onboard new dealers'
+};
+
+// Clean category names (remove redundant "Resources")
+const cleanCategoryName = (name) => {
+    return name
+        .replace(' Resources', '')
+        .replace('Dealer Tools', 'Tools');
 };
 
 const CORE_LABELS = {
@@ -33,7 +42,6 @@ const CORE_LABELS = {
     community: 'Community',
     samples: 'Samples',
     replacements: 'Replacements'
-    // intentionally omit 'resources' to avoid recursion (cannot surface Resources inside itself if removed)
 };
 
 export const ResourcesScreen = ({ theme, onNavigate, homeApps }) => {
@@ -68,94 +76,93 @@ export const ResourcesScreen = ({ theme, onNavigate, homeApps }) => {
         if (label.includes('Commission')) return DollarSign;
         if (label.includes('Contract')) return FileText;
         if (label.includes('Social')) return Share2;
-        if (label.includes('Sample')) return Percent;
+        if (label.includes('Sample') || label.includes('Discount')) return Percent;
         if (label.includes('Search Fabrics')) return Search;
         if (label.includes('Discontinued')) return Palette;
         if (label.includes('Loaner')) return Package;
-        if (label.includes('Dealer')) return Users;
+        if (label.includes('Dealer') || label.includes('Customer')) return Users;
         if (label.includes('Field Visit')) return MapPin;
         if (label.includes('Presentations')) return MonitorPlay;
         if (label.includes('Install')) return Wrench;
         if (label.includes('Tradeshow')) return Calendar;
         if (label.includes('Tradeshows')) return Calendar;
-        // Core app labels mapping fallback to Database icon
         if (Object.values(CORE_LABELS).includes(label)) return Database;
         return Database;
     };
 
-    const Row = ({ item, isFirst }) => {
+    const Row = ({ item, isLast }) => {
         const Icon = getResourceIcon(item.label);
-        const sub = sublabelMap[item.label] || (CORE_LABELS && Object.values(CORE_LABELS).includes(item.label) ? 'Main application' : 'Tool');
-        const borderTop = isFirst ? 'transparent' : theme.colors.border;
+        const sub = sublabelMap[item.label] || (Object.values(CORE_LABELS).includes(item.label) ? 'Main app' : '');
+        
         return (
-            <li>
-                <button
-                    onClick={() => onNavigate(item.nav)}
-                    className="group w-full pl-2 pr-2 py-3 text-left flex items-center transition-colors duration-150"
-                    style={{
-                        backgroundColor: 'transparent',
-                        borderTop: `1px solid ${borderTop}`,
-                        borderBottom: '1px solid transparent'
-                    }}
+            <button
+                onClick={() => onNavigate(item.nav)}
+                className="w-full px-3 py-2.5 text-left flex items-center gap-3 transition-colors hover:bg-black/[0.02] active:scale-[0.99]"
+                style={{
+                    borderBottom: isLast ? 'none' : `1px solid ${theme.colors.border}20`
+                }}
+            >
+                <div
+                    className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center"
+                    style={{ backgroundColor: theme.colors.subtle }}
                 >
-                    <div
-                        className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center transition-transform duration-200 group-hover:scale-105"
-                        style={{ backgroundColor: theme.colors.subtle }}
-                    >
-                        <Icon className="w-5 h-5" style={{ color: theme.colors.accent }} strokeWidth={1.5} />
-                    </div>
-                    <div className="flex-1 ml-6">
-                        <h4 className="font-semibold text-sm" style={{ color: theme.colors.textPrimary }}>
-                            {item.label}
-                        </h4>
-                        <p className="text-xs truncate" style={{ color: theme.colors.textSecondary }}>
+                    <Icon className="w-4 h-4" style={{ color: theme.colors.accent }} strokeWidth={1.75} />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-[13px]" style={{ color: theme.colors.textPrimary }}>
+                        {item.label}
+                    </h4>
+                    {sub && (
+                        <p className="text-[11px] truncate" style={{ color: theme.colors.textSecondary }}>
                             {sub}
                         </p>
-                    </div>
-                    <ChevronRight
-                        className="w-5 h-5 ml-2 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
-                        style={{ color: theme.colors.border }}
-                    />
-                </button>
-            </li>
+                    )}
+                </div>
+                <ChevronRight
+                    className="w-4 h-4 flex-shrink-0"
+                    style={{ color: theme.colors.border }}
+                />
+            </button>
         );
     };
 
-    const CategoryCard = ({ category, isFirst }) => (
-        <section className={isFirst ? 'mt-6' : 'pt-8'}>
-            <GlassCard theme={theme} className="px-6 py-4">
-                <h3 className="text-lg font-semibold text-center mb-3" style={{ color: theme.colors.textPrimary }}>
-                    {category.category}
-                </h3>
-                <ul className="pb-1">
-                    {category.items?.map((item, idx) => (
-                        <Row key={item.nav+item.label} item={item} isFirst={idx === 0} />
-                    ))}
-                </ul>
-            </GlassCard>
-        </section>
-    );
-
-    const header = (
-        <div className="pt-6 pb-2">
-            <h1 className="text-2xl font-bold" style={{ color: theme.colors.textPrimary }}>Resources</h1>
-            <p className="text-sm mt-1" style={{ color: theme.colors.textSecondary }}>Tools and documentation</p>
-        </div>
+    const CategoryCard = ({ category }) => (
+        <GlassCard theme={theme} className="p-1 overflow-hidden" variant="elevated">
+            <h3 
+                className="text-[11px] font-semibold uppercase tracking-wider px-3 py-2" 
+                style={{ color: theme.colors.textSecondary }}
+            >
+                {cleanCategoryName(category.category)}
+            </h3>
+            <div>
+                {category.items?.map((item, idx) => (
+                    <Row 
+                        key={item.nav + item.label} 
+                        item={item} 
+                        isLast={idx === category.items.length - 1} 
+                    />
+                ))}
+            </div>
+        </GlassCard>
     );
 
     return (
         <ScreenLayout
             theme={theme}
-            header={header}
             maxWidth="content"
             padding={true}
             paddingBottom="8rem"
+            gap="0.75rem"
         >
-            <div className="max-w-3xl mx-auto space-y-6">
-                {resourceCategories.map((cat, i) => (
-                    <CategoryCard key={cat.category} category={cat} isFirst={i === 0} />
-                ))}
-            </div>
+            {/* Title - no subtitle needed */}
+            <h1 className="text-lg font-bold" style={{ color: theme.colors.textPrimary }}>
+                Resources
+            </h1>
+            
+            {/* Categories */}
+            {resourceCategories.map((cat) => (
+                <CategoryCard key={cat.category} category={cat} />
+            ))}
         </ScreenLayout>
     );
 };
