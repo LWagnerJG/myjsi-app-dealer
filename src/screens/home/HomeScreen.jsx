@@ -695,7 +695,7 @@ export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opport
         <ScreenLayout
             theme={theme}
             header={isDesktop ? header : null}
-            maxWidth="content"
+            maxWidth="wide"
             padding={true}
             paddingBottom="8rem"
         >

@@ -251,7 +251,7 @@ export const SalesScreen = ({ theme, onNavigate }) => {
   return (
     <ScreenLayout
       theme={theme}
-      maxWidth="content"
+      maxWidth="default"
       padding={true}
       paddingBottom="8rem"
       gap="0.75rem"

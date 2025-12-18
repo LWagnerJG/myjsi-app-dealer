@@ -184,7 +184,7 @@ export const SettingsScreen = ({ theme, isDarkMode, onToggleTheme, customNavItem
     <ScreenLayout
       theme={theme}
       header={header}
-      maxWidth="content"
+      maxWidth="default"
       padding={true}
       paddingBottom="8rem"
     >

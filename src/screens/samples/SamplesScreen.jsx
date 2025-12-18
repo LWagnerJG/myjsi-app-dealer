@@ -485,7 +485,7 @@ export const SamplesScreen = ({ theme, onNavigate, cart: cartProp, onUpdateCart:
             <ScreenLayout
                 theme={theme}
                 header={header}
-                maxWidth="content"
+                maxWidth="wide"
                 padding={false}
                 paddingBottom="10rem"
             >

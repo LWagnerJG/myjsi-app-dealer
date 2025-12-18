@@ -1,7 +1,7 @@
 // JSI ScreenLayout - Consistent page structure wrapper
 // Handles: responsive max-width, sticky header, scroll detection, padding
 // Uses JSI blur effects and typography
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { useIsDesktop } from '../hooks/useResponsive.js';
 import { DESIGN_TOKENS, JSI_COLORS, JSI_TYPOGRAPHY, shadow } from './tokens.js';
 
@@ -13,7 +13,7 @@ export const ScreenLayout = ({
     stickyHeader = true,
     headerBlur = true,
     // Content configuration
-    maxWidth = 'lg', // 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full'
+    maxWidth = 'default', // 'sm' | 'md' | 'lg' | 'default' | 'wide' | 'full'
     padding = true,
     paddingBottom = '6rem', // Extra space for bottom navigation/FAB
     gap = '1rem', // Gap between children
@@ -32,22 +32,24 @@ export const ScreenLayout = ({
         onScrollChange?.(scrolled, scrollRef.current.scrollTop);
     }, [onScrollChange]);
     
-    // Max-width mapping - more reasonable content widths
-    const maxWidthMap = {
-        sm: '480px',
-        md: '640px',
-        lg: '768px',
-        xl: '896px',
-        '2xl': '1024px',
-        '3xl': '1152px',
-        '4xl': '1280px',
-        content: '640px', // Tighter content width for better readability
-        wide: '768px',    // Slightly wider
-        full: '100%',
+    // Responsive max-width mapping
+    // Mobile gets full width (minus padding), desktop gets constrained
+    const getMaxWidth = () => {
+        if (!isDesktop) return '100%'; // Mobile: full width
+        
+        const widthMap = {
+            sm: '480px',
+            md: '560px',
+            lg: '640px',
+            default: '720px', // Good balance for most content
+            wide: '960px',    // For grids and galleries
+            full: '100%',
+        };
+        return widthMap[maxWidth] || widthMap.default;
     };
     
-    const contentMaxWidth = maxWidthMap[maxWidth] || maxWidthMap.lg;
-    const shouldConstrainWidth = maxWidth !== 'full';
+    const contentMaxWidth = getMaxWidth();
+    const shouldConstrainWidth = isDesktop && maxWidth !== 'full';
     
     const bgColor = theme?.colors?.background || JSI_COLORS.warmBeige;
     
@@ -82,7 +84,7 @@ export const ScreenLayout = ({
                 <div style={headerStyles}>
                     <div 
                         style={{
-                            maxWidth: contentMaxWidth,
+                            maxWidth: shouldConstrainWidth ? contentMaxWidth : '100%',
                             marginLeft: 'auto',
                             marginRight: 'auto',
                             width: '100%',

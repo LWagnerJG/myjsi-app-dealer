@@ -336,7 +336,7 @@ export const OrdersScreen = ({ theme, onNavigate }) => {
     <ScreenLayout
       theme={theme}
       header={header}
-      maxWidth="content"
+      maxWidth="wide"
       padding={true}
       paddingBottom="8rem"
     >
