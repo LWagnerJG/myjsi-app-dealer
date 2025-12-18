@@ -3,7 +3,7 @@
 // Uses JSI blur effects and typography
 import React, { useState, useRef, useCallback } from 'react';
 import { useIsDesktop } from '../hooks/useResponsive.js';
-import { DESIGN_TOKENS, JSI_COLORS, JSI_TYPOGRAPHY, shadow } from './tokens.js';
+import { DESIGN_TOKENS, JSI_COLORS, JSI_TYPOGRAPHY } from './tokens.js';
 
 export const ScreenLayout = ({
     children,
@@ -33,23 +33,17 @@ export const ScreenLayout = ({
     }, [onScrollChange]);
     
     // Responsive max-width mapping
-    // Mobile gets full width (minus padding), desktop gets constrained
-    const getMaxWidth = () => {
-        if (!isDesktop) return '100%'; // Mobile: full width
-        
-        const widthMap = {
-            sm: '480px',
-            md: '560px',
-            lg: '640px',
-            default: '720px', // Good balance for most content
-            wide: '960px',    // For grids and galleries
-            full: '100%',
-        };
-        return widthMap[maxWidth] || widthMap.default;
+    const widthMap = {
+        sm: '480px',
+        md: '560px',
+        lg: '640px',
+        default: '720px',
+        wide: '960px',
+        full: '100%',
     };
     
-    const contentMaxWidth = getMaxWidth();
-    const shouldConstrainWidth = isDesktop && maxWidth !== 'full';
+    const contentMaxWidth = widthMap[maxWidth] || widthMap.default;
+    const shouldConstrain = maxWidth !== 'full';
     
     const bgColor = theme?.colors?.background || JSI_COLORS.warmBeige;
     
@@ -71,6 +65,17 @@ export const ScreenLayout = ({
         ? (isDesktop ? '1.5rem' : '1rem')
         : '0';
     
+    // Shared content wrapper styles - ALWAYS centered with max-width
+    const contentWrapperStyles = {
+        width: '100%',
+        maxWidth: shouldConstrain ? contentMaxWidth : '100%',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        paddingLeft: horizontalPadding,
+        paddingRight: horizontalPadding,
+        boxSizing: 'border-box',
+    };
+    
     return (
         <div 
             className={`flex flex-col h-full ${className}`}
@@ -82,17 +87,11 @@ export const ScreenLayout = ({
             {/* Sticky Header Area */}
             {header && (
                 <div style={headerStyles}>
-                    <div 
-                        style={{
-                            maxWidth: shouldConstrainWidth ? contentMaxWidth : '100%',
-                            marginLeft: 'auto',
-                            marginRight: 'auto',
-                            width: '100%',
-                            paddingLeft: horizontalPadding,
-                            paddingRight: horizontalPadding,
-                        }}
-                    >
-                        {typeof header === 'function' ? header({ isScrolled, isDesktop }) : header}
+                    {/* Centering wrapper for header */}
+                    <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                        <div style={contentWrapperStyles}>
+                            {typeof header === 'function' ? header({ isScrolled, isDesktop }) : header}
+                        </div>
                     </div>
                 </div>
             )}
@@ -103,21 +102,19 @@ export const ScreenLayout = ({
                 onScroll={handleScroll}
                 className="flex-1 overflow-y-auto scrollbar-hide"
             >
-                <div 
-                    className="flex flex-col"
-                    style={{
-                        maxWidth: shouldConstrainWidth ? contentMaxWidth : '100%',
-                        marginLeft: 'auto',
-                        marginRight: 'auto',
-                        width: '100%',
-                        paddingLeft: horizontalPadding,
-                        paddingRight: horizontalPadding,
-                        paddingTop: padding ? '1rem' : 0,
-                        paddingBottom: paddingBottom,
-                        gap: gap,
-                    }}
-                >
-                    {children}
+                {/* Centering wrapper for content */}
+                <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                    <div 
+                        className="flex flex-col"
+                        style={{
+                            ...contentWrapperStyles,
+                            paddingTop: padding ? '1rem' : 0,
+                            paddingBottom: paddingBottom,
+                            gap: gap,
+                        }}
+                    >
+                        {children}
+                    </div>
                 </div>
             </div>
         </div>
