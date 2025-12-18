@@ -1,91 +1,72 @@
-import React, { useMemo, useState, useCallback, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useMemo, useState, useCallback } from 'react';
 import { Modal } from '../../components/common/Modal';
-import { ArrowUp, ArrowDown, TrendingUp, Award, BarChart, Table, Target, ChevronRight, Trophy, Users } from 'lucide-react';
+import { ArrowUp, ArrowDown, BarChart, Table, Target, ChevronRight, Trophy, Award } from 'lucide-react';
 import { MONTHLY_SALES_DATA, SALES_VERTICALS_DATA } from './data.js';
 import { ORDER_DATA, STATUS_COLORS } from '../orders/data.js';
 import { SalesByVerticalBreakdown } from './components/SalesByVerticalBreakdown.jsx';
-import { CountUp } from '../../components/common/CountUp.jsx';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { GlassCard, ScreenLayout } from '../../design-system/index.js';
 import { JSI_COLORS, DESIGN_TOKENS } from '../../design-system/tokens.js';
 
 const formatCompanyName = (name = '') => name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 const monthNameToNumber = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
 
-// Redesigned tabs - Customer Leaderboard left, Sales Rewards right
-const SegmentedTabs = ({ theme, active, onChange }) => {
-  const tabs = useMemo(() => [
-    { key: 'ranking', label: 'Customer Leaderboard', Icon: Trophy },
-    { key: 'rewards', label: 'Sales Rewards', Icon: Award },
-  ], []);
-  
-  const wrapRef = useRef(null);
-  const btnRefs = useRef([]);
-  const [indicator, setIndicator] = useState({ left: 0, width: 0, ready: false });
-  
-  const recalc = useCallback(() => {
-    const i = tabs.findIndex(t => t.key === active);
-    if (i === -1) { setIndicator(o => ({ ...o, ready: false })); return; }
-    const el = btnRefs.current[i];
-    const wrap = wrapRef.current;
-    if (!el || !wrap) return;
-    const wl = wrap.getBoundingClientRect().left;
-    const { left, width } = el.getBoundingClientRect();
-    setIndicator({ left: left - wl, width, ready: true });
-  }, [active, tabs]);
-  
-  useEffect(() => { recalc(); }, [recalc]);
-  useEffect(() => {
-    const r = () => recalc();
-    window.addEventListener('resize', r);
-    return () => window.removeEventListener('resize', r);
-  }, [recalc]);
-  
-  return (
-    <div 
-      ref={wrapRef} 
-      className="relative w-full flex rounded-full p-1 gap-1" 
+// Navigation buttons - NOT toggles, just clickable cards that navigate
+const NavigationButtons = ({ theme, onNavigate }) => (
+  <div className="grid grid-cols-2 gap-3">
+    <button
+      onClick={() => onNavigate('customer-rank')}
+      className="flex items-center gap-3 p-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] text-left"
       style={{ 
         backgroundColor: theme.colors.surface,
         border: `1px solid ${theme.colors.border}`,
-        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)'
+        boxShadow: DESIGN_TOKENS.shadows.sm
       }}
     >
-      {indicator.ready && (
-        <motion.div 
-          layout 
-          className="absolute inset-y-1 rounded-full" 
-          style={{ 
-            left: indicator.left, 
-            width: indicator.width, 
-            backgroundColor: theme.colors.accent,
-            boxShadow: DESIGN_TOKENS.shadows.sm
-          }} 
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }} 
-        />
-      )}
-      {tabs.map((t, i) => {
-        const selected = t.key === active;
-        return (
-          <button 
-            key={t.key} 
-            ref={el => btnRefs.current[i] = el} 
-            onClick={() => onChange(selected ? null : t.key)} 
-            className="flex-1 flex items-center justify-center gap-2 py-2.5 px-4 font-semibold text-[13px] tracking-wide rounded-full relative z-10 transition-colors"
-            style={{ 
-              color: selected ? '#FFF' : theme.colors.textSecondary 
-            }}
-          >
-            <t.Icon className="w-4 h-4" />
-            <span className="hidden sm:inline">{t.label}</span>
-            <span className="sm:hidden">{t.key === 'ranking' ? 'Leaderboard' : 'Rewards'}</span>
-          </button>
-        );
-      })}
-    </div>
-  );
-};
+      <div 
+        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ backgroundColor: `${JSI_COLORS.gold}15` }}
+      >
+        <Trophy className="w-5 h-5" style={{ color: JSI_COLORS.gold }} />
+      </div>
+      <div className="min-w-0">
+        <p className="font-semibold text-sm" style={{ color: theme.colors.textPrimary }}>
+          Customer Leaderboard
+        </p>
+        <p className="text-[11px] mt-0.5" style={{ color: theme.colors.textSecondary }}>
+          Project rankings
+        </p>
+      </div>
+      <ChevronRight className="w-4 h-4 ml-auto flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
+    </button>
+    
+    <button
+      onClick={() => onNavigate('incentive-rewards')}
+      className="flex items-center gap-3 p-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] text-left"
+      style={{ 
+        backgroundColor: theme.colors.surface,
+        border: `1px solid ${theme.colors.border}`,
+        boxShadow: DESIGN_TOKENS.shadows.sm
+      }}
+    >
+      <div 
+        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+        style={{ backgroundColor: `${theme.colors.accent}15` }}
+      >
+        <Award className="w-5 h-5" style={{ color: theme.colors.accent }} />
+      </div>
+      <div className="min-w-0">
+        <p className="font-semibold text-sm" style={{ color: theme.colors.textPrimary }}>
+          Sales Rewards
+        </p>
+        <p className="text-[11px] mt-0.5" style={{ color: theme.colors.textSecondary }}>
+          Incentive programs
+        </p>
+      </div>
+      <ChevronRight className="w-4 h-4 ml-auto flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
+    </button>
+  </div>
+);
 
 // Improved Monthly Bar Chart with better styling
 const MonthlyBarChart = ({ data, theme, onMonthSelect, dataType = 'bookings' }) => {
@@ -301,15 +282,16 @@ const OrderModal = ({ order, onClose, theme }) => {
 };
 
 // Compact Progress to Goal component
-const ProgressToGoalCompact = ({ theme, totalBookings, goal, percentToGoal, yearProgressPercent, aheadOfPace, deltaLabel }) => {
+const ProgressToGoalCompact = ({ theme, totalBookings, goal, percentToGoal, aheadOfPace, deltaLabel }) => {
   const prefersReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   
   return (
     <div 
       className="flex items-center gap-4 p-4 rounded-2xl"
       style={{ 
-        backgroundColor: `${theme.colors.subtle}40`,
-        border: `1px solid ${theme.colors.border}30`
+        backgroundColor: theme.colors.surface,
+        border: `1px solid ${theme.colors.border}`,
+        boxShadow: DESIGN_TOKENS.shadows.sm
       }}
     >
       <div 
@@ -365,14 +347,13 @@ export const SalesScreen = ({ theme, onNavigate }) => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [numRecentOrders, setNumRecentOrders] = useState(3);
   const [selectedMonth, setSelectedMonth] = useState(null);
-  const [topTab, setTopTab] = useState(null);
 
   const { totalBookings, totalSales } = useMemo(() => ({
     totalBookings: MONTHLY_SALES_DATA.reduce((a, m) => a + m.bookings, 0),
     totalSales: MONTHLY_SALES_DATA.reduce((a, m) => a + m.sales, 0)
   }), []);
 
-  const { yearProgressPercent, percentToGoal, deltaLabel, aheadOfPace } = useMemo(() => {
+  const { percentToGoal, deltaLabel, aheadOfPace } = useMemo(() => {
     const now = new Date();
     const start = new Date(now.getFullYear(), 0, 1);
     const next = new Date(now.getFullYear() + 1, 0, 1);
@@ -382,7 +363,6 @@ export const SalesScreen = ({ theme, onNavigate }) => {
     const goalPct = (MONTHLY_SALES_DATA.reduce((a, m) => a + m.bookings, 0) / 7000000) * 100;
     const delta = goalPct - yearPct;
     return { 
-      yearProgressPercent: yearPct, 
       percentToGoal: goalPct, 
       deltaLabel: `${Math.abs(delta).toFixed(1)}%`, 
       aheadOfPace: delta >= 0 
@@ -402,28 +382,18 @@ export const SalesScreen = ({ theme, onNavigate }) => {
   const displayedRecent = useMemo(() => allRecentOrders.slice(0, numRecentOrders), [allRecentOrders, numRecentOrders]);
   const goal = 7000000;
 
-  const handleTabChange = useCallback(k => { 
-    setTopTab(k); 
-    if (k === 'rewards') onNavigate('incentive-rewards'); 
-    if (k === 'ranking') onNavigate('customer-rank'); 
-  }, [onNavigate]);
-  
   const showMoreOrders = () => setNumRecentOrders(n => Math.min(allRecentOrders.length, n === 3 ? 8 : n + 5));
-
-  const header = ({ isScrolled }) => (
-    <div className="py-4">
-      <SegmentedTabs theme={theme} active={topTab} onChange={handleTabChange} />
-    </div>
-  );
 
   return (
     <ScreenLayout
       theme={theme}
-      header={header}
       maxWidth="content"
       padding={true}
       paddingBottom="8rem"
     >
+      {/* Navigation Buttons - Customer Leaderboard & Sales Rewards */}
+      <NavigationButtons theme={theme} onNavigate={onNavigate} />
+
       {/* Primary: Monthly Performance Chart */}
       <GlassCard theme={theme} className="p-5" variant="elevated">
         {selectedMonth ? (
@@ -514,7 +484,6 @@ export const SalesScreen = ({ theme, onNavigate }) => {
         totalBookings={totalBookings}
         goal={goal}
         percentToGoal={percentToGoal}
-        yearProgressPercent={yearProgressPercent}
         aheadOfPace={aheadOfPace}
         deltaLabel={deltaLabel}
       />
