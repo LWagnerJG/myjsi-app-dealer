@@ -26,26 +26,39 @@ const CATEGORY_FILTERS = [
     { key: 'casegoods', label: 'Casegoods', match: (type) => type === 'Casegoods' || type === 'Laminate' || type === 'Veneer' || type === 'Tables' },
 ];
 
-const TypeCard = ({ type, weeks, image, isQuickship, theme, onQuickshipClick }) => (
-    <div className="flex flex-col items-center">
-        <div className="relative w-16 h-16 rounded-xl bg-white flex items-center justify-center overflow-hidden">
-            <img src={image} alt={type} className="w-full h-full object-contain" />
+// Compact product card with integrated lead time badge
+const ProductCard = ({ type, weeks, image, isQuickship, theme, onQuickshipClick }) => (
+    <div className="relative flex flex-col items-center">
+        {/* Image container with integrated week badge */}
+        <div className="relative">
+            <div className="w-14 h-14 rounded-lg bg-white flex items-center justify-center overflow-hidden shadow-sm">
+                <img src={image} alt={type} className="w-full h-full object-contain p-0.5" />
+            </div>
+            {/* QuickShip indicator - yellow, discrete */}
             {isQuickship && (
                 <button
                     onClick={(e) => { e.stopPropagation(); onQuickshipClick(); }}
-                    className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center transition-transform hover:scale-110"
-                    style={{ backgroundColor: '#10B981' }}
+                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center shadow-sm"
+                    style={{ backgroundColor: '#FCD34D' }}
                 >
-                    <Zap className="w-3 h-3 text-white" />
+                    <Zap className="w-2.5 h-2.5" style={{ color: '#92400E' }} />
                 </button>
             )}
+            {/* Week badge overlay at bottom */}
+            <div 
+                className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-full text-[10px] font-bold shadow-sm"
+                style={{ 
+                    backgroundColor: theme.colors.surface,
+                    color: theme.colors.textPrimary,
+                    border: `1px solid ${theme.colors.border}`
+                }}
+            >
+                {weeks}<span className="font-normal opacity-60">wk</span>
+            </div>
         </div>
-        <div className="mt-1.5 text-center">
-            <span className="text-lg font-bold" style={{ color: theme.colors.textPrimary }}>{weeks}</span>
-            <span className="text-[10px] font-medium ml-0.5" style={{ color: theme.colors.textSecondary }}>wk</span>
-        </div>
-        <span className="text-[10px] font-medium" style={{ color: theme.colors.textSecondary }}>
-            {type.replace('Wood Seating', 'Wood').replace('Upholstery', 'Uph')}
+        {/* Type label */}
+        <span className="mt-2.5 text-[9px] font-medium uppercase tracking-wide" style={{ color: theme.colors.textSecondary }}>
+            {type.replace('Wood Seating', 'Wood').replace('Upholstery', 'Uph').replace('Casegoods', 'Case')}
         </span>
     </div>
 );
@@ -114,7 +127,7 @@ export const LeadTimesScreen = ({ theme = {} }) => {
     const activeFilterLabel = CATEGORY_FILTERS.find(f => f.key === categoryFilter)?.label;
 
     const header = (
-        <div className="py-3 space-y-3">
+        <div className="py-2 space-y-2">
             <div className="flex items-center gap-2">
                 <StandardSearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search series..." theme={safeTheme} className="flex-1" />
                 <button ref={filterBtnRef} onClick={() => setShowFilterMenu(!showFilterMenu)} className="flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold transition-all flex-shrink-0" style={{ backgroundColor: categoryFilter !== 'all' ? safeTheme.colors.accent : safeTheme.colors.surface, color: categoryFilter !== 'all' ? '#fff' : safeTheme.colors.textSecondary, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
@@ -139,19 +152,98 @@ export const LeadTimesScreen = ({ theme = {} }) => {
         <ScreenLayout theme={safeTheme} header={header} maxWidth="default" padding={true} paddingBottom="7rem">
             <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: safeTheme.colors.surface }}>
                 {rows.map(({ series, types }, index) => (
-                    <div key={series} className="flex items-center gap-4 px-4 py-4 transition-colors hover:bg-black/[0.02]" style={{ borderBottom: index < rows.length - 1 ? '1px solid ' + safeTheme.colors.border + '15' : 'none' }}>
-                        <div className="w-24 flex-shrink-0">
-                            <h3 className="font-semibold text-sm leading-tight" style={{ color: safeTheme.colors.textPrimary }}>{series}</h3>
-                        </div>
-                        <div className="flex-1 flex items-center justify-end gap-4">
-                            {types.map((t, i) => (<TypeCard key={i} {...t} theme={safeTheme} onQuickshipClick={() => setShowQuickshipHint(true)} />))}
+                    <div 
+                        key={series} 
+                        className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-black/[0.02]" 
+                        style={{ borderBottom: index < rows.length - 1 ? `1px solid ${safeTheme.colors.border}20` : 'none' }}
+                    >
+                        {/* Series name */}
+                        <h3 className="font-semibold text-sm flex-shrink-0 w-20" style={{ color: safeTheme.colors.textPrimary }}>
+                            {series}
+                        </h3>
+                        {/* Product cards */}
+                        <div className="flex items-center gap-5">
+                            {types.map((t, i) => (
+                                <ProductCard 
+                                    key={i} 
+                                    {...t} 
+                                    theme={safeTheme} 
+                                    onQuickshipClick={() => setShowQuickshipHint(true)} 
+                                />
+                            ))}
                         </div>
                     </div>
                 ))}
             </div>
-            {rows.length === 0 && (<div className="text-center py-16 rounded-2xl" style={{ backgroundColor: safeTheme.colors.subtle }}><p className="text-sm font-medium" style={{ color: safeTheme.colors.textPrimary }}>No series found</p></div>)}
-            {showFilterMenu && createPortal(<div className="fixed rounded-2xl shadow-xl overflow-hidden py-2" style={{ top: filterPos.top, right: filterPos.right, backgroundColor: safeTheme.colors.surface, border: '1px solid ' + safeTheme.colors.border, zIndex: 100000, minWidth: 180 }}>{CATEGORY_FILTERS.map(f => { const isActive = categoryFilter === f.key; return (<button key={f.key} onClick={() => { setCategoryFilter(f.key); setShowFilterMenu(false); }} className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium transition-colors hover:bg-black/5" style={{ color: isActive ? safeTheme.colors.accent : safeTheme.colors.textPrimary }}>{f.label}{isActive && <Check className="w-4 h-4" />}</button>); })}</div>, document.body)}
-            {showQuickshipHint && createPortal(<div className="fixed inset-0 flex items-center justify-center z-[100001]" onClick={() => setShowQuickshipHint(false)}><div className="absolute inset-0 bg-black/30" /><div className="relative rounded-2xl p-6 mx-4 max-w-sm text-center shadow-2xl" style={{ backgroundColor: safeTheme.colors.surface }} onClick={e => e.stopPropagation()}><div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" style={{ backgroundColor: '#10B98120' }}><Zap className="w-6 h-6" style={{ color: '#10B981' }} /></div><h3 className="font-bold text-lg mb-2" style={{ color: safeTheme.colors.textPrimary }}>QuickShip Available</h3><p className="text-sm" style={{ color: safeTheme.colors.textSecondary }}>This configuration ships in <strong>12 business days</strong> or less when ordered with qualifying options.</p><button onClick={() => setShowQuickshipHint(false)} className="mt-4 px-6 py-2 rounded-full text-sm font-semibold" style={{ backgroundColor: safeTheme.colors.accent, color: '#fff' }}>Got it</button></div></div>, document.body)}
+            {rows.length === 0 && (
+                <div className="text-center py-12 rounded-2xl" style={{ backgroundColor: safeTheme.colors.subtle }}>
+                    <p className="text-sm font-medium" style={{ color: safeTheme.colors.textPrimary }}>No series found</p>
+                </div>
+            )}
+            
+            {/* Filter Menu Portal */}
+            {showFilterMenu && createPortal(
+                <div 
+                    className="fixed rounded-2xl shadow-xl overflow-hidden py-2" 
+                    style={{ 
+                        top: filterPos.top, 
+                        right: filterPos.right, 
+                        backgroundColor: safeTheme.colors.surface, 
+                        border: '1px solid ' + safeTheme.colors.border, 
+                        zIndex: 100000, 
+                        minWidth: 180 
+                    }}
+                >
+                    {CATEGORY_FILTERS.map(f => {
+                        const isActive = categoryFilter === f.key;
+                        return (
+                            <button 
+                                key={f.key} 
+                                onClick={() => { setCategoryFilter(f.key); setShowFilterMenu(false); }} 
+                                className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium transition-colors hover:bg-black/5" 
+                                style={{ color: isActive ? safeTheme.colors.accent : safeTheme.colors.textPrimary }}
+                            >
+                                {f.label}
+                                {isActive && <Check className="w-4 h-4" />}
+                            </button>
+                        );
+                    })}
+                </div>,
+                document.body
+            )}
+            
+            {/* QuickShip Hint Modal */}
+            {showQuickshipHint && createPortal(
+                <div className="fixed inset-0 flex items-center justify-center z-[100001]" onClick={() => setShowQuickshipHint(false)}>
+                    <div className="absolute inset-0 bg-black/30" />
+                    <div 
+                        className="relative rounded-2xl p-6 mx-4 max-w-sm text-center shadow-2xl" 
+                        style={{ backgroundColor: safeTheme.colors.surface }} 
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div 
+                            className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" 
+                            style={{ backgroundColor: '#FEF3C7' }}
+                        >
+                            <Zap className="w-6 h-6" style={{ color: '#D97706' }} />
+                        </div>
+                        <h3 className="font-bold text-lg mb-2" style={{ color: safeTheme.colors.textPrimary }}>
+                            QuickShip Available
+                        </h3>
+                        <p className="text-sm" style={{ color: safeTheme.colors.textSecondary }}>
+                            This configuration ships in <strong>12 business days</strong> or less when ordered with qualifying options.
+                        </p>
+                        <button 
+                            onClick={() => setShowQuickshipHint(false)} 
+                            className="mt-4 px-6 py-2 rounded-full text-sm font-semibold" 
+                            style={{ backgroundColor: safeTheme.colors.accent, color: '#fff' }}
+                        >
+                            Got it
+                        </button>
+                    </div>
+                </div>,
+                document.body
+            )}
         </ScreenLayout>
     );
 };

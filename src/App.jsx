@@ -40,6 +40,10 @@ const SearchFabricsScreen = React.lazy(() => import('./screens/resources/search-
 const RequestComYardageScreen = React.lazy(() => import('./screens/resources/request-com-yardage/index.js'));
 const SocialMediaScreen = React.lazy(() => import('./screens/resources/social-media/index.js'));
 const ComColRequest = React.lazy(() => import('./screens/resources/search-fabrics/ComColRequest.jsx').then(m => ({ default: m.ComColRequest })));
+// Scan mini app screens (feature flagged)
+const ScanScreen = React.lazy(() => import('./screens/resources/scan/index.js'));
+const ScanCameraScreen = React.lazy(() => import('./screens/resources/scan/ScanCameraScreen.jsx'));
+const OrderReceivingStatusScreen = React.lazy(() => import('./screens/resources/scan/OrderReceivingStatusScreen.jsx'));
 
 // Centralized legacy -> canonical slug mapping for resource feature routes
 const RESOURCE_SLUG_ALIASES = {
@@ -77,7 +81,10 @@ const RESOURCE_FEATURE_SCREENS = {
     'social-media': SocialMediaScreen,
     'search-fabrics': SearchFabricsScreen,
     'request-com-yardage': RequestComYardageScreen,
-    'comcol-request': ComColRequest
+    'comcol-request': ComColRequest,
+    // Scan mini app routes
+    'scan': ScanScreen,
+    'scan/camera': ScanCameraScreen,
 };
 
 // URL path <-> screen key mapping
@@ -132,6 +139,20 @@ if (base === 'resources') {
         if (subResource === 'comcol-request') {
             const ComColRequestScreen = RESOURCE_FEATURE_SCREENS['comcol-request'];
             return <Suspense fallback={SuspenseFallback}><ComColRequestScreen {...rest} /></Suspense>;
+        }
+    }
+    
+    // Handle Scan mini app routes
+    if (subPath.startsWith('scan/')) {
+        const scanSubPath = subPath.slice('scan/'.length);
+        // Scan camera screen
+        if (scanSubPath === 'camera') {
+            return <Suspense fallback={SuspenseFallback}><ScanCameraScreen {...rest} /></Suspense>;
+        }
+        // Order receiving status: scan/order/:orderId
+        if (scanSubPath.startsWith('order/')) {
+            const orderId = scanSubPath.slice('order/'.length);
+            return <Suspense fallback={SuspenseFallback}><OrderReceivingStatusScreen orderId={orderId} {...rest} /></Suspense>;
         }
     }
     

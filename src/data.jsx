@@ -2,7 +2,7 @@
     MousePointer, BarChart2, Users, Package2, RefreshCw, PieChart, Armchair,
     Database, Briefcase, MessageSquare, Package, RotateCw, Search, Paperclip,
     DollarSign, UserPlus, MapPin, Percent, FileText, Calendar, Palette,
-    Wrench, MonitorPlay, Share2, Hourglass, Settings, HelpCircle, Send
+    Wrench, MonitorPlay, Share2, Hourglass, Settings, HelpCircle, Send, ScanLine
 } from 'lucide-react';
 
 export const lightTheme = {
@@ -101,6 +101,8 @@ export const QUICK_ACCESS_APPS = [
     { id: 'customer-ranking', name: 'Customer Ranking', route: 'customer-rank', icon: BarChart2, isDefault: false },
     { id: 'members', name: 'Members', route: 'members', icon: Users, isDefault: false, dealerHidden: true },
     { id: 'settings', name: 'Settings', route: 'settings', icon: Settings, isDefault: false, dealerHidden: true },
+    // Scan mini app - for warehouse/delivery receiving
+    { id: 'scan', name: 'Scan', route: 'resources/scan', icon: ScanLine, isDefault: false },
 ];
 
 // Dealer allowlist for Quick Access - apps dealers can add to their grid
@@ -108,7 +110,8 @@ export const DEALER_QUICK_ACCESS_ALLOWLIST = [
     'replacements', 'samples', 'orders', 'projects', 'products', 'community',
     'lead-times', 'customer-directory', 'sales', 'resources', 'contracts',
     'discounts', 'loaner-pool', 'discontinued-finishes', 'social-media',
-    'design-days', 'presentations', 'install-instructions', 'customer-ranking'
+    'design-days', 'presentations', 'install-instructions', 'customer-ranking',
+    'scan'
 ];
 
 // Get default Quick Access app IDs

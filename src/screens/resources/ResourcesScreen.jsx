@@ -1,7 +1,8 @@
 import React, { useMemo, useEffect } from 'react';
 import {
     Database, Search, Share2, FileText, DollarSign, Calendar, Percent,
-    Palette, Package, Users, MapPin, MonitorPlay, Wrench, Clock, ChevronRight
+    Palette, Package, Users, MapPin, MonitorPlay, Wrench, Clock, ChevronRight,
+    ScanLine
 } from 'lucide-react';
 import { RESOURCES_DATA } from './data.js';
 import { GlassCard, ScreenLayout } from '../../design-system/index.js';
@@ -24,7 +25,8 @@ const sublabelMap = {
     'Social Media': 'Marketing assets',
     'Presentations': 'Sales deck library',
     'Tradeshows': 'Upcoming events',
-    'New Dealer Sign-Up': 'Onboard new dealers'
+    'New Dealer Sign-Up': 'Onboard new dealers',
+    'Scan': 'Receive and confirm deliveries'
 };
 
 // Clean category names (remove redundant "Resources")
@@ -86,6 +88,7 @@ export const ResourcesScreen = ({ theme, onNavigate, homeApps }) => {
         if (label.includes('Install')) return Wrench;
         if (label.includes('Tradeshow')) return Calendar;
         if (label.includes('Tradeshows')) return Calendar;
+        if (label === 'Scan') return ScanLine;
         if (Object.values(CORE_LABELS).includes(label)) return Database;
         return Database;
     };

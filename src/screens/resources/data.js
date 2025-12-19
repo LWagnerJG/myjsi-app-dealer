@@ -1,4 +1,8 @@
 // Resources feature specific data (migrated from root data folder)
+
+// Feature flag for Scan mini app - can be toggled globally or per-account
+export const SCAN_FEATURE_ENABLED = true;
+
 export const RESOURCES_DATA = [
     {
         category: "Product & Finish Resources",
@@ -23,6 +27,8 @@ export const RESOURCES_DATA = [
             { label: "Loaner Pool", nav: "resources/loaner-pool" },
             { label: "Request Field Visit", nav: "resources/request-field-visit" },
             { label: "Install Instructions", nav: "resources/install-instructions" },
+            // Scan mini app - feature flagged
+            ...(SCAN_FEATURE_ENABLED ? [{ label: "Scan", nav: "resources/scan", subtitle: "Receive and confirm deliveries" }] : []),
         ].sort((a, b) => a.label.localeCompare(b.label))
     },
     {
