@@ -10,15 +10,19 @@ export const PRODUCT_DATA = {
     'benches': {
         name: 'Benches',
         products: [
-            { id: 'native', name: 'Native', price: 1200, image: 'https://via.placeholder.com/300x200/E3DBC8/2A2A2A?text=Native+Bench' },
-            { id: 'poet', name: 'Poet', price: 780, image: 'https://via.placeholder.com/300x200/D9CDBA/2A2A2A?text=Poet+Bench' },
-            { id: 'indie', name: 'Indie', price: 920, image: 'https://via.placeholder.com/300x200/C7AD8E/2A2A2A?text=Indie+Bench' },
+            { id: 'indie', name: 'Indie', price: 920, image: localImage('/category-images/bench-images/jsi_indie_comp_00040.jpg'), thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'native', name: 'Native', price: 1200, image: localImage('/category-images/bench-images/jsi_native_comp_00028.jpg'), thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'oxley', name: 'Oxley', price: 1050, image: localImage('/category-images/bench-images/jsi_oxley_comp_00001_5ueHuWt.jpg'), thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'poet', name: 'Poet', price: 780, image: localImage('/series-images/jsi_poet_comp_00050.jpg'), thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'americana', name: 'Americana', price: 1020, image: localImage('/series-images/jsi_americana_comp_00026.jpg'), thumbScale: 1.3, heroScale: 1.15 },
         ],
         competition: [],
         competitionByProduct: {
+            'indie': [comp('OFS Modern Amenity', '$950', '-3%'), comp('Kimball Alterna', '$935', '-2%'), comp('Global Duet', '$905', '+2%')],
             'native': [comp('OFS Rowen Bench', '$1250', '-4%'), comp('Kimball EverySpace', '$1325', '-9%'), comp('Indiana Clutch', '$1180', '+2%')],
+            'oxley': [comp('OFS Heya Bench', '$1080', '-3%'), comp('Kimball Villa Bench', '$1120', '-6%'), comp('SitOnIt Movi Bench', '$1010', '+4%')],
             'poet': [comp('OFS Lite', '$790', '-1%'), comp('Kimball Pep Bench', '$770', '+1%'), comp('SitOnIt Nomad', '$730', '+6%')],
-            'indie': [comp('OFS Modern Amenity', '$950', '-3%'), comp('Kimball Alterna', '$935', '-2%'), comp('Global Duet', '$905', '+2%')]
+            'americana': [comp('OFS Classic Bench', '$1050', '-3%'), comp('Kimball Heritage', '$1080', '-6%'), comp('SitOnIt Relay Bench', '$985', '+4%')],
         }
     },
     'casegoods': {
@@ -102,43 +106,43 @@ export const PRODUCT_DATA = {
     'lounge': {
         name: 'Lounge',
         products: [
-            { id: 'arwyn', name: 'Arwyn', price: 1500, image: 'https://via.placeholder.com/300x200/E3DBC8/2A2A2A?text=Arwyn+Lounge' },
-            { id: 'caav', name: 'Cäav', price: 1800, image: 'https://via.placeholder.com/300x200/D9CDBA/2A2A2A?text=Caav+Lounge' },
-            { id: 'finn', name: 'Finn', price: 1600, image: 'https://via.placeholder.com/300x200/C7AD8E/2A2A2A?text=Finn+Lounge' },
+            { id: 'arwyn', name: 'Arwyn', price: 1500, image: localImage('/category-images/lounge-images/jsi_arwyn_comp_00002.jpg'), thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'indie-lounge', name: 'Indie', price: 1350, image: localImage('/category-images/lounge-images/jsi_indie_comp_00060.jpg'), thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'poet-lounge', name: 'Poet', price: 1200, image: localImage('/category-images/lounge-images/jsi_poet_component_00008.jpg'), thumbScale: 1.3, heroScale: 1.15 },
         ],
         competition: [],
         competitionByProduct: {
             'arwyn': [comp('OFS Heya Lounge', '$1580', '-5%'), comp('Kimball Villa Lounge', '$1625', '-7%'), comp('Indiana Ovation Lounge', '$1490', '+1%')],
-            'caav': [comp('OFS Eleven Lounge', '$1880', '-4%'), comp('Kimball Axiom Lounge', '$1850', '-3%'), comp('Allsteel Rise', '$1790', '+1%')],
-            'finn': [comp('OFS Coact Lounge', '$1650', '-3%'), comp('Kimball Joya Lounge', '$1620', '-1%'), comp('Indiana Comfort', '$1550', '+3%')]
+            'indie-lounge': [comp('OFS Modern Amenity Lounge', '$1420', '-5%'), comp('Kimball Alterna Lounge', '$1400', '-4%'), comp('SitOnIt Nomad Lounge', '$1310', '+3%')],
+            'poet-lounge': [comp('OFS Lite Lounge', '$1260', '-5%'), comp('Kimball Pep Lounge', '$1240', '-3%'), comp('SitOnIt Rio Lounge', '$1150', '+4%')]
         }
     },
     'swivels': {
         name: 'Swivels',
         products: [
-            { id: 'arwyn-swivel', name: 'Arwyn', price: 1300, image: 'https://via.placeholder.com/300x200/E3DBC8/2A2A2A?text=Arwyn+Swivel' },
-            { id: 'wink', name: 'Wink', price: 500, image: 'https://via.placeholder.com/300x200/D9CDBA/2A2A2A?text=Wink+Swivel' },
-            { id: 'protocol', name: 'Protocol', price: 800, image: 'https://via.placeholder.com/300x200/C7AD8E/2A2A2A?text=Protocol+Swivel' },
+            { id: 'arwyn-swivel', name: 'Arwyn Conference', price: 1300, image: localImage('/category-images/swivel-images/jsi_arwynconference_comp_0001_7U1AfYF.jpg'), thumbScale: 1.5, heroScale: 1.25 },
+            { id: 'cosgrove-swivel', name: 'Cosgrove', price: 850, image: localImage('/category-images/swivel-images/jsi_cosgrove_comp_highback_arms_00002_KAky10n.jpg'), thumbScale: 1.5, heroScale: 1.25 },
+            { id: 'garvey', name: 'Garvey', price: 680, image: localImage('/category-images/swivel-images/jsi_garveyr5_comp_00002.jpg'), thumbScale: 1.5, heroScale: 1.25 },
         ],
         competition: [],
         competitionByProduct: {
             'arwyn-swivel': [comp('SitOnIt Focus Task', '$1350', '-4%'), comp('Kimball Joya Task', '$1365', '-5%'), comp('OFS Rally Task', '$1310', '-1%')],
-            'wink': [comp('SitOnIt Wit Task', '$520', '-4%'), comp('Kimball Pep Task', '$515', '-3%'), comp('OFS Lite Task', '$505', '-1%')],
-            'protocol': [comp('SitOnIt Amplify', '$835', '-4%'), comp('Kimball Task Pro', '$825', '-3%'), comp('OFS Rally Lite', '$810', '-1%')]
+            'cosgrove-swivel': [comp('SitOnIt Amplify', '$880', '-3%'), comp('Kimball Task Plus', '$890', '-4%'), comp('OFS Eleven Task', '$835', '+2%')],
+            'garvey': [comp('SitOnIt Wit Task', '$710', '-4%'), comp('Kimball Pep Task', '$700', '-3%'), comp('OFS Lite Task', '$660', '+3%')]
         }
     },
     'training-tables': {
         name: 'Training Tables',
         products: [
-            { id: 'moto-training', name: 'Moto', price: 900, image: 'https://via.placeholder.com/300x200/E3DBC8/2A2A2A?text=Moto+Training' },
-            { id: 'connect', name: 'Connect', price: 850, image: 'https://via.placeholder.com/300x200/D9CDBA/2A2A2A?text=Connect+Training' },
-            { id: 'bespace', name: 'BeSpace', price: 950, image: 'https://via.placeholder.com/300x200/C7AD8E/2A2A2A?text=BeSpace+Training' },
+            { id: 'lok', name: 'Lok', price: 950, image: localImage('/category-images/training-images/jsi_lok_comp_00001.jpg'), thumbScale: 1.2, heroScale: 1.1 },
+            { id: 'lok-quickship', name: 'Lok QuickShip', price: 900, image: localImage('/category-images/training-images/jsi_lokquickship_comp_0004_scnOitC.jpg'), thumbScale: 1.2, heroScale: 1.1 },
+            { id: 'nosh', name: 'Nosh', price: 850, image: localImage('/category-images/training-images/jsi_nosh_comp_00011.jpg'), thumbScale: 1.2, heroScale: 1.1 },
         ],
         competition: [],
         competitionByProduct: {
-            'moto-training': [comp('SitOnIt Switch', '$930', '-3%'), comp('Kimball KORE Train', '$920', '-2%'), comp('OFS Applause Train', '$905', '-1%')],
-            'connect': [comp('SitOnIt Link', '$875', '-3%'), comp('Kimball Pairings Train', '$865', '-2%'), comp('OFS Motum Train', '$852', '-0%')],
-            'bespace': [comp('SitOnIt Flex Train', '$980', '-3%'), comp('Kimball Dock Train', '$970', '-2%'), comp('OFS Thrive Train', '$955', '-1%')]
+            'lok': [comp('SitOnIt Switch', '$980', '-3%'), comp('Kimball KORE Train', '$1000', '-5%'), comp('OFS Applause Train', '$925', '+3%')],
+            'lok-quickship': [comp('SitOnIt Switch Quick', '$930', '-3%'), comp('Kimball Pairings Quick', '$945', '-5%'), comp('OFS Motum Quick', '$875', '+3%')],
+            'nosh': [comp('SitOnIt Flex Train', '$880', '-3%'), comp('Kimball Dock Train', '$895', '-5%'), comp('OFS Thrive Train', '$825', '+3%')]
         }
     }
 };
