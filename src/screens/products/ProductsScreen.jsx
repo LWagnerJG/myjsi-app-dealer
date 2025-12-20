@@ -40,64 +40,47 @@ const CategoryCard = React.memo(({
                 onClick={handleClick}
                 style={{ padding: 0 }}
             >
-                {/* Image grid at top - larger, more prominent */}
+                {/* Image row - clean, no individual boxes */}
                 <div 
-                    className="grid w-full"
+                    className="flex w-full items-center justify-around"
                     style={{ 
-                        gridTemplateColumns: isDesktop ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)',
-                        backgroundColor: '#fafaf9',
-                        padding: isDesktop ? '16px' : '12px',
-                        gap: isDesktop ? '12px' : '8px'
+                        backgroundColor: theme.colors.surface || '#f5f5f4',
+                        padding: isDesktop ? '20px 16px' : '14px 10px',
+                        minHeight: isDesktop ? '100px' : '70px'
                     }}
                 >
-                    {category.images?.slice(0, isDesktop ? 3 : 2).map((img, index) => (
+                    {category.images?.slice(0, 3).map((img, index) => (
                         <div 
                             key={index} 
-                            className="overflow-hidden rounded-lg"
+                            className="flex items-center justify-center"
                             style={{ 
-                                backgroundColor: '#ffffff',
-                                aspectRatio: '1',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                padding: '8px'
+                                width: isDesktop ? '80px' : '60px',
+                                height: isDesktop ? '80px' : '55px'
                             }}
                         >
                             <img
                                 src={img}
-                                alt={`${category.name} example ${index + 1}`}
-                                className="w-full h-full object-contain hover:scale-110 transition-transform duration-500"
+                                alt={`${category.name} ${index + 1}`}
+                                className="max-w-full max-h-full object-contain hover:scale-110 transition-transform duration-300"
                                 loading="lazy"
                             />
                         </div>
                     ))}
                 </div>
-                {/* Text content below */}
+                {/* Category name only - clean and minimal */}
                 <div 
-                    className="px-4 py-3"
+                    className="px-4 py-2.5"
                     style={{ backgroundColor: '#ffffff' }}
                 >
                     <h2 
                         className="font-semibold" 
                         style={{ 
                             color: theme.colors.textPrimary,
-                            fontSize: isDesktop ? '1rem' : '0.9375rem',
-                            marginBottom: '2px'
+                            fontSize: isDesktop ? '0.9375rem' : '0.875rem'
                         }}
                     >
                         {category.name}
                     </h2>
-                    {category.description && (
-                        <p 
-                            className="text-xs" 
-                            style={{ 
-                                color: theme.colors.textSecondary,
-                                lineHeight: '1.4'
-                            }}
-                        >
-                            {category.description}
-                        </p>
-                    )}
                 </div>
             </GlassCard>
         );
@@ -292,14 +275,10 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
                 <div 
                     className={
                         viewMode === 'grid' 
-                            ? (isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-5' : 'grid grid-cols-1 gap-3')
+                            ? (isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-4' : 'grid grid-cols-2 gap-3')
                             : (isDesktop ? 'grid grid-cols-2 gap-3' : 'space-y-2')
                     } 
-                    style={{ 
-                        paddingTop: isDesktop ? '0' : '4px',
-                        paddingLeft: isDesktop ? '0' : '0',
-                        paddingRight: isDesktop ? '0' : '0'
-                    }}
+                    style={{ paddingTop: '4px' }}
                 >
                     {filteredCategories.map(category => (
                         <CategoryCard
