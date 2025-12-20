@@ -33,68 +33,58 @@ const CategoryCard = React.memo(({
     }, [category, onClick]);
 
     if (viewMode === 'grid') {
-        // Show 2 images on mobile, 3 on desktop - make them prominent
-        const imageCount = isDesktop ? 3 : 2;
-        const images = category.images?.slice(0, imageCount) || [];
+        // Show 3 images - they float naturally on a clean background
+        const images = category.images?.slice(0, 3) || [];
         
         return (
-            <GlassCard
-                theme={theme}
-                className={`overflow-hidden cursor-pointer transform transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${className}`}
+            <div
+                className={`rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md active:scale-[0.98] ${className}`}
                 onClick={handleClick}
-                style={{ padding: 0 }}
+                style={{ 
+                    backgroundColor: '#ffffff',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                }}
             >
-                {/* Large prominent image area */}
+                {/* Images float on white - no boxes, just products */}
                 <div 
-                    className="w-full flex items-end justify-center"
+                    className="flex items-end justify-center"
                     style={{ 
-                        backgroundColor: '#f9f9f8',
-                        padding: isDesktop ? '24px 20px 16px' : '20px 12px 12px',
-                        minHeight: isDesktop ? '140px' : '110px',
-                        gap: isDesktop ? '16px' : '8px'
+                        padding: isDesktop ? '28px 24px 20px' : '20px 16px 14px',
+                        gap: isDesktop ? '20px' : '12px',
+                        minHeight: isDesktop ? '130px' : '95px'
                     }}
                 >
                     {images.map((img, index) => (
-                        <div 
-                            key={index} 
-                            className="flex items-end justify-center flex-1"
+                        <img
+                            key={index}
+                            src={img}
+                            alt={`${category.name} ${index + 1}`}
+                            className="object-contain"
                             style={{ 
-                                maxWidth: isDesktop ? '120px' : '90px',
-                                height: isDesktop ? '100px' : '75px'
+                                maxHeight: isDesktop ? '90px' : '65px',
+                                maxWidth: isDesktop ? '100px' : '70px',
+                                flex: '0 1 auto'
                             }}
-                        >
-                            <img
-                                src={img}
-                                alt={`${category.name} ${index + 1}`}
-                                className="max-w-full max-h-full object-contain drop-shadow-sm"
-                                style={{ 
-                                    filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.08))'
-                                }}
-                                loading="lazy"
-                            />
-                        </div>
+                            loading="lazy"
+                        />
                     ))}
                 </div>
-                {/* Category name - bold and clear */}
+                {/* Category name */}
                 <div 
-                    className="px-3 py-2.5"
-                    style={{ 
-                        backgroundColor: '#ffffff',
-                        borderTop: '1px solid rgba(0,0,0,0.03)'
-                    }}
+                    className="px-4 pb-3"
+                    style={{ paddingTop: '0' }}
                 >
                     <h2 
                         className="font-semibold" 
                         style={{ 
                             color: theme.colors.textPrimary,
-                            fontSize: isDesktop ? '0.9375rem' : '0.8125rem',
-                            letterSpacing: '-0.01em'
+                            fontSize: isDesktop ? '0.9375rem' : '0.8125rem'
                         }}
                     >
                         {category.name}
                     </h2>
                 </div>
-            </GlassCard>
+            </div>
         );
     }
     return (
