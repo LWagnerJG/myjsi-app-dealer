@@ -1,0 +1,1908 @@
+
+<!DOCTYPE html>
+<html class="l-html " lang="en">
+<head>
+    <title>Jsi_Finn_Comp_00006.Jpg | S | J | Bf3E7Ba5C7D36E7Cc7F9Df10Fba65Dcb | Cache | Product | Catalog | Media | JSI</title>
+    <meta type="description" content="
+
+            JSI is quality furniture for work and life"/>
+    <meta property="og:title" content="Jsi_Finn_Comp_00006.Jpg | S | J | Bf3E7Ba5C7D36E7Cc7F9Df10Fba65Dcb | Cache | Product | Catalog | Media | JSI">
+    <meta property="og:description" content="
+
+            JSI is quality furniture for work and life">
+    <meta property="og:image" content="
+            https://webresources.jsifurniture.com/static/uploads/imglogo-jsi_black.svg">
+    <meta property="og:url" content="
+            http://www.jsifurniture.com/media/catalog/product/cache/bf3e7ba5c7d36e7cc7f9df10fba65dcb/j/s/jsi_finn_comp_00006.jpg">
+
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <link rel="shortcut icon"
+          type="image/png"
+          href="
+                  https://webresources.jsifurniture.com/static/uploads/img/favicon.ico"/>
+
+    <link href="https://webresources.jsifurniture.com/static/uploads/css/app.css" rel="stylesheet" type="text/css">
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet" type="text/css">
+
+    
+
+    
+        <script src="https://assets.adobedtm.com/175f7caa2b90/4cda48be6bfc/launch-69e499af009c.min.js" async></script>
+    
+
+
+    <script>
+      let STATIC_URL = "https://webresources.jsifurniture.com/static/uploads";
+    </script>
+
+<!-- ********************************************************************************** -->
+<!-- *** Removed the following because addthis.com is no longer available.
+ <!--   <script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-54c92e477b20f0cd" defer></script>  -->
+<!-- ********************************************************************************** -->
+
+    
+    
+
+
+        <!-- *************************************************************************** -->
+    <!-- ***  Google Analytics code                                             **** -->
+<!-- Google tag (gtag.js) --> <script async src="https://www.googletagmanager.com/gtag/js?id=G-3Z4S43X9KG"></script> 
+       <script> window.dataLayer = window.dataLayer || []; 
+        function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-3Z4S43X9KG'); 
+        </script>
+
+    <!-- *************************************************************************** -->
+
+</head>
+
+<body class="site-jsi">
+
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+
+    
+
+<script>
+    function FinishSample(strEmail, intID, strFlag){
+        var LS_URL = "https://apps.jsifurniture.com/finishsamples/";
+        var SC_URL = "https://apps.jsifurniture.com/finishsamples/shopcart.aspx/";
+
+        //var LS_URL = "https://jgtestweb.azurewebsites.net/jsifinishInfo/";
+        //var SC_URL = "https://jgtestweb.azurewebsites.net/jsifinishInfo/shopcart.aspx/";
+
+        var URL = "";
+        var CurDat = new Date();
+        var intYear = CurDat.getFullYear();
+        var intMonth = CurDat.getMonth();
+        var intDay = CurDat.getDate();
+        var intHour = CurDat.getHours();
+        var intMinute = CurDat.getMinutes();
+        var intSeconds = CurDat.getSeconds();
+
+        var strDateTime = "" + intYear + intMonth + intDay + intHour + intMinute + intSeconds;
+
+        switch(strFlag){
+            case "ls":
+                URL = LS_URL;
+                break;
+            case "sc":
+                URL = SC_URL;
+                break;
+            default:
+                URL = LS_URL;
+        }
+
+        if (strEmail > " " ){
+            URL = URL + "?info=" + strEmail + "~" + intID + "~Df8%$d5qAcDfb" + "~" + strDateTime;
+        }
+        
+        window.open(URL, "_blank");
+    }
+
+
+</script>
+<header class="position-sticky header-wrapper header p-0">
+    
+<div id="mobile-menu" class="">
+    <div class="container">
+        <div class="row p-0 flex-column justify-content-start">
+            <div data-name="products" class="p-2 d-flex flex-row justify-content-between site-mobile-section">
+                <div><div class="mobile-menu-link" href="#">PRODUCTS</div></div><div><i class="caret fas fa-angle-down"></i></div>
+            </div>
+            <div class="products-links-wrapper mobile-menu-wrapper">
+                
+
+<div data-name="products-dropdown" class="products-menu-wrapper menu-wrapper p-2 pl-4">
+    <div class="row">
+        <div class="col-12 my-2">
+            <div data-name="product-types" class="subhead d-flex justify-content-between align-items-center">
+                <p class="">Product Type</p><i class="subsection-caret fas fa-angle-down"></i>
+            </div>
+            <hr class="m-0 mb-2">
+            <div class="product-types-wrapper mobile-subsection">
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?type=7">
+                            Accessories/Ancillary
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?type=6">
+                            Adjustable Height
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?type=1">
+                            Casegoods
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?type=8">
+                            Casework
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?type=5">
+                            Open Plan
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?type=4">
+                            Seating
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?type=3">
+                            Tables
+                        </a>
+                    </p>
+                
+            </div>
+        </div>
+        <div class="col-12 my-2">
+            <div data-name="product-space-applications" class="subhead d-flex justify-content-between align-items-center">
+                <p class="">Spaces + Applications</p><i class="subsection-caret fas fa-angle-down"></i>
+            </div>
+            <hr class="m-0 mb-2">
+            <div class="product-space-applications-wrapper mobile-subsection">
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?space-application=12">
+                            administrative
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?space-application=3">
+                            café/dining
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?space-application=15">
+                            caregiver
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?space-application=11">
+                            community
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?space-application=5">
+                            learning
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?space-application=4">
+                            meeting
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?space-application=13">
+                            mother&#39;s/wellness room
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?space-application=8">
+                            open plan
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?space-application=14">
+                            patient
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?space-application=1">
+                            privacy
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?space-application=6">
+                            private office
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/series/?space-application=2">
+                            social
+                        </a>
+                    </p>
+                
+            </div>
+        </div>
+        <div class="col-12 my-2">
+            <div data-name="product-industries" class="subhead d-flex justify-content-between align-items-center">
+                <p class="">Industries</p><i class="subsection-caret fas fa-angle-down"></i>
+            </div>
+            <hr class="m-0 mb-2">
+            <div class="product-industries-wrapper mobile-subsection">
+            
+                <p class="my-2 my-0">
+                    <a class="text-capitalize" href="/series/?industry=5">
+                        corporate
+                    </a>
+                </p>
+            
+                <p class="my-2 my-0">
+                    <a class="text-capitalize" href="/series/?industry=1">
+                        education
+                    </a>
+                </p>
+            
+                <p class="my-2 my-0">
+                    <a class="text-capitalize" href="/series/?industry=2">
+                        government
+                    </a>
+                </p>
+            
+                <p class="my-2 my-0">
+                    <a class="text-capitalize" href="/series/?industry=3">
+                        healthcare
+                    </a>
+                </p>
+            
+                <p class="my-2 my-0">
+                    <a class="text-capitalize" href="/series/?industry=4">
+                        hospitality
+                    </a>
+                </p>
+            
+            </div>
+        </div>
+        <div class="col-12 mb-1 mt-4">
+            
+                <p class="mb-2">
+                    <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/products/whats-new/">
+                        What&#39;s New
+                    </a>
+                </p>
+            
+                <p class="mb-2">
+                    <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/products/quickship-program/">
+                        Quickship
+                    </a>
+                </p>
+            
+        </div>
+    </div>
+</div>
+            </div>
+            <div data-name="resources" class="p-2 d-flex flex-row justify-content-between site-mobile-section mt-2">
+                <div><div class="mobile-menu-link" href="#">RESOURCES</div></div><div><i class="caret fas fa-angle-down"></i></div>
+            </div>
+            <div class="resources-links-wrapper mobile-menu-wrapper">
+                
+
+<script>
+    function FinishSample(strEmail, intID, strFlag){
+        var LS_URL = "https://apps.jsifurniture.com/finishsamples/";
+        var SC_URL = "https://apps.jsifurniture.com/finishsamples/shopcart.aspx/";
+        
+
+
+        //var LS_URL = "https://jgtestweb.azurewebsites.net/jsifinishInfo/";
+        //var SC_URL = "https://jgtestweb.azurewebsites.net/jsifinishInfo/shopcart.aspx/";
+
+        var URL = "";
+        var CurDat = new Date();
+        var intYear = CurDat.getFullYear();
+        var intMonth = CurDat.getMonth();
+        var intDay = CurDat.getDate();
+        var intHour = CurDat.getHours();
+        var intMinute = CurDat.getMinutes();
+        var intSeconds = CurDat.getSeconds();
+
+        var strDateTime = "" + intYear + intMonth + intDay + intHour + intMinute + intSeconds;
+
+        switch(strFlag){
+            case "ls":
+                URL = LS_URL;
+                break;
+            case "sc":
+                URL = SC_URL;
+                break;
+            default:
+                URL = LS_URL;
+        }
+
+        if (strEmail > " " ){
+            URL = URL + "?info=" + strEmail + "~" + intID + "~Df8%$d5qAcDfb" + "~" + strDateTime;
+        }
+        
+        window.open(URL, "_blank");
+    }
+
+
+</script>
+
+
+<div data-name="resources-mobile-dropdown" class="d-block d-lg-none resources-menu-wrapper menu-wrapper p-2 pl-4 pl-lg-2 pt-lg-3 pb-lg-5 px-lg-5">
+    <div class="row">
+        <div class="col-12 my-2">
+            <div data-name="resources-spec-tools" class="subhead d-flex justify-content-between align-items-center">
+                <p class="">Design Tools</p><i class="subsection-caret fas fa-angle-down"></i>
+            </div>
+            <hr class="m-0">
+            <div class="resources-spec-tools-wrapper mobile-subsection">
+                <p class="my-0">
+                    <a href="/resources/design-tools/">CET</a>
+                </p>
+                
+                    <p class="my-0">
+                        <a class="text-capitalize" href="https://www.jsifurniture.com/resources/design-tools/#revit">
+                            Revit
+                        </a>
+                    </p>
+                
+                    <p class="my-0">
+                        <a class="text-capitalize" href="https://www.jsifurniture.com/resources/design-tools/#symbols">
+                            Symbols
+                        </a>
+                    </p>
+                
+                    <p class="my-0">
+                        <a class="text-capitalize" href="https://www.jsifurniture.com/resources/design-tools/#typicals">
+                            Planning Typicals
+                        </a>
+                    </p>
+                
+            </div>
+        </div>
+        <div class="col-12 my-2">
+            <div data-name="resources-literature-sales-tools" class="subhead d-flex justify-content-between align-items-center">
+                <p class="">Literature + Sales Tools</p><i class="subsection-caret fas fa-angle-down"></i>
+            </div>
+            <hr class="m-0">
+            <div class="resources-literature-sales-tools-wrapper mobile-subsection">
+                <p class="my-2 my-0">
+                    <!--
+                    <a class="text-capitalize" href="/resources/literature">
+                        Order Literature + Materials
+                    </a>
+                    -->
+                    <a class="text-capitalize" href="" onclick="FinishSample('','None', 'sl');">
+                        Samples + Literature
+                    </a>
+                </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/resources/literature/type/5">
+                            Miscellaneous Planning + Spec Guides
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/resources/literature/type/1">
+                            Product Brochures
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/resources/literature/type/4">
+                            Commercial Price Lists
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/resources/literature/type/9">
+                            GSA + Contracts Price Lists
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/resources/literature/type/10">
+                            Sales Presentations
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/resources/literature/type/2">
+                            Solutions + Overviews
+                        </a>
+                    </p>
+                
+            </div>
+        </div>
+        <div class="col-12 my-2">
+            <div data-name="resources-documents" class="subhead d-flex justify-content-between align-items-center">
+                <p class="">Documents</p><i class="subsection-caret fas fa-angle-down"></i>
+            </div>
+            <hr class="m-0">
+            <div class="resources-documents-wrapper mobile-subsection">
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/resources/documents/type/6">
+                            GREENGUARD Certificates
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/resources/documents/type/8">
+                            Warranty Information
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/resources/documents/type/11">
+                            Installation Instructions
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/resources/documents/type/7">
+                            Care + Maintenance
+                        </a>
+                    </p>
+                
+                    <p class="my-2 my-0">
+                        <a class="text-capitalize" href="/resources/documents/type/12">
+                            2020 Catalog Updates
+                        </a>
+                    </p>
+                
+            </div>
+        </div>
+        <div class="col-12 my-2 mb-1 mt-4">
+            
+                <p class="my-2 my-0">
+                    <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/resources/contracts/gsa-contract/index">
+                        Contracts
+                    </a>
+                </p>
+            
+                <p class="my-2 my-0">
+                    <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/resources/images/">
+                        Image Library
+                    </a>
+                </p>
+            
+                <p class="my-2 my-0">
+                    <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/finishes-and-materials/material/1">
+                        Finishes + Materials
+                    </a>
+                </p>
+            
+                <p class="my-2 my-0">
+                    <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/resources/materials-portfolio-second-edition/">
+                        Materials Portfolio Second Edition
+                    </a>
+                </p>
+            
+                <p class="my-2 my-0">
+                    <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/resources/textile-partner-info/overview/">
+                        Textiles
+                    </a>
+                </p>
+            
+                <p class="my-2 my-0">
+                    <a class="font-weight-bold text-capitalize" href="https://apps.jsifurniture.com/jsi_fabric/comapp.aspx">
+                        Graded-In + COM
+                    </a>
+                </p>
+            
+                <p class="my-2 my-0">
+                    <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/resources/installations/">
+                        Installations
+                    </a>
+                </p>
+            
+                <p class="my-2 my-0">
+                    <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/resources/lead-times/">
+                        Lead Times
+                    </a>
+                </p>
+            
+        </div>
+    </div>
+</div>
+
+            </div>
+            <div data-name="solutions" class="p-2 d-flex flex-row justify-content-between site-mobile-section mt-2">
+                <div><div class="mobile-menu-link" href="#">SOLUTIONS</div></div><div><i class="caret fas fa-angle-down"></i></div>
+            </div>
+            <div class="solutions-links-wrapper mobile-menu-wrapper">
+                <div data-name="solutions-dropdown" class="resources-menu-wrapper menu-wrapper p-2 pl-4">
+    <div class="row">
+        <div class="col-12 my-2">
+            <div data-name="solutions-spaces-applications" class="subhead d-flex justify-content-between align-items-center">
+                <p class="">Spaces + Applications</p><i class="subsection-caret fas fa-angle-down"></i>
+            </div>
+            <hr class="m-0 mb-2">
+            <div class="solutions-spaces-applications-wrapper mobile-subsection">
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/cafe-dining/">
+                        Café / Dining
+                    </a>
+                </p>
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/caregiver/">
+                        Caregiver
+                    </a>
+                </p>
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/community/">
+                        Community
+                    </a>
+                </p>
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/learning-and-training/">
+                        Learning &amp; Training
+                    </a>
+                </p>
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/meeting/">
+                        Meeting
+                    </a>
+                </p>
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/office-and-administrative/">
+                        Office &amp; Administrative
+                    </a>
+                </p>
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/patient/">
+                        Patient
+                    </a>
+                </p>
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/privacy/">
+                        Privacy
+                    </a>
+                </p>
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/social/">
+                        Social
+                    </a>
+                </p>
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/campus-life/">
+                        Campus Life
+                    </a>
+                </p>
+            
+            </div>
+        </div>
+        <div class="col-12 my-2">
+            <div data-name="solutions-industries" class="subhead d-flex justify-content-between align-items-center">
+                <p class="">Industries</p><i class="subsection-caret fas fa-angle-down"></i>
+            </div>
+            <hr class="m-0 mb-2">
+            <div class="solutions-industries-wrapper mobile-subsection">
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/industries/corporate/">
+                        Corporate
+                    </a>
+                </p>
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/industries/education/">
+                        Education
+                    </a>
+                </p>
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/industries/government/">
+                        Government
+                    </a>
+                </p>
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/industries/healthcare/">
+                        Healthcare
+                    </a>
+                </p>
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/industries/hospitality/">
+                        Hospitality
+                    </a>
+                </p>
+            
+            </div>
+        </div>
+        <div class="col-12 my-2">
+            <div data-name="solutions-installations" class="subhead d-flex justify-content-between align-items-center">
+                <p class="">Programs</p><i class="subsection-caret fas fa-angle-down"></i>
+            </div>
+            <hr class="m-0 mb-2">
+            <div class="solutions-installations-wrapper mobile-subsection">
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/products/quickship-program/">
+                        Quickship
+                    </a>
+                </p>
+            
+                <p class="my-2">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/programs/core-materials/">
+                        Core Materials
+                    </a>
+                </p>
+            
+            </div>
+        </div>
+    </div>
+</div>
+            </div>
+            <div data-name="about-us" class="p-2 d-flex flex-row justify-content-between site-mobile-section mt-2">
+                <div><div class="mobile-menu-link" href="#">ABOUT US</div></div><div><i class="caret fas fa-angle-down"></i></div>
+            </div>
+            <div class="about-us-links-wrapper mobile-menu-wrapper">
+                <div class="d-none d-lg-block">
+    <div data-name="about-us-dropdown" class="about-us-menu-wrapper menu-wrapper p-2 pt-lg-3 pb-lg-5 px-lg-5">
+        <div class="row justify-content-start flex-column flex-wrap about-wrapper">
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/who-we-are/">
+                    Who We Are
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/love-what-you-do-podcast/">
+                    Love What You Do Podcast
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/find-a-rep">
+                    Find a Rep
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/showrooms/">
+                    Showrooms
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/design-days-2025/">
+                    Design Days 2025 Showroom
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/design-days-2024/">
+                    Design Days 2024 Showroom
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/designdays-show-2023/">
+                    Design Days 2023 Showroom
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/hcd-show-2024/">
+                    Healthcare Design Expo 2024
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/hcd-show-2025/">
+                    Healthcare Design Expo 2025
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/jsi-news-events/">
+                    News + Events
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/sustainability/overview/">
+                    Sustainability
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/email-signup/">
+                    JSI Email Sign Up
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/jsi-health-email-signup/">
+                    JSI Health Email Sign Up
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/product-designers/">
+                    Product Designers
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/careers/">
+                    Careers
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/contact-us/">
+                    Contact Us
+                </a>
+            </p>
+            
+        </div>
+    </div>
+</div>
+<div class="d-block d-lg-none">
+    <div class="menu-wrapper p-2 pl-4 pl-lg-2 pt-lg-3 pb-lg-5 px-lg-5">
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/who-we-are/">
+                    Who We Are
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/love-what-you-do-podcast/">
+                    Love What You Do Podcast
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/find-a-rep">
+                    Find a Rep
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/showrooms/">
+                    Showrooms
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/design-days-2025/">
+                    Design Days 2025 Showroom
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/design-days-2024/">
+                    Design Days 2024 Showroom
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/designdays-show-2023/">
+                    Design Days 2023 Showroom
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/hcd-show-2024/">
+                    Healthcare Design Expo 2024
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/hcd-show-2025/">
+                    Healthcare Design Expo 2025
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/jsi-news-events/">
+                    News + Events
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/sustainability/overview/">
+                    Sustainability
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/email-signup/">
+                    JSI Email Sign Up
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/jsi-health-email-signup/">
+                    JSI Health Email Sign Up
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/product-designers/">
+                    Product Designers
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/careers/">
+                    Careers
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/contact-us/">
+                    Contact Us
+                </a>
+            </p>
+        
+    </div>
+</div>
+            </div>
+
+
+
+
+
+            
+        </div>
+    </div>
+</div>
+
+    <style>
+        .menu_text{
+            display: block;
+            font-size: .60em;
+            margin-top: 0;
+            margin-bottom: 0;
+            margin-left: 0em;
+            margin-right: 1em;
+            font-weight:normal;
+            color: #c7c4be;
+        }
+    </style>
+
+    <div class="ml-5 position-relative desktop-wrapper">
+        <div class="justify-content-start align-items-center flex-row  d-lg-flex d-none">
+            <div class="col-1 p-0">
+                <a href="/">
+                    <img src="https://webresources.jsifurniture.com/static/uploads/img/logo-jsi_black.svg" alt="JSI" class="site-logo"/>
+                </a>
+            </div>
+            <div class="header-links col-6 p-0 position-relative d-flex justify-content-between">
+                <div data-name="products"
+                     class="detect-hover header-link text-center ">
+                    <a class="mx-2 top-nav-link " href="/series">PRODUCTS</a>
+                    <div class="detect-hover header-dropdown position-absolute text-left d-lg-none">
+                        
+
+<div data-name="products-dropdown" class="products-menu-wrapper menu-wrapper p-2 pl-4 pl-lg-2 pt-lg-3 pb-lg-5 px-lg-5">
+    <div class="row">
+        <div class="col-12 col-lg-3 my-2 my-lg-0">
+            <p class="desktop-subhead">Type</p>
+            <hr class="m-0 mb-2 mb-lg-0">
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?type=7">
+                        Accessories/Ancillary
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?type=6">
+                        Adjustable Height
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?type=1">
+                        Casegoods
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?type=8">
+                        Casework
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?type=5">
+                        Open Plan
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?type=4">
+                        Seating
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?type=3">
+                        Tables
+                    </a>
+                </p>
+            
+        </div>
+        <div class="col-12 col-lg-3 p-lg-0 my-2 my-lg-0">
+            <p class="desktop-subhead">Application</p>
+            <hr class="m-0 mb-2 mb-lg-0">
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?space-application=12">
+                        administrative
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?space-application=3">
+                        café/dining
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?space-application=15">
+                        caregiver
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?space-application=11">
+                        community
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?space-application=5">
+                        learning
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?space-application=4">
+                        meeting
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?space-application=13">
+                        mother&#39;s/wellness room
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?space-application=8">
+                        open plan
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?space-application=14">
+                        patient
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?space-application=1">
+                        privacy
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?space-application=6">
+                        private office
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?space-application=2">
+                        social
+                    </a>
+                </p>
+            
+        </div>
+        <div class="col-12 col-lg-3 my-2 my-lg-0">
+            <p class="desktop-subhead">Industry</p>
+            <hr class="m-0 mb-2 mb-lg-0">
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?industry=5">
+                        corporate
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?industry=1">
+                        education
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?industry=2">
+                        government
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?industry=3">
+                        healthcare
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="text-capitalize" href="/series/?industry=4">
+                        hospitality
+                    </a>
+                </p>
+            
+        </div>
+        <div class="col-12 col-lg-3 mb-1 mb-lg-0 mt-4 mt-lg-0">
+            
+                <p class="mb-2 mb-lg-0">
+                    <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/products/whats-new/">
+                        What&#39;s New
+                    </a>
+                </p>
+            
+                <p class="mb-2 mb-lg-0">
+                    <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/products/quickship-program/">
+                        Quickship
+                    </a>
+                </p>
+            
+        </div>
+    </div>
+</div>
+                    </div>
+                </div>
+                <div data-name="resources"
+                     class="detect-hover header-link text-center ">
+                    <a data-name="resources" class="mx-2 top-nav-link " href="#">RESOURCES</a>
+                    <div class="detect-hover header-dropdown position-absolute text-left d-lg-none">
+                        
+
+<script>
+    function FinishSample(strEmail, intID, strFlag){
+        var LS_URL = "https://apps.jsifurniture.com/finishsamples/";
+        var SC_URL = "https://apps.jsifurniture.com/finishsamples/shopcart.aspx/";
+
+        //var LS_URL = "https://jgtestweb.azurewebsites.net/jsifinishInfo/";
+        //var SC_URL = "https://jgtestweb.azurewebsites.net/jsifinishInfo/shopcart.aspx/";
+
+  
+        var URL = "";
+        var CurDat = new Date();
+        var intYear = CurDat.getFullYear();
+        var intMonth = CurDat.getMonth();
+        var intDay = CurDat.getDate();
+        var intHour = CurDat.getHours();
+        var intMinute = CurDat.getMinutes();
+        var intSeconds = CurDat.getSeconds();
+
+        var strDateTime = "" + intYear + intMonth + intDay + intHour + intMinute + intSeconds;
+
+        switch(strFlag){
+            case "ls":
+                URL = LS_URL;
+                break;
+            case "sc":
+                URL = SC_URL;
+                break;
+            default:
+                URL = LS_URL;
+        }
+
+        if (strEmail > " " ){
+            URL = URL + "?info=" + strEmail + "~" + intID + "~Df8%$d5qAcDfb" + "~" + strDateTime;
+        }
+        
+        window.open(URL, "_blank");
+    }
+
+
+</script>
+
+<div data-name="resources-dropdown" class="d-flex resources-menu-wrapper menu-wrapper pt-3 pb-5 px-5">
+    <div class="row w-100">
+        <div class="col-4">
+            <a href="/resources/design-tools/" class="d-block font-weight-bold">Design Tools</a>
+            <hr class="m-0">
+            <p><a href="/resources/design-tools/">CET</a></p>
+            
+                <p>
+                    <a href="https://www.jsifurniture.com/resources/design-tools/#revit">
+                        Revit
+                    </a>
+                </p>
+            
+                <p>
+                    <a href="https://www.jsifurniture.com/resources/design-tools/#symbols">
+                        Symbols
+                    </a>
+                </p>
+            
+                <p>
+                    <a href="https://www.jsifurniture.com/resources/design-tools/#typicals">
+                        Planning Typicals
+                    </a>
+                </p>
+            
+
+            <a href="/resources/literature" class="mt-4 d-block font-weight-bold">Literature + Sales Tools</a>
+            <hr class="m-0">
+            <p>
+            <!--
+                    <a href="/resources/literature">
+                    Order Literature + Materials
+                </a>
+                -->
+                <!--
+                 <a href="https://apps.jsifurniture.com/finishsamples">
+                    Samples + Literature
+                </a>
+                -->
+                <a href="" onclick="FinishSample('','None', 'sl');">
+                    Samples + Literature
+                </a>
+
+
+            </p>
+            
+                <p>
+                    <a href="/resources/literature/type/5">
+                        Miscellaneous Planning + Spec Guides
+                    </a>
+                </p>
+            
+                <p>
+                    <a href="/resources/literature/type/1">
+                        Product Brochures
+                    </a>
+                </p>
+            
+                <p>
+                    <a href="/resources/literature/type/4">
+                        Commercial Price Lists
+                    </a>
+                </p>
+            
+                <p>
+                    <a href="/resources/literature/type/9">
+                        GSA + Contracts Price Lists
+                    </a>
+                </p>
+            
+                <p>
+                    <a href="/resources/literature/type/10">
+                        Sales Presentations
+                    </a>
+                </p>
+            
+                <p>
+                    <a href="/resources/literature/type/2">
+                        Solutions + Overviews
+                    </a>
+                </p>
+            
+        </div>
+        <div class="col-4">
+            <a href="/resources/documents" class="font-weight-bold">Documents</a>
+            <hr class="m-0">
+            
+                <p>
+                    <a href="/resources/documents/type/6">
+                        GREENGUARD Certificates
+                    </a>
+                </p>
+            
+                <p>
+                    <a href="/resources/documents/type/8">
+                        Warranty Information
+                    </a>
+                </p>
+            
+                <p>
+                    <a href="/resources/documents/type/11">
+                        Installation Instructions
+                    </a>
+                </p>
+            
+                <p>
+                    <a href="/resources/documents/type/7">
+                        Care + Maintenance
+                    </a>
+                </p>
+            
+                <p>
+                    <a href="/resources/documents/type/12">
+                        2020 Catalog Updates
+                    </a>
+                </p>
+            
+        </div>
+        <div class="col-4">
+            
+                <p>
+                    <a class="font-weight-bold" href="https://www.jsifurniture.com/resources/contracts/gsa-contract/index" target="_self">
+                        Contracts
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="font-weight-bold" href="https://www.jsifurniture.com/resources/images/" target="_self">
+                        Image Library
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="font-weight-bold" href="https://www.jsifurniture.com/finishes-and-materials/material/1" target="_self">
+                        Finishes + Materials
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="font-weight-bold" href="https://www.jsifurniture.com/resources/materials-portfolio-second-edition/" target="">
+                        Materials Portfolio Second Edition
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="font-weight-bold" href="https://www.jsifurniture.com/resources/textile-partner-info/overview/" target="_self">
+                        Textiles
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="font-weight-bold" href="https://apps.jsifurniture.com/jsi_fabric/comapp.aspx" target="_blank">
+                        Graded-In + COM
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="font-weight-bold" href="https://www.jsifurniture.com/resources/installations/" target="_self">
+                        Installations
+                    </a>
+                </p>
+            
+                <p>
+                    <a class="font-weight-bold" href="https://www.jsifurniture.com/resources/lead-times/" target="_self">
+                        Lead Times
+                    </a>
+                </p>
+            
+            
+        </div>
+    </div>
+</div>
+
+                    </div>
+                </div>
+                <div data-name="solutions"
+                     class="detect-hover header-link text-center ">
+                    <a class="mx-2 top-nav-link " href="#">SOLUTIONS</a>
+                    <div class="detect-hover header-dropdown position-absolute text-left d-lg-none">
+                        <div data-name="solutions-dropdown" class="resources-menu-wrapper menu-wrapper p-2 pl-4 pl-lg-2 pt-lg-3 pb-lg-5 px-lg-5">
+    <div class="row">
+        <div class="col-12 col-lg-4 my-2 my-lg-0">
+            <p class="desktop-subhead">Spaces + Applications</p>
+            <hr class="m-0 mb-2 mb-lg-0">
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/cafe-dining/">
+                        Café / Dining
+                    </a>
+                </p>
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/caregiver/">
+                        Caregiver
+                    </a>
+                </p>
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/community/">
+                        Community
+                    </a>
+                </p>
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/learning-and-training/">
+                        Learning &amp; Training
+                    </a>
+                </p>
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/meeting/">
+                        Meeting
+                    </a>
+                </p>
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/office-and-administrative/">
+                        Office &amp; Administrative
+                    </a>
+                </p>
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/patient/">
+                        Patient
+                    </a>
+                </p>
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/privacy/">
+                        Privacy
+                    </a>
+                </p>
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/social/">
+                        Social
+                    </a>
+                </p>
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/spaces-applications/campus-life/">
+                        Campus Life
+                    </a>
+                </p>
+            
+        </div>
+        <div class="col-12 col-lg-4 my-2 my-lg-0">
+            <p class="desktop-subhead">Industries</p>
+            <hr class="m-0 mb-2 mb-lg-0">
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/industries/corporate/">
+                        Corporate
+                    </a>
+                </p>
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/industries/education/">
+                        Education
+                    </a>
+                </p>
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/industries/government/">
+                        Government
+                    </a>
+                </p>
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/industries/healthcare/">
+                        Healthcare
+                    </a>
+                </p>
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/industries/hospitality/">
+                        Hospitality
+                    </a>
+                </p>
+            
+        </div>
+        <div class="col-12 col-lg-4 my-2 my-lg-0">
+            <p class="desktop-subhead">Programs</p>
+            <hr class="m-0 mb-2 mb-lg-0">
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/products/quickship-program/">
+                        Quickship
+                    </a>
+                </p>
+            
+                <p class="my-2 my-lg-0">
+                    <a class="text-capitalize" href="https://www.jsifurniture.com/solutions/programs/core-materials/">
+                        Core Materials
+                    </a>
+                </p>
+            
+        </div>
+    </div>
+</div>
+                    </div>
+                </div>
+                <div data-name="about-us"
+                     class="detect-hover header-link text-center ">
+                    <a class="mx-2 top-nav-link " href="#">ABOUT US</a>
+                    <div class="detect-hover header-dropdown position-absolute text-left d-lg-none">
+                        <div class="d-none d-lg-block">
+    <div data-name="about-us-dropdown" class="about-us-menu-wrapper menu-wrapper p-2 pt-lg-3 pb-lg-5 px-lg-5">
+        <div class="row justify-content-start flex-column flex-wrap about-wrapper">
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/who-we-are/">
+                    Who We Are
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/love-what-you-do-podcast/">
+                    Love What You Do Podcast
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/find-a-rep">
+                    Find a Rep
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/showrooms/">
+                    Showrooms
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/design-days-2025/">
+                    Design Days 2025 Showroom
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/design-days-2024/">
+                    Design Days 2024 Showroom
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/designdays-show-2023/">
+                    Design Days 2023 Showroom
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/hcd-show-2024/">
+                    Healthcare Design Expo 2024
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/hcd-show-2025/">
+                    Healthcare Design Expo 2025
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/jsi-news-events/">
+                    News + Events
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/sustainability/overview/">
+                    Sustainability
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/email-signup/">
+                    JSI Email Sign Up
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/jsi-health-email-signup/">
+                    JSI Health Email Sign Up
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/product-designers/">
+                    Product Designers
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/careers/">
+                    Careers
+                </a>
+            </p>
+            
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/contact-us/">
+                    Contact Us
+                </a>
+            </p>
+            
+        </div>
+    </div>
+</div>
+<div class="d-block d-lg-none">
+    <div class="menu-wrapper p-2 pl-4 pl-lg-2 pt-lg-3 pb-lg-5 px-lg-5">
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/who-we-are/">
+                    Who We Are
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/love-what-you-do-podcast/">
+                    Love What You Do Podcast
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/find-a-rep">
+                    Find a Rep
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/showrooms/">
+                    Showrooms
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/design-days-2025/">
+                    Design Days 2025 Showroom
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/design-days-2024/">
+                    Design Days 2024 Showroom
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/designdays-show-2023/">
+                    Design Days 2023 Showroom
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/hcd-show-2024/">
+                    Healthcare Design Expo 2024
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/hcd-show-2025/">
+                    Healthcare Design Expo 2025
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/jsi-news-events/">
+                    News + Events
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/sustainability/overview/">
+                    Sustainability
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/email-signup/">
+                    JSI Email Sign Up
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/jsi-health-email-signup/">
+                    JSI Health Email Sign Up
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/product-designers/">
+                    Product Designers
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/careers/">
+                    Careers
+                </a>
+            </p>
+        
+            <p class="my-2 my-0 m-lg-1">
+                <a class="font-weight-bold text-capitalize" href="https://www.jsifurniture.com/about-us/contact-us/">
+                    Contact Us
+                </a>
+            </p>
+        
+    </div>
+</div>
+                    </div>
+                </div>
+
+
+
+                
+            </div>
+
+            <!-- *********************************************************** -->
+            <!-- **  Added for the new finish sample ordering site           -->
+            <!-- 
+                 <div data-name="finish-sample"
+                     class="detect-hover header-link text-center ">
+                    
+                         <img src="https://webresources.jsifurniture.com/static/uploads/img/Wood_Sample_Gray.svg" alt="Samples+Literature" width="20" height="20" class="mr-3"
+                             data-toggle="modal"
+                             data-target="#genericModal"
+                             data-remote="/boards/modal/registration-required">
+                         <div class="menu_text" style="vertical-align:left;">
+                        Samples+ Liturature
+                        </div>
+                  
+                    
+                </div>
+            -->
+
+            <!-- *********************************************************** -->
+
+            <div class="col-2 p-0 pr-3 flex-nowrap d-flex justify-content-end align-items-center position-relative">
+
+              <!-- *********************************************************** -->
+              <!-- **  Added for the new finish sample ordering site           -->
+              <div>
+                    
+                        <img src="https://webresources.jsifurniture.com/static/uploads/img/JSI_Shopping_Cart_Gray2.svg" alt="Shopping Cart" width="20" height="20" class="mr-3"
+                             data-toggle="modal"
+                             data-target="#genericModal"
+                             data-remote="/boards/modal/registration-required">
+                    
+                </div>
+                <!-- *********************************************************** -->
+ 
+                <div>
+                    
+                        <img src="https://webresources.jsifurniture.com/static/uploads/img/heart_grey--thick.svg" alt="View favorites or boards" width="20" height="20" class="mr-3"
+                             data-toggle="modal"
+                             data-target="#genericModal"
+                             data-remote="/boards/modal/registration-required">
+                    
+                </div>
+                
+
+
+    <div id="header-profile-image-wrapper"
+         class="d-flex align-items-center cursor-pointer header-profile-wrapper pr-2">
+        <div class="header-profile-image" style="height:25px; width:auto;">
+            <img class="header-profile-image" style="height:25px; width:auto;"
+                 src="https://webresources.jsifurniture.com/static/uploads/img/header_user.svg"/>
+        </div>
+        <i style="color: grey;" class="ml-1 fas fa-caret-down header-profile-image-caret"></i>
+        
+    </div>
+
+                <div id="profile-dropdown"
+                     class="profile-dropdown-styling profile-dropdown-wrapper position-absolute p-3 d-flex flex-column justify-content-between">
+                    
+                        <a href="/login">Login</a>
+                    
+                </div>
+            </div>
+            <div class="col-3 search-section d-flex justify-content-between position-relative">
+                <form action="/search/" method="get" class="header-search-bar w-100 ui-front">
+                    <label for="search-input" class="sr-only">Search</label>
+                    <input id="search-input" name="term" type="text" class="border-0 header-search-bar-input"/>
+                    <button type="submit" class="btn p-0 header-search-bar-btn">
+                        <img src="https://webresources.jsifurniture.com/static/uploads/img/icon-search_black.svg" alt="Magnifying Glass"/>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="mobile-search-input" class="position-absolute container d-lg-none">
+        <div class="position-relative w-100 h-100">
+            <form action="/search/" method="get">
+                <label for="mobile-search-input" class="sr-only">Search</label>
+                <input id="mobile-search-input" name="term" type="text" class="w-100 h-100 border-none"/>
+            </form>
+            <i class="fas fa-search position-absolute input-search-icon"></i>
+            <i id="close-mobile-search-input" class="fas fa-times-circle position-absolute input-close-icon"></i>
+        </div>
+    </div>
+    <div class="container mobile-header-wrapper h-inherit d-block d-lg-none">
+        <div class="mobile-header h-inherit d-flex d-lg-none justify-content-between align-items-center">
+            <div class="mobile-img-wrapper text-left col-6 p-0">
+                <a href="/">
+                    <img src="https://webresources.jsifurniture.com/static/uploads/img/logo-jsi_black.svg" alt="JSI" width="75"/>
+                </a>
+            </div>
+            <div class="mobile-search-and-icons-wrapper text-right col-6 p-0 d-flex justify-content-end flex-row align-items-center position-relative pr-2">
+                <i id="mobile-search-icon" class="pr-2 fas fa-search"></i>
+                
+                    <img src="https://webresources.jsifurniture.com/static/uploads/img/heart_grey--thick.svg" alt="View favorites or boards" width="20" height="20" class="mr-2"
+                         data-toggle="modal"
+                         data-target="#genericModal"
+                         data-remote="/boards/modal/registration-required">
+                
+                <!-- *********************************************************** -->
+                <!-- **  Added for the new finish sample ordering site           -->
+                    
+                        <img src="https://webresources.jsifurniture.com/static/uploads/img/JSI_Shopping_Cart_Gray2.svg" alt="Shopping Cart" width="20" height="20" class="mr-3"
+                             data-toggle="modal"
+                             data-target="#genericModal"
+                             data-remote="/boards/modal/registration-required">
+                    
+                <!-- *********************************************************** -->                
+                
+
+
+    <div id="header-profile-image-wrapper"
+         class="d-flex align-items-center cursor-pointer header-profile-wrapper pr-2">
+        <div class="header-profile-image" style="height:25px; width:auto;">
+            <img class="header-profile-image" style="height:25px; width:auto;"
+                 src="https://webresources.jsifurniture.com/static/uploads/img/header_user.svg"/>
+        </div>
+        <i style="color: grey;" class="ml-1 fas fa-caret-down header-profile-image-caret"></i>
+        
+    </div>
+
+                <i id="activate-mobile-menu" class="fas fa-bars ml-2 mobile-bars-icon"></i>
+                <i id="close-mobile-menu" class="fas fa-times ml-2 mobile-bars-icon d-none"></i>
+                <div id="profile-dropdown"
+                     class="profile-dropdown-styling mobile-dropdown profile-dropdown-wrapper position-absolute p-3 d-flex flex-column justify-content-between">
+                    
+                        <a href="/login">Login</a>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+
+
+
+
+
+<div class="content" id="content" tabindex="-1">
+    
+    <div class="container my-5">
+        <div class="row d-md-flex align-items-center">
+            <div class="col col-12 col-md-3 text-center mb-3 mb-md-0">
+                <img src="https://webresources.jsifurniture.com/static/uploads/img/404_image.svg" alt="Character on an island." width="160px" />
+            </div>
+            <div class="col col-12 col-md-9">
+                <h2 class="font-weight-bold mb-5 text-success">Whoa There!</h2>
+                <p class="my-3">You've been 404'd, an error has occurred</p>
+                <p>While we wait for the IT Team to respond to our smoke signal, click here to return to the <a href="/">homepage</a>.</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+    
+<footer class="footer ">
+    <hr class="m-0">
+    <div class="my-4 mx-5 top-row d-flex flex-column justify-content-center flex-lg-row justify-content-lg-start align-items-lg-end">
+        <div class="d-flex flex-column justify-content-center align-items-center align-items-lg-start mr-lg-3 mr-xl-5">
+            <a class="text-dark" href="/">
+                <img src="https://webresources.jsifurniture.com/static/uploads/img/tagline-love-what-you-do_black.svg" alt="Love What You Do" class="footer__site-logo"/>
+            </a>
+            <small>JSI is quality furniture for work and life</small>
+
+            <div>
+                <a href="https://www.facebook.com/jsifurniture" target="_blank" rel="noreferrer noopener"><i class="fab fa-facebook mr-1 text-medium"></i></a>
+                <a href="https://www.instagram.com/jsifurniture/" target="_blank" rel="noreferrer noopener"><i class="fab fa-instagram m-1 text-medium"></i></a>
+                <a href="https://www.pinterest.com/jsi_furniture/" target="_blank" rel="noreferrer noopener"><i class="fab fa-pinterest m-1 text-medium"></i></a>
+                <a href="https://www.linkedin.com/company/jasper-group/" target="_blank" rel="noreferrer noopener"><i class="fab fa-linkedin m-1 text-medium"></i></a>
+                <a href="https://www.youtube.com/channel/UCzVM2t2vk7FJrdpbKdxnTJw" target="_blank" rel="noreferrer noopener"><i class="fab fa-youtube m-1 text-medium"></i></a>
+            </div>
+        </div>
+
+        <div class="mx-lg-3 mx-xl-5 mt-3 mt-lg-0 text-center text-lg-left">
+            <a href="tel:+18004574511" class="text-dark text-nowrap"><strong>P</strong> 800.457.4511</a><br>
+            <a href="tel:+18124821548" class="text-dark text-nowrap"><strong>F</strong> 812.482.1548</a>
+        </div>
+
+        <div class="mx-lg-3 mx-xl-5 mt-3 mt-lg-0 text-center text-lg-left text-nowrap">
+            225 Clay St <br>
+            Jasper, IN 47546
+        </div>
+
+        <div class="mx-lg-3 mx-xl-5 mt-3 mt-lg-0 text-center text-lg-left">
+            <a href="/about-us/careers" class="text-dark font-weight-bold">Careers</a><br>
+            <a href="http://www.jaspergroup.us.com/" class="text-dark font-weight-bold">Jasper Group</a>
+        </div>
+
+
+        <div class="ml-lg-3 ml-xl-5 mt-3 mt-lg-0 flex-lg-grow-1 d-flex justify-content-center justify-content-lg-end">
+            <a href="/email-signup" class="btn btn-light bg-medium text-white text-nowrap">Sign Up for Our Newsletter</a>
+        </div>
+    </div>
+
+    <div class="copyright text-white text-center d-flex justify-content-center align-items-center">
+        <span>&#169; 2025 JSI. ALL RIGHTS RESERVED. QUALITY FURNITURE FOR WORK + LIFE.</span>
+    </div>
+</footer>
+
+
+<div class="modal fade" id="genericModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+
+
+
+
+
+
+    <!-- Google Analytics -->
+    <script>
+      (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function () {
+          (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+          m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+      })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+      ga('create', 'UA-28230467-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+    <!-- End Google Analytics -->
+
+    <script src="https://webresources.jsifurniture.com/static/uploads/js/app.min.js" type="text/javascript" defer></script>
+
+
+</body>
+</html>

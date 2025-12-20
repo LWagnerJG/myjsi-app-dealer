@@ -14,7 +14,15 @@ export const PRODUCT_DATA = {
             { id: 'native', name: 'Native', price: 1200, image: localImage('/category-images/bench-images/jsi_native_comp_00028.jpg'), thumbScale: 1.3, heroScale: 1.15 },
             { id: 'oxley', name: 'Oxley', price: 1050, image: localImage('/category-images/bench-images/jsi_oxley_comp_00001_5ueHuWt.jpg'), thumbScale: 1.3, heroScale: 1.15 },
             { id: 'poet', name: 'Poet', price: 780, image: localImage('/series-images/jsi_poet_comp_00050.jpg'), thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'ziva', name: 'Ziva', price: 850, image: 'https://www.jsifurniture.com/media/catalog/product/cache/bf3e7ba5c7d36e7cc7f9df10fba65dcb/j/s/jsi_ziva_comp_00005.jpg', thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'arwyn-bench', name: 'Arwyn', price: 980, image: localImage('/category-images/lounge-images/jsi_arwyn_comp_00002.jpg'), thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'bespace', name: 'BeSPACE', price: 890, image: 'https://www.jsifurniture.com/media/catalog/product/cache/bf3e7ba5c7d36e7cc7f9df10fba65dcb/j/s/jsi_bespace_comp_00004.jpg', thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'finn', name: 'Finn', price: 1100, image: 'https://www.jsifurniture.com/media/catalog/product/cache/bf3e7ba5c7d36e7cc7f9df10fba65dcb/j/s/jsi_finn_comp_00006.jpg', thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'finn-nu', name: 'Finn Nu', price: 1150, image: 'https://www.jsifurniture.com/media/catalog/product/cache/bf3e7ba5c7d36e7cc7f9df10fba65dcb/j/s/jsi_finnnu_comp_00001.jpg', thumbScale: 1.3, heroScale: 1.15 },
             { id: 'americana', name: 'Americana', price: 1020, image: localImage('/series-images/jsi_americana_comp_00026.jpg'), thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'boston-bench', name: 'Boston', price: 950, image: localImage('/category-images/guest-images/jsi_boston_comp_0007_jBfEUNr.jpg'), thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'connect', name: 'Connect', price: 870, image: 'https://www.jsifurniture.com/media/catalog/product/cache/bf3e7ba5c7d36e7cc7f9df10fba65dcb/j/s/jsi_connect_comp_00001.jpg', thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'encore', name: 'Encore', price: 820, image: 'https://www.jsifurniture.com/media/catalog/product/cache/bf3e7ba5c7d36e7cc7f9df10fba65dcb/j/s/jsi_encore_comp_00001.jpg', thumbScale: 1.3, heroScale: 1.15 },
         ],
         competition: [],
         competitionByProduct: {
@@ -22,7 +30,15 @@ export const PRODUCT_DATA = {
             'native': [comp('OFS Rowen Bench', '$1250', '-4%'), comp('Kimball EverySpace', '$1325', '-9%'), comp('Indiana Clutch', '$1180', '+2%')],
             'oxley': [comp('OFS Heya Bench', '$1080', '-3%'), comp('Kimball Villa Bench', '$1120', '-6%'), comp('SitOnIt Movi Bench', '$1010', '+4%')],
             'poet': [comp('OFS Lite', '$790', '-1%'), comp('Kimball Pep Bench', '$770', '+1%'), comp('SitOnIt Nomad', '$730', '+6%')],
+            'ziva': [comp('OFS Rally Bench', '$875', '-3%'), comp('Kimball Bloom Bench', '$890', '-4%'), comp('SitOnIt Rio Bench', '$825', '+3%')],
+            'arwyn-bench': [comp('OFS Heya Plus', '$1010', '-3%'), comp('Kimball Joya Bench', '$1025', '-4%'), comp('Indiana Ovation', '$950', '+3%')],
+            'bespace': [comp('OFS Coact Bench', '$920', '-3%'), comp('Kimball KORE Bench', '$935', '-5%'), comp('SitOnIt Focus Bench', '$860', '+3%')],
+            'finn': [comp('OFS Eleven Bench', '$1140', '-4%'), comp('Kimball Axiom Bench', '$1180', '-7%'), comp('Indiana Strut Bench', '$1065', '+3%')],
+            'finn-nu': [comp('OFS Eleven Plus', '$1190', '-3%'), comp('Kimball Axiom Plus', '$1230', '-7%'), comp('Indiana Strut Plus', '$1115', '+3%')],
             'americana': [comp('OFS Classic Bench', '$1050', '-3%'), comp('Kimball Heritage', '$1080', '-6%'), comp('SitOnIt Relay Bench', '$985', '+4%')],
+            'boston-bench': [comp('OFS Rowen Low', '$980', '-3%'), comp('Kimball Dock Bench', '$1000', '-5%'), comp('Indiana Compel Bench', '$920', '+3%')],
+            'connect': [comp('OFS Link Bench', '$900', '-3%'), comp('Kimball Pairings Bench', '$915', '-5%'), comp('SitOnIt Switch Bench', '$840', '+4%')],
+            'encore': [comp('OFS Applause Bench', '$845', '-3%'), comp('Kimball Mio Bench', '$860', '-5%'), comp('SitOnIt Flex Bench', '$790', '+4%')]
         }
     },
     'casegoods': {
