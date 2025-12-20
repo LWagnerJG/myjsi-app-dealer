@@ -1,0 +1,60 @@
+headersOrigin = "config"
+redirectsOrigin = "config"
+plugins = []
+
+[functions]
+
+[functions."*"]
+
+[build]
+publish = "C:\\Users\\Luke Wagner\\myjsi-app-dealer\\myjsi-app-dealer\\myjsi-app-working\\dist"
+publishOrigin = "ui"
+commandOrigin = "ui"
+base = "C:\\Users\\Luke Wagner\\myjsi-app-dealer\\myjsi-app-dealer\\myjsi-app-working"
+command = "npm run build"
+
+[build.environment]
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[[headers]]
+for = "/*"
+
+[headers.values]
+X-Frame-Options = "DENY"
+X-XSS-Protection = "1; mode=block"
+X-Content-Type-Options = "nosniff"
+
+[[headers]]
+for = "/*.js"
+
+[headers.values]
+Content-Type = "application/javascript; charset=utf-8"
+
+[[headers]]
+for = "/*.mjs"
+
+[headers.values]
+Content-Type = "application/javascript; charset=utf-8"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]

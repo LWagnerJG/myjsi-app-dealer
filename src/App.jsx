@@ -106,6 +106,18 @@ const base = parts[0];
 
 if (base === 'projects') return <ProjectsScreen ref={projectsScreenRef} {...rest} />;
 
+// Product category routes: products/category/:categoryId
+if (base === 'products' && parts[1] === 'category' && parts.length >= 3) {
+    const categoryId = parts[2];
+    // Competition view: products/category/:categoryId/competition/:productId
+    if (parts[3] === 'competition') {
+        const productId = parts[4] || null;
+        return <CompetitiveAnalysisScreen {...rest} categoryId={categoryId} productId={productId} />;
+    }
+    // Category product listing
+    return <ProductComparisonScreen {...rest} categoryId={categoryId} />;
+}
+
 // Order detail routes: orders/:orderNumber
 if (base === 'orders' && parts[1]) {
     const orderNumber = parts[1];
