@@ -33,44 +33,45 @@ const CategoryCard = React.memo(({
     }, [category, onClick]);
 
     if (viewMode === 'grid') {
+        // Show 3 images - they float naturally on a clean background
+        const images = category.images?.slice(0, 3) || [];
+        
         return (
-            <GlassCard
-                theme={theme}
-                className={`overflow-hidden cursor-pointer transform transition-all duration-200 hover:scale-[1.01] active:scale-[0.98] ${className}`}
+            <div
+                className={`rounded-2xl overflow-hidden cursor-pointer transition-all duration-200 hover:shadow-md active:scale-[0.98] ${className}`}
                 onClick={handleClick}
-                style={{ padding: 0 }}
+                style={{ 
+                    backgroundColor: '#ffffff',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                }}
             >
-                {/* Image row - clean, no individual boxes */}
+                {/* Images float on white - no boxes, just products */}
                 <div 
-                    className="flex w-full items-center justify-around"
+                    className="flex items-end justify-evenly"
                     style={{ 
-                        backgroundColor: theme.colors.surface || '#f5f5f4',
-                        padding: isDesktop ? '20px 16px' : '14px 10px',
-                        minHeight: isDesktop ? '100px' : '70px'
+                        padding: isDesktop ? '32px 32px 24px' : '24px 20px 16px',
+                        minHeight: isDesktop ? '140px' : '105px'
                     }}
                 >
-                    {category.images?.slice(0, 3).map((img, index) => (
-                        <div 
-                            key={index} 
-                            className="flex items-center justify-center"
+                    {images.map((img, index) => (
+                        <img
+                            key={index}
+                            src={img}
+                            alt={`${category.name} ${index + 1}`}
+                            className="object-contain"
                             style={{ 
-                                width: isDesktop ? '80px' : '60px',
-                                height: isDesktop ? '80px' : '55px'
+                                maxHeight: isDesktop ? '95px' : '70px',
+                                maxWidth: isDesktop ? '30%' : '28%',
+                                flex: '0 1 auto'
                             }}
-                        >
-                            <img
-                                src={img}
-                                alt={`${category.name} ${index + 1}`}
-                                className="max-w-full max-h-full object-contain hover:scale-110 transition-transform duration-300"
-                                loading="lazy"
-                            />
-                        </div>
+                            loading="lazy"
+                        />
                     ))}
                 </div>
-                {/* Category name only - clean and minimal */}
+                {/* Category name */}
                 <div 
-                    className="px-4 py-2.5"
-                    style={{ backgroundColor: '#ffffff' }}
+                    className="px-4 pb-3.5"
+                    style={{ paddingTop: '0' }}
                 >
                     <h2 
                         className="font-semibold" 
@@ -82,7 +83,7 @@ const CategoryCard = React.memo(({
                         {category.name}
                     </h2>
                 </div>
-            </GlassCard>
+            </div>
         );
     }
     return (
@@ -218,7 +219,9 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
     }, [searchTerm]);
 
     const handleCategoryClick = useCallback((category) => {
+        console.log('Category clicked:', category.name, 'nav:', category.nav);
         if (category.nav) {
+            console.log('Navigating to:', category.nav);
             onNavigate(category.nav);
         }
     }, [onNavigate]);
@@ -275,7 +278,7 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
                 <div 
                     className={
                         viewMode === 'grid' 
-                            ? (isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-4' : 'grid grid-cols-2 gap-3')
+                            ? (isDesktop ? 'grid grid-cols-2 lg:grid-cols-3 gap-4' : 'grid grid-cols-2 gap-2.5')
                             : (isDesktop ? 'grid grid-cols-2 gap-3' : 'space-y-2')
                     } 
                     style={{ paddingTop: '4px' }}
