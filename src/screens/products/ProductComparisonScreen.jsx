@@ -10,60 +10,60 @@ const LOUNGE_SEATING_OPTIONS = ['Single Seater','Two Seater','Three Seater','Ott
 const MATERIAL_UPCHARGE = { laminate: 1, veneer: 1.12 };
 const TYPICAL_MULTIPLIERS = { 'U-Shape': 1, 'L-Shape': 0.92, 'Single Ped Desk': 0.85, 'Adjustable Ht Desk': 1.05 };
 
-// Product selection tabs - refined glass aesthetic
+// Product selection tabs - compact, refined glass aesthetic
 const ProductTabs = React.memo(({ products, activeProduct, onProductSelect, theme, categoryName }) => {
   const isCasegoods = categoryName?.toLowerCase() === 'casegoods';
   return (
     <div 
-      className="rounded-3xl overflow-hidden"
+      className="rounded-2xl overflow-hidden"
       style={{ 
-        backgroundColor: 'rgba(255,255,255,0.85)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        boxShadow: '0 2px 16px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03)'
+        backgroundColor: 'rgba(255,255,255,0.92)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        boxShadow: '0 2px 12px rgba(0,0,0,0.04)'
       }}
     >
-      <div className="flex justify-center gap-6 overflow-x-auto scrollbar-hide px-6 py-5" style={{ minHeight: 140 }}>
+      <div className="flex justify-center gap-4 overflow-x-auto scrollbar-hide px-4 py-3">
         {products.map(p => {
           const active = activeProduct.id === p.id;
-          const baseScale = p?.thumbScale || (isCasegoods ? 1.25 : 1.0);
+          const baseScale = p?.thumbScale || (isCasegoods ? 1.3 : 1.1);
           return (
-            <div key={p.id} className="flex flex-col items-center select-none" style={{ minWidth: 80 }}>
-              <button 
-                onClick={() => onProductSelect(p)} 
-                aria-pressed={active} 
-                className="relative flex items-center justify-center transition-all duration-300"
-                style={{ 
-                  width: 80, 
-                  height: 80,
-                  WebkitTapHighlightColor: 'transparent'
-                }}
+            <button 
+              key={p.id}
+              onClick={() => onProductSelect(p)} 
+              aria-pressed={active} 
+              className="flex flex-col items-center select-none transition-all duration-200"
+              style={{ 
+                minWidth: 70,
+                opacity: active ? 1 : 0.5,
+                WebkitTapHighlightColor: 'transparent'
+              }}
+            >
+              <div 
+                className="flex items-center justify-center"
+                style={{ width: 64, height: 56 }}
               >
                 <img 
                   src={p.image} 
                   alt={p.name} 
                   loading="lazy" 
-                  className={`max-w-full max-h-full object-contain transition-all duration-500 ${active ? 'scale-110' : 'scale-100 opacity-60'} hover:opacity-100`} 
-                  style={{ transform: `scale(${baseScale * (active ? 1.1 : 1)})` }} 
-                />
-              </button>
-              <div className="mt-3 flex flex-col items-center">
-                <span 
-                  className={`text-xs font-medium transition-colors duration-300 ${active ? 'font-semibold' : ''}`}
-                  style={{ color: active ? theme.colors.textPrimary : theme.colors.textSecondary }}
-                >
-                  {p.name}
-                </span>
-                <div 
-                  className="mt-1.5 h-0.5 rounded-full transition-all duration-300"
-                  style={{ 
-                    width: active ? 24 : 0,
-                    backgroundColor: theme.colors.textPrimary,
-                    opacity: active ? 1 : 0
-                  }}
+                  className="max-w-full max-h-full object-contain transition-transform duration-300"
+                  style={{ transform: `scale(${baseScale})` }} 
                 />
               </div>
-            </div>
+              <span 
+                className="mt-1.5 text-[11px] font-medium text-center leading-tight"
+                style={{ color: theme.colors.textPrimary }}
+              >
+                {p.name}
+              </span>
+              {active && (
+                <div 
+                  className="mt-1 h-0.5 w-6 rounded-full"
+                  style={{ backgroundColor: theme.colors.textPrimary }}
+                />
+              )}
+            </button>
           );
         })}
       </div>
@@ -77,10 +77,11 @@ const ProductHero = React.memo(({ product, theme, categoryId, onNavigate, catego
   const handleCompetitionClick = useCallback(()=> onNavigate(`products/category/${categoryId}/competition/${product.id}`),[categoryId,onNavigate,product.id]);
   const isChairCategory = /chair|guest|seating/i.test(categoryId) || /chair|guest|seating/i.test(categoryName||'');
   const isCasegoods = categoryId==='casegoods';
-  const aspectClass = isChairCategory? 'aspect-[4/3]' : 'aspect-video';
+  const aspectClass = isChairCategory? 'aspect-[4/3]' : 'aspect-[16/10]';
   const [currentImg,setCurrentImg]=useState(product.image); const [prevImg,setPrevImg]=useState(null);
   useEffect(()=>{ if(product.image!==currentImg){ setPrevImg(currentImg); setCurrentImg(product.image); const t=setTimeout(()=>setPrevImg(null),450); return ()=>clearTimeout(t);} },[product.image,currentImg]);
-  let baseZoom = product.heroScale ? Math.min(1.18, Math.max(0.85, product.heroScale)) : (isChairCategory?0.96:1.12); if(isCasegoods) baseZoom*=1.15;
+  // More aggressive zoom to fill frame and eliminate borders
+  let baseZoom = product.heroScale ? Math.min(1.5, Math.max(1.1, product.heroScale * 1.2)) : (isChairCategory?1.25:1.4); if(isCasegoods) baseZoom*=1.1;
   return (
     <div 
       className={`relative w-full ${aspectClass} rounded-3xl overflow-hidden group`} 
@@ -89,11 +90,11 @@ const ProductHero = React.memo(({ product, theme, categoryId, onNavigate, catego
         boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)'
       }}
     >
-      {prevImg && <img src={prevImg} alt="prev" className="absolute inset-0 w-full h-full object-contain opacity-0 transition-opacity duration-500" />}
+      {prevImg && <img src={prevImg} alt="prev" className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500" />}
       <img 
         src={currentImg} 
         alt={product.name} 
-        className="absolute inset-0 w-full h-full object-contain transition-all duration-[900ms] ease-[cubic-bezier(.22,.8,.12,.99)] opacity-0 group-hover:scale-[1.02]" 
+        className="absolute inset-0 w-full h-full object-cover transition-all duration-[900ms] ease-[cubic-bezier(.22,.8,.12,.99)] opacity-0 group-hover:scale-[1.02]" 
         style={{ transform:`scale(${baseZoom})`, animation:'fadeInHero 600ms forwards' }} 
       />
       {/* Refined gradient overlay */}
@@ -121,14 +122,14 @@ const ProductHero = React.memo(({ product, theme, categoryId, onNavigate, catego
         </div>
         <button 
           onClick={handleCompetitionClick} 
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 active:scale-95 hover:scale-[1.02]" 
+          className="flex items-center gap-2 px-4 py-2 rounded-2xl font-semibold text-sm transition-all duration-200 active:scale-95 hover:scale-[1.02]" 
           style={{ 
-            backgroundColor: 'rgba(255,255,255,0.75)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
             color: theme.colors.textPrimary, 
-            border: '1px solid rgba(255,255,255,0.5)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.5)'
+            border: '1px solid rgba(255,255,255,0.8)',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.08), inset 0 1px 1px rgba(255,255,255,0.9), inset 0 -1px 1px rgba(0,0,0,0.03)'
           }}
         >
           <span>Competition</span>
