@@ -10,32 +10,69 @@ const LOUNGE_SEATING_OPTIONS = ['Single Seater','Two Seater','Three Seater','Ott
 const MATERIAL_UPCHARGE = { laminate: 1, veneer: 1.12 };
 const TYPICAL_MULTIPLIERS = { 'U-Shape': 1, 'L-Shape': 0.92, 'Single Ped Desk': 0.85, 'Adjustable Ht Desk': 1.05 };
 
-// Product selection tabs
+// Product selection tabs - refined glass aesthetic
 const ProductTabs = React.memo(({ products, activeProduct, onProductSelect, theme, categoryName }) => {
   const isCasegoods = categoryName?.toLowerCase() === 'casegoods';
   return (
-    <GlassCard theme={theme} className="pt-4 pb-1 px-4">
-      <div className="flex space-x-8 overflow-x-auto scrollbar-hide pb-2" style={{ minHeight: 136 }}>
+    <div 
+      className="rounded-3xl overflow-hidden"
+      style={{ 
+        backgroundColor: 'rgba(255,255,255,0.85)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: '0 2px 16px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03)'
+      }}
+    >
+      <div className="flex justify-center gap-6 overflow-x-auto scrollbar-hide px-6 py-5" style={{ minHeight: 140 }}>
         {products.map(p => {
           const active = activeProduct.id === p.id;
           const baseScale = p?.thumbScale || (isCasegoods ? 1.25 : 1.0);
           return (
-            <div key={p.id} className="flex flex-col items-center select-none" style={{ width: 86 }}>
-              <button onClick={() => onProductSelect(p)} aria-pressed={active} className="relative w-[86px] h-[96px] flex items-center justify-center active:scale-95 transition-transform" style={{ WebkitTapHighlightColor:'transparent' }}>
-                <img src={p.image} alt={p.name} loading="lazy" className={`max-w-full max-h-full object-contain transition-transform duration-500 ${active?'scale-[1.04]':'scale-100'} hover:scale-[1.06]`} style={{ transform:`scale(${baseScale})` }} />
-                {active && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 h-1 w-10 rounded-full" style={{ backgroundColor: theme.colors.accent }} />}
+            <div key={p.id} className="flex flex-col items-center select-none" style={{ minWidth: 80 }}>
+              <button 
+                onClick={() => onProductSelect(p)} 
+                aria-pressed={active} 
+                className="relative flex items-center justify-center transition-all duration-300"
+                style={{ 
+                  width: 80, 
+                  height: 80,
+                  WebkitTapHighlightColor: 'transparent'
+                }}
+              >
+                <img 
+                  src={p.image} 
+                  alt={p.name} 
+                  loading="lazy" 
+                  className={`max-w-full max-h-full object-contain transition-all duration-500 ${active ? 'scale-110' : 'scale-100 opacity-60'} hover:opacity-100`} 
+                  style={{ transform: `scale(${baseScale * (active ? 1.1 : 1)})` }} 
+                />
               </button>
-              <span className="mt-2 text-[11px] font-semibold tracking-wide px-1 text-center leading-tight" style={{ color: theme.colors.textPrimary }}>{p.name}</span>
+              <div className="mt-3 flex flex-col items-center">
+                <span 
+                  className={`text-xs font-medium transition-colors duration-300 ${active ? 'font-semibold' : ''}`}
+                  style={{ color: active ? theme.colors.textPrimary : theme.colors.textSecondary }}
+                >
+                  {p.name}
+                </span>
+                <div 
+                  className="mt-1.5 h-0.5 rounded-full transition-all duration-300"
+                  style={{ 
+                    width: active ? 24 : 0,
+                    backgroundColor: theme.colors.textPrimary,
+                    opacity: active ? 1 : 0
+                  }}
+                />
+              </div>
             </div>
           );
         })}
       </div>
-    </GlassCard>
+    </div>
   );
 });
 ProductTabs.displayName='ProductTabs';
 
-// Hero component
+// Hero component - enhanced gradient and glass button
 const ProductHero = React.memo(({ product, theme, categoryId, onNavigate, categoryName }) => {
   const handleCompetitionClick = useCallback(()=> onNavigate(`products/category/${categoryId}/competition/${product.id}`),[categoryId,onNavigate,product.id]);
   const isChairCategory = /chair|guest|seating/i.test(categoryId) || /chair|guest|seating/i.test(categoryName||'');
@@ -45,27 +82,65 @@ const ProductHero = React.memo(({ product, theme, categoryId, onNavigate, catego
   useEffect(()=>{ if(product.image!==currentImg){ setPrevImg(currentImg); setCurrentImg(product.image); const t=setTimeout(()=>setPrevImg(null),450); return ()=>clearTimeout(t);} },[product.image,currentImg]);
   let baseZoom = product.heroScale ? Math.min(1.18, Math.max(0.85, product.heroScale)) : (isChairCategory?0.96:1.12); if(isCasegoods) baseZoom*=1.15;
   return (
-    <div className={`relative w-full ${aspectClass} rounded-3xl overflow-hidden shadow-lg group`} style={{ backgroundColor: theme.colors.surface }}>
+    <div 
+      className={`relative w-full ${aspectClass} rounded-3xl overflow-hidden group`} 
+      style={{ 
+        background: 'linear-gradient(165deg, #e8e6e1 0%, #d4d0c8 50%, #c5c0b6 100%)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)'
+      }}
+    >
       {prevImg && <img src={prevImg} alt="prev" className="absolute inset-0 w-full h-full object-contain opacity-0 transition-opacity duration-500" />}
-      <img src={currentImg} alt={product.name} className="absolute inset-0 w-full h-full object-contain transition-all duration-[900ms] ease-[cubic-bezier(.22,.8,.12,.99)] opacity-0 group-hover:scale-[1.02]" style={{ transform:`scale(${baseZoom})`, animation:'fadeInHero 600ms forwards' }} />
-      <div className="absolute inset-0 pointer-events-none" style={{ background:'linear-gradient(to top, rgba(0,0,0,0.34), rgba(0,0,0,0.12) 55%, rgba(0,0,0,0.02) 75%, rgba(0,0,0,0))' }} />
-      <div className="absolute left-0 right-0 bottom-0 flex items-end justify-between px-5 pb-4 pt-8">
+      <img 
+        src={currentImg} 
+        alt={product.name} 
+        className="absolute inset-0 w-full h-full object-contain transition-all duration-[900ms] ease-[cubic-bezier(.22,.8,.12,.99)] opacity-0 group-hover:scale-[1.02]" 
+        style={{ transform:`scale(${baseZoom})`, animation:'fadeInHero 600ms forwards' }} 
+      />
+      {/* Refined gradient overlay */}
+      <div 
+        className="absolute inset-0 pointer-events-none" 
+        style={{ 
+          background: 'linear-gradient(to top, rgba(40,38,35,0.5) 0%, rgba(40,38,35,0.2) 35%, transparent 60%)'
+        }} 
+      />
+      {/* Product info with glass pill for price */}
+      <div className="absolute left-0 right-0 bottom-0 flex items-end justify-between px-5 pb-5 pt-8">
         <div className="leading-tight select-none">
-          <h2 className="text-[30px] font-bold text-white drop-shadow-sm tracking-tight">{product.name}</h2>
-          <p className="mt-1 text-[18px] font-semibold text-white/95 drop-shadow-sm">${product.price?.toLocaleString()||'TBD'}</p>
+          <h2 
+            className="text-[28px] font-bold text-white tracking-tight"
+            style={{ textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}
+          >
+            {product.name}
+          </h2>
+          <p 
+            className="mt-1 text-lg font-semibold text-white/90"
+            style={{ textShadow: '0 1px 8px rgba(0,0,0,0.2)' }}
+          >
+            ${product.price?.toLocaleString()||'TBD'}
+          </p>
         </div>
-        <div className="absolute bottom-3 right-4">
-          <button onClick={handleCompetitionClick} className="flex items-center space-x-2 px-5 py-2 rounded-full font-semibold text-sm transition-all active:scale-95 backdrop-blur-sm hover:brightness-105" style={{ backgroundColor:'rgba(255,255,255,0.55)', color:theme.colors.textPrimary, border:'1px solid rgba(255,255,255,0.65)', boxShadow:'0 4px 14px rgba(0,0,0,0.18)' }}>
-            <span>Competition</span><ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
+        <button 
+          onClick={handleCompetitionClick} 
+          className="flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 active:scale-95 hover:scale-[1.02]" 
+          style={{ 
+            backgroundColor: 'rgba(255,255,255,0.75)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            color: theme.colors.textPrimary, 
+            border: '1px solid rgba(255,255,255,0.5)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.5)'
+          }}
+        >
+          <span>Competition</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );
 });
 ProductHero.displayName='ProductHero';
 
-// Pricing Table
+// Pricing Table - refined with glass aesthetic
 const PricingTable = React.memo(({ products, activeProduct, onSelectProduct, theme, categoryId, typicalLayout, onTypicalLayoutChange, conferenceSize, onConferenceSizeChange, loungeConfig, onLoungeConfigChange, guestLegType, onGuestLegTypeChange, materialMode, onMaterialModeChange }) => {
   const isGuest = categoryId==='guest';
   const isCasegoods = categoryId==='casegoods';
@@ -75,7 +150,7 @@ const PricingTable = React.memo(({ products, activeProduct, onSelectProduct, the
 
   // Material toggle only for these categories
   const showMaterialToggle = isCasegoods || isConference || isTraining;
-  const materialOptions = ['Laminate','Veneer']; // training uses same set
+  const materialOptions = ['Laminate','Veneer'];
   const materialActiveIndex = materialOptions.findIndex(o=>materialMode===o.toLowerCase());
 
   // Top pills depending on category
@@ -104,39 +179,132 @@ const PricingTable = React.memo(({ products, activeProduct, onSelectProduct, the
   };
 
   return (
-    <GlassCard theme={theme} className="px-0 pb-3 pt-0 overflow-hidden animate-[fadeSlide_.55s_ease]">
-      {pills.length>0 && (
-        <div className="px-6 pt-4 flex gap-2 overflow-x-auto scrollbar-hide">
-          {pills.map(pill=>{ const active = (isCasegoods && pill===typicalLayout) || (isConference && pill===conferenceSize) || (isLounge && pill===loungeConfig) || (isGuest && pill.toLowerCase()===guestLegType); return (
-            <button key={pill} onClick={()=>handlePillClick(pill)} className={`px-4 h-9 rounded-full text-[12px] font-medium whitespace-nowrap transition-colors flex items-center shadow-sm border ${active? 'font-semibold':''}`} style={{ backgroundColor: active? theme.colors.accent: theme.colors.surface, color: active? '#FFFFFF': theme.colors.textPrimary, borderColor: active? theme.colors.accent: theme.colors.border }}>{pill}</button>
-          );})}
-        </div>
-      )}
-      {showMaterialToggle && (
-        <div className="px-6 mt-3">
-          <div className="relative flex h-10 w-full rounded-full border p-1 overflow-hidden font-medium text-[12px]" style={{ borderColor:theme.colors.border, backgroundColor:theme.colors.surface }}>
-            <span className="absolute top-1 bottom-1 left-1 rounded-full shadow-sm transition-transform duration-300 ease-out" style={{ width:`calc((100% - .5rem)/${materialOptions.length})`, background:theme.colors.subtle, transform:`translateX(${materialActiveIndex*100}%)` }} />
-            {materialOptions.map(opt=>{ const key=opt.toLowerCase(); const active=materialMode===key; return (
-              <button key={opt} onClick={()=>onMaterialModeChange(key)} className={`relative z-10 flex-1 rounded-full flex items-center justify-center whitespace-nowrap transition-colors ${active? 'font-semibold':''}`} style={{ color: active? theme.colors.textPrimary: theme.colors.textSecondary }}>{opt}</button>
-            );})}
+    <div 
+      className="rounded-3xl overflow-hidden animate-[fadeSlide_.55s_ease]"
+      style={{ 
+        backgroundColor: 'rgba(255,255,255,0.85)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        boxShadow: '0 2px 16px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.03)'
+      }}
+    >
+      {/* Configuration pills */}
+      {pills.length > 0 && (
+        <div className="px-5 pt-5 pb-1">
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+            {pills.map(pill => { 
+              const active = (isCasegoods && pill===typicalLayout) || (isConference && pill===conferenceSize) || (isLounge && pill===loungeConfig) || (isGuest && pill.toLowerCase()===guestLegType); 
+              return (
+                <button 
+                  key={pill} 
+                  onClick={() => handlePillClick(pill)} 
+                  className="px-4 h-9 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 flex items-center"
+                  style={{ 
+                    backgroundColor: active ? theme.colors.textPrimary : 'rgba(0,0,0,0.04)',
+                    color: active ? '#FFFFFF' : theme.colors.textSecondary,
+                    fontWeight: active ? 600 : 500
+                  }}
+                >
+                  {pill}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
-      <div className="mx-6 h-px mt-4" style={{ backgroundColor:theme.colors.border }} />
-      <div className="px-6 pt-2 pb-1 flex items-center justify-between">
-        <span className="text-[11px] font-semibold tracking-wide uppercase" style={{ color: theme.colors.textSecondary }}>Series</span>
-        <span className="text-[11px] font-semibold tracking-wide uppercase" style={{ color: theme.colors.textSecondary }}>List $</span>
+      
+      {/* Material toggle with refined styling */}
+      {showMaterialToggle && (
+        <div className="px-5 pt-3">
+          <div 
+            className="relative flex h-11 w-full rounded-full p-1 overflow-hidden"
+            style={{ backgroundColor: 'rgba(0,0,0,0.04)' }}
+          >
+            <span 
+              className="absolute top-1 bottom-1 rounded-full transition-transform duration-300 ease-out"
+              style={{ 
+                width: `calc((100% - 8px) / ${materialOptions.length})`,
+                left: 4,
+                backgroundColor: '#ffffff',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+                transform: `translateX(${materialActiveIndex * 100}%)`
+              }} 
+            />
+            {materialOptions.map(opt => { 
+              const key = opt.toLowerCase(); 
+              const active = materialMode === key; 
+              return (
+                <button 
+                  key={opt} 
+                  onClick={() => onMaterialModeChange(key)} 
+                  className="relative z-10 flex-1 rounded-full flex items-center justify-center whitespace-nowrap transition-colors text-sm"
+                  style={{ 
+                    color: active ? theme.colors.textPrimary : theme.colors.textSecondary,
+                    fontWeight: active ? 600 : 500
+                  }}
+                >
+                  {opt}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      
+      {/* Divider */}
+      <div className="mx-5 h-px mt-4" style={{ backgroundColor: 'rgba(0,0,0,0.06)' }} />
+      
+      {/* Series header */}
+      <div className="px-5 pt-3 pb-2 flex items-center justify-between">
+        <span className="text-[11px] font-semibold tracking-widest uppercase" style={{ color: theme.colors.textSecondary }}>
+          Series
+        </span>
+        <span className="text-[11px] font-semibold tracking-widest uppercase" style={{ color: theme.colors.textSecondary }}>
+          List $
+        </span>
       </div>
-      <div className="mt-1">
-        {sorted.map(p=>{ const active=p.id===activeProduct.id; const price=computePrice(p); return (
-          <button key={p.id} onClick={()=>onSelectProduct(p)} disabled={active} className={`w-full group px-6 py-3 flex items-center justify-between text-[13px] transition-colors text-left ${active?'bg-transparent':'hover:bg-black/5'} rounded-none`} style={{ cursor: active?'default':'pointer' }}>
-            <span className="flex items-center"><span className="inline-block w-1.5 h-4 mr-3 rounded-full transition-colors" style={{ backgroundColor: active? theme.colors.accent: theme.colors.border }} />
-              <span className={`font-medium ${active?'tracking-wide':''}`} style={{ color: active? theme.colors.textPrimary: theme.colors.textSecondary }}>{p.name}</span></span>
-            <span className="font-semibold" style={{ color: active? theme.colors.accent: theme.colors.textSecondary }}>${price?.toLocaleString?.()||'TBD'}</span>
-          </button>
-        );})}
+      
+      {/* Product list */}
+      <div className="pb-2">
+        {sorted.map(p => { 
+          const active = p.id === activeProduct.id; 
+          const price = computePrice(p); 
+          return (
+            <button 
+              key={p.id} 
+              onClick={() => onSelectProduct(p)} 
+              disabled={active} 
+              className="w-full group px-5 py-3.5 flex items-center justify-between text-sm transition-all duration-200 text-left rounded-none"
+              style={{ 
+                cursor: active ? 'default' : 'pointer',
+                backgroundColor: active ? 'rgba(0,0,0,0.03)' : 'transparent'
+              }}
+            >
+              <span className="flex items-center gap-3">
+                <span 
+                  className="w-1 h-5 rounded-full transition-all duration-300"
+                  style={{ 
+                    backgroundColor: active ? theme.colors.textPrimary : 'rgba(0,0,0,0.1)'
+                  }}
+                />
+                <span 
+                  className="font-medium"
+                  style={{ color: active ? theme.colors.textPrimary : theme.colors.textSecondary }}
+                >
+                  {p.name}
+                </span>
+              </span>
+              <span 
+                className="font-semibold tabular-nums"
+                style={{ color: active ? theme.colors.textPrimary : theme.colors.textSecondary }}
+              >
+                ${price?.toLocaleString?.() || 'TBD'}
+              </span>
+            </button>
+          );
+        })}
       </div>
-    </GlassCard>
+    </div>
   );
 });
 PricingTable.displayName='PricingTable';
