@@ -47,11 +47,10 @@ const CategoryCard = React.memo(({
             >
                 {/* Images float on white - no boxes, just products */}
                 <div 
-                    className="flex items-end justify-center"
+                    className="flex items-end justify-evenly"
                     style={{ 
-                        padding: isDesktop ? '28px 24px 20px' : '20px 16px 14px',
-                        gap: isDesktop ? '20px' : '12px',
-                        minHeight: isDesktop ? '130px' : '95px'
+                        padding: isDesktop ? '32px 32px 24px' : '24px 20px 16px',
+                        minHeight: isDesktop ? '140px' : '105px'
                     }}
                 >
                     {images.map((img, index) => (
@@ -61,8 +60,8 @@ const CategoryCard = React.memo(({
                             alt={`${category.name} ${index + 1}`}
                             className="object-contain"
                             style={{ 
-                                maxHeight: isDesktop ? '90px' : '65px',
-                                maxWidth: isDesktop ? '100px' : '70px',
+                                maxHeight: isDesktop ? '95px' : '70px',
+                                maxWidth: isDesktop ? '30%' : '28%',
                                 flex: '0 1 auto'
                             }}
                             loading="lazy"
@@ -71,14 +70,14 @@ const CategoryCard = React.memo(({
                 </div>
                 {/* Category name */}
                 <div 
-                    className="px-4 pb-3"
+                    className="px-4 pb-3.5"
                     style={{ paddingTop: '0' }}
                 >
                     <h2 
                         className="font-semibold" 
                         style={{ 
                             color: theme.colors.textPrimary,
-                            fontSize: isDesktop ? '0.9375rem' : '0.8125rem'
+                            fontSize: isDesktop ? '0.9375rem' : '0.875rem'
                         }}
                     >
                         {category.name}
