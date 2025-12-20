@@ -346,7 +346,7 @@ export const ProductComparisonScreen = ({ categoryId, onNavigate, theme }) => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className="p-4 space-y-5">
+        <div className="p-4 pb-28 space-y-5">
           <ProductTabs products={visibleProducts} activeProduct={activeProduct} onProductSelect={handleProductSelect} theme={theme} categoryName={categoryData.name} />
           <ProductHero product={activeProduct} theme={theme} categoryId={categoryId} onNavigate={onNavigate} categoryName={categoryData.name} />
           <PricingTable products={visibleProducts} activeProduct={activeProduct} onSelectProduct={handleProductSelect} theme={theme} categoryId={categoryId} typicalLayout={typicalLayout} onTypicalLayoutChange={setTypicalLayout} conferenceSize={conferenceSize} onConferenceSizeChange={setConferenceSize} loungeConfig={loungeConfig} onLoungeConfigChange={setLoungeConfig} guestLegType={guestLegType} onGuestLegTypeChange={setGuestLegType} materialMode={materialMode} onMaterialModeChange={setMaterialMode} />
