@@ -38,36 +38,35 @@ const CategoryCard = React.memo(({
                 theme={theme}
                 className={`overflow-hidden cursor-pointer transform transition-all duration-200 hover:scale-[1.01] active:scale-[0.98] ${className}`}
                 onClick={handleClick}
-                style={{ padding: 0, backgroundColor: '#f8f7f5' }}
+                style={{ padding: 0 }}
             >
-                {/* Image strip at top - clean layout, no dividers */}
+                {/* Image grid at top - larger, more prominent */}
                 <div 
-                    className="flex w-full overflow-hidden"
+                    className="grid w-full"
                     style={{ 
-                        height: isDesktop ? '120px' : '90px',
-                        backgroundColor: '#f8f7f5',
-                        gap: 0
+                        gridTemplateColumns: isDesktop ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)',
+                        backgroundColor: '#fafaf9',
+                        padding: isDesktop ? '16px' : '12px',
+                        gap: isDesktop ? '12px' : '8px'
                     }}
                 >
                     {category.images?.slice(0, isDesktop ? 3 : 2).map((img, index) => (
                         <div 
                             key={index} 
-                            className="flex-1 overflow-hidden"
+                            className="overflow-hidden rounded-lg"
                             style={{ 
-                                backgroundColor: '#f8f7f5',
+                                backgroundColor: '#ffffff',
+                                aspectRatio: '1',
                                 display: 'flex',
                                 alignItems: 'center',
-                                justifyContent: 'center'
+                                justifyContent: 'center',
+                                padding: '8px'
                             }}
                         >
                             <img
                                 src={img}
                                 alt={`${category.name} example ${index + 1}`}
-                                className="w-full h-full object-contain hover:scale-105 transition-transform duration-500"
-                                style={{ 
-                                    padding: '8px',
-                                    backgroundColor: '#f8f7f5'
-                                }}
+                                className="w-full h-full object-contain hover:scale-110 transition-transform duration-500"
                                 loading="lazy"
                             />
                         </div>
