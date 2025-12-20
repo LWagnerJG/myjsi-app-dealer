@@ -10,20 +10,17 @@ export const PRODUCT_DATA = {
     'benches': {
         name: 'Benches',
         products: [
+            // Only benches with actual bench images
             { id: 'poet', name: 'Poet', price: 780, image: localImage('/category-images/bench-images/jsi_poet_comp_00050.jpg'), thumbScale: 1.3, heroScale: 1.15 },
             { id: 'indie', name: 'Indie', price: 920, image: localImage('/category-images/bench-images/jsi_indie_comp_00040.jpg'), thumbScale: 1.3, heroScale: 1.15 },
-            { id: 'boston-bench', name: 'Boston', price: 950, image: localImage('/category-images/guest-images/jsi_boston_comp_0007_jBfEUNr.jpg'), thumbScale: 1.3, heroScale: 1.15 },
-            { id: 'arwyn-bench', name: 'Arwyn', price: 980, image: localImage('/category-images/lounge-images/jsi_arwyn_comp_00002.jpg'), thumbScale: 1.3, heroScale: 1.15 },
-            { id: 'oxley', name: 'Oxley', price: 1050, image: localImage('/category-images/bench-images/jsi_oxley_comp_00001_5ueHuWt.jpg'), thumbScale: 1.3, heroScale: 1.15 },
-            { id: 'native', name: 'Native', price: 1200, image: localImage('/category-images/bench-images/jsi_native_comp_00028.jpg'), thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'oxley', name: 'Oxley', price: 1050, image: localImage('/category-images/bench-images/jsi_oxley_comp_00001_5ueHuWt.jpg'), thumbScale: 1.35, heroScale: 1.18 },
+            { id: 'native', name: 'Native', price: 1200, image: localImage('/category-images/bench-images/jsi_native_comp_00028.jpg'), thumbScale: 1.4, heroScale: 1.2 },
             { id: 'americana', name: 'Americana', price: 1350, image: localImage('/category-images/bench-images/jsi_americana_comp_00026.jpg'), thumbScale: 1.4, heroScale: 1.2 },
         ],
         competition: [],
         competitionByProduct: {
             'poet': [comp('OFS Lite', '$790', '-1%'), comp('Kimball Pep Bench', '$770', '+1%'), comp('SitOnIt Nomad', '$730', '+6%')],
             'indie': [comp('OFS Modern Amenity', '$950', '-3%'), comp('Kimball Alterna', '$935', '-2%'), comp('Global Duet', '$905', '+2%')],
-            'boston-bench': [comp('OFS Rowen Low', '$980', '-3%'), comp('Kimball Dock Bench', '$1000', '-5%'), comp('Indiana Compel Bench', '$920', '+3%')],
-            'arwyn-bench': [comp('OFS Heya Plus', '$1010', '-3%'), comp('Kimball Joya Bench', '$1025', '-4%'), comp('Indiana Ovation', '$950', '+3%')],
             'oxley': [comp('OFS Heya Bench', '$1080', '-3%'), comp('Kimball Villa Bench', '$1120', '-6%'), comp('SitOnIt Movi Bench', '$1010', '+4%')],
             'native': [comp('OFS Rowen Bench', '$1250', '-4%'), comp('Kimball EverySpace', '$1325', '-9%'), comp('Indiana Clutch', '$1180', '+2%')],
             'americana': [comp('OFS Heritage', '$1400', '-4%'), comp('Kimball Classic Bench', '$1380', '-2%'), comp('Indiana Traditional', '$1320', '+2%')]
