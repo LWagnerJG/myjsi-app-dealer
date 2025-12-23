@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 import { ArrowRight, Package, ChevronDown, Check } from 'lucide-react';
 import { PRODUCT_DATA, VERTICALS } from './data.js';
@@ -11,19 +12,31 @@ const LOUNGE_SEATING_OPTIONS = ['Single Seater','Two Seater','Three Seater','Ott
 const MATERIAL_UPCHARGE = { laminate: 1, veneer: 1.12 };
 const TYPICAL_MULTIPLIERS = { 'U-Shape': 1, 'L-Shape': 0.92, 'Single Ped Desk': 0.85, 'Adjustable Ht Desk': 1.05 };
 
-// Inline Vertical Dropdown - compact design for tabs bar
+// Inline Vertical Dropdown - uses portal for proper stacking
 const VerticalDropdown = React.memo(({ vertical, gsaOnly, onVerticalChange, onGsaChange, theme }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [buttonRect, setButtonRect] = useState(null);
+  const buttonRef = React.useRef(null);
   
   const activeLabel = vertical 
     ? VERTICALS.find(v => v.key === vertical)?.label?.substring(0, 4) + '.'
     : 'All';
+
+  const handleToggle = () => {
+    if (!isOpen && buttonRef.current) {
+      setButtonRect(buttonRef.current.getBoundingClientRect());
+    }
+    setIsOpen(!isOpen);
+  };
+
+  const handleClose = () => setIsOpen(false);
   
   return (
-    <div className="relative flex-shrink-0">
+    <>
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
+        ref={buttonRef}
+        onClick={handleToggle}
+        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all flex-shrink-0"
         style={{
           backgroundColor: vertical ? theme.colors.accent + '18' : 'rgba(0,0,0,0.05)',
           color: vertical ? theme.colors.accent : theme.colors.textSecondary,
@@ -33,24 +46,31 @@ const VerticalDropdown = React.memo(({ vertical, gsaOnly, onVerticalChange, onGs
         <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
-      {isOpen && (
+      {isOpen && buttonRect && createPortal(
         <>
-          <div className="fixed inset-0" style={{ zIndex: 9998 }} onClick={() => setIsOpen(false)} />
+          {/* Backdrop */}
           <div 
-            className="absolute top-full left-0 mt-2 w-56 rounded-2xl overflow-hidden shadow-2xl"
+            className="fixed inset-0" 
+            style={{ zIndex: 99998 }} 
+            onClick={handleClose} 
+          />
+          {/* Dropdown menu */}
+          <div 
+            className="fixed w-56 rounded-2xl overflow-hidden shadow-2xl"
             style={{ 
-              zIndex: 9999,
+              zIndex: 99999,
+              top: buttonRect.bottom + 8,
+              left: buttonRect.left,
               backgroundColor: theme.colors.surface,
               border: `1px solid ${theme.colors.border}`
             }}
           >
-            {/* Vertical options */}
             <div className="p-2">
               <p className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider" style={{ color: theme.colors.textSecondary }}>
                 Vertical
               </p>
               <button
-                onClick={() => { onVerticalChange(null); setIsOpen(false); }}
+                onClick={() => { onVerticalChange(null); handleClose(); }}
                 className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-colors"
                 style={{ 
                   backgroundColor: !vertical ? theme.colors.accent + '10' : 'transparent',
@@ -63,7 +83,7 @@ const VerticalDropdown = React.memo(({ vertical, gsaOnly, onVerticalChange, onGs
               {VERTICALS.map(v => (
                 <button
                   key={v.key}
-                  onClick={() => { onVerticalChange(v.key); setIsOpen(false); }}
+                  onClick={() => { onVerticalChange(v.key); handleClose(); }}
                   className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm transition-colors"
                   style={{ 
                     backgroundColor: vertical === v.key ? theme.colors.accent + '10' : 'transparent',
@@ -81,7 +101,7 @@ const VerticalDropdown = React.memo(({ vertical, gsaOnly, onVerticalChange, onGs
               <div className="px-2 pb-2 pt-1">
                 <div className="h-px mb-2" style={{ backgroundColor: theme.colors.border }} />
                 <button
-                  onClick={() => { onGsaChange(!gsaOnly); }}
+                  onClick={() => onGsaChange(!gsaOnly)}
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors"
                   style={{ backgroundColor: gsaOnly ? theme.colors.accent + '10' : 'transparent' }}
                 >
@@ -99,9 +119,10 @@ const VerticalDropdown = React.memo(({ vertical, gsaOnly, onVerticalChange, onGs
               </div>
             )}
           </div>
-        </>
+        </>,
+        document.body
       )}
-    </div>
+    </>
   );
 });
 VerticalDropdown.displayName = 'VerticalDropdown';
@@ -111,7 +132,7 @@ const ProductTabs = React.memo(({ products, activeProduct, onProductSelect, them
   const isCasegoods = categoryName?.toLowerCase() === 'casegoods';
   return (
     <div 
-      className="rounded-2xl overflow-visible"
+      className="rounded-2xl"
       style={{ 
         backgroundColor: 'rgba(255,255,255,0.92)',
         backdropFilter: 'blur(16px)',
