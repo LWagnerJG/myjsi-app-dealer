@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
-import { ArrowRight, Package } from 'lucide-react';
-import { PRODUCT_DATA } from './data.js';
+import { ArrowRight, Package, Filter, ChevronDown, Check, X } from 'lucide-react';
+import { PRODUCT_DATA, VERTICALS } from './data.js';
+import { useIsDesktop } from '../../hooks/useResponsive.js';
 
 // Configuration option sets
 const CASEGOODS_TYPICAL_OPTIONS = ['U-Shape','L-Shape','Single Ped Desk','Adjustable Ht Desk'];
@@ -9,6 +10,112 @@ const CONFERENCE_SIZE_OPTIONS = ['30x72','42x90','48x108','54x180','60x210'];
 const LOUNGE_SEATING_OPTIONS = ['Single Seater','Two Seater','Three Seater','Ottoman'];
 const MATERIAL_UPCHARGE = { laminate: 1, veneer: 1.12 };
 const TYPICAL_MULTIPLIERS = { 'U-Shape': 1, 'L-Shape': 0.92, 'Single Ped Desk': 0.85, 'Adjustable Ht Desk': 1.05 };
+
+// Filter dropdown component
+const FilterDropdown = React.memo(({ vertical, gsaOnly, onVerticalChange, onGsaChange, theme, productCount }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const activeLabel = vertical 
+    ? VERTICALS.find(v => v.key === vertical)?.label 
+    : 'All Markets';
+  
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all"
+        style={{
+          backgroundColor: (vertical || gsaOnly) ? theme.colors.accent + '15' : 'rgba(0,0,0,0.04)',
+          color: (vertical || gsaOnly) ? theme.colors.accent : theme.colors.textSecondary,
+          border: (vertical || gsaOnly) ? `1.5px solid ${theme.colors.accent}30` : '1.5px solid transparent'
+        }}
+      >
+        <Filter className="w-4 h-4" />
+        <span>{activeLabel}{gsaOnly ? ' · GSA' : ''}</span>
+        <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      
+      {isOpen && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+          <div 
+            className="absolute top-full left-0 mt-2 w-64 rounded-2xl overflow-hidden z-50 shadow-xl"
+            style={{ 
+              backgroundColor: theme.colors.surface,
+              border: `1px solid ${theme.colors.border}`
+            }}
+          >
+            {/* Vertical options */}
+            <div className="p-2">
+              <p className="px-3 py-2 text-[10px] font-semibold uppercase tracking-wider" style={{ color: theme.colors.textSecondary }}>
+                Market Vertical
+              </p>
+              <button
+                onClick={() => { onVerticalChange(null); }}
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors"
+                style={{ 
+                  backgroundColor: !vertical ? theme.colors.accent + '10' : 'transparent',
+                  color: !vertical ? theme.colors.accent : theme.colors.textPrimary
+                }}
+              >
+                <span className="font-medium">All Markets</span>
+                {!vertical && <Check className="w-4 h-4" />}
+              </button>
+              {VERTICALS.map(v => (
+                <button
+                  key={v.key}
+                  onClick={() => { onVerticalChange(v.key); }}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-colors"
+                  style={{ 
+                    backgroundColor: vertical === v.key ? theme.colors.accent + '10' : 'transparent',
+                    color: vertical === v.key ? theme.colors.accent : theme.colors.textPrimary
+                  }}
+                >
+                  <span className="font-medium">{v.label}</span>
+                  {vertical === v.key && <Check className="w-4 h-4" />}
+                </button>
+              ))}
+            </div>
+            
+            {/* GSA Checkbox - only show when Government is selected */}
+            {vertical === 'government' && (
+              <div className="px-2 pb-2 pt-1">
+                <div className="h-px mb-2" style={{ backgroundColor: theme.colors.border }} />
+                <button
+                  onClick={() => onGsaChange(!gsaOnly)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors"
+                  style={{ 
+                    backgroundColor: gsaOnly ? theme.colors.accent + '10' : 'transparent',
+                  }}
+                >
+                  <div 
+                    className="w-5 h-5 rounded-md flex items-center justify-center transition-all"
+                    style={{ 
+                      backgroundColor: gsaOnly ? theme.colors.accent : 'transparent',
+                      border: `2px solid ${gsaOnly ? theme.colors.accent : theme.colors.border}`
+                    }}
+                  >
+                    {gsaOnly && <Check className="w-3.5 h-3.5 text-white" />}
+                  </div>
+                  <span className="font-medium" style={{ color: theme.colors.textPrimary }}>GSA Approved Only</span>
+                </button>
+              </div>
+            )}
+            
+            {/* Results count */}
+            <div 
+              className="px-4 py-3 text-xs"
+              style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textSecondary }}
+            >
+              {productCount} product{productCount !== 1 ? 's' : ''} available
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+});
+FilterDropdown.displayName = 'FilterDropdown';
 
 // Product selection tabs - compact, refined glass aesthetic
 const ProductTabs = React.memo(({ products, activeProduct, onProductSelect, theme, categoryName }) => {
@@ -23,7 +130,7 @@ const ProductTabs = React.memo(({ products, activeProduct, onProductSelect, them
         boxShadow: '0 2px 12px rgba(0,0,0,0.04)'
       }}
     >
-      <div className="flex justify-center gap-4 overflow-x-auto scrollbar-hide px-4 py-3">
+      <div className="flex justify-start gap-4 overflow-x-auto scrollbar-hide px-4 py-3">
         {products.map(p => {
           const active = activeProduct.id === p.id;
           const baseScale = p?.thumbScale || (isCasegoods ? 1.3 : 1.1);
@@ -72,29 +179,35 @@ const ProductTabs = React.memo(({ products, activeProduct, onProductSelect, them
 });
 ProductTabs.displayName='ProductTabs';
 
-// Hero component - enhanced gradient and glass button
-const ProductHero = React.memo(({ product, theme, categoryId, onNavigate, categoryName }) => {
+// Hero component - constrained sizing for desktop
+const ProductHero = React.memo(({ product, theme, categoryId, onNavigate, categoryName, isDesktop }) => {
   const handleCompetitionClick = useCallback(()=> onNavigate(`products/category/${categoryId}/competition/${product.id}`),[categoryId,onNavigate,product.id]);
   const isChairCategory = /chair|guest|seating/i.test(categoryId) || /chair|guest|seating/i.test(categoryName||'');
   const isCasegoods = categoryId==='casegoods';
-  const aspectClass = isChairCategory? 'aspect-[4/3]' : 'aspect-[16/10]';
+  // Constrain aspect ratio more on desktop for chairs to prevent massive images
+  const aspectClass = isDesktop 
+    ? (isChairCategory ? 'aspect-[16/9]' : 'aspect-[16/9]')
+    : (isChairCategory ? 'aspect-[4/3]' : 'aspect-[16/10]');
   const [currentImg,setCurrentImg]=useState(product.image); const [prevImg,setPrevImg]=useState(null);
   useEffect(()=>{ if(product.image!==currentImg){ setPrevImg(currentImg); setCurrentImg(product.image); const t=setTimeout(()=>setPrevImg(null),450); return ()=>clearTimeout(t);} },[product.image,currentImg]);
-  // More aggressive zoom to fill frame and eliminate borders
-  let baseZoom = product.heroScale ? Math.min(1.5, Math.max(1.1, product.heroScale * 1.2)) : (isChairCategory?1.25:1.4); if(isCasegoods) baseZoom*=1.1;
+  // Reduced zoom for desktop to keep product properly framed
+  let baseZoom = product.heroScale ? Math.min(1.3, Math.max(1.0, product.heroScale)) : (isChairCategory?1.1:1.2); 
+  if(isCasegoods) baseZoom*=1.05;
+  if(isDesktop) baseZoom *= 0.85; // Reduce zoom further on desktop
   return (
     <div 
       className={`relative w-full ${aspectClass} rounded-3xl overflow-hidden group`} 
       style={{ 
         background: 'linear-gradient(165deg, #e8e6e1 0%, #d4d0c8 50%, #c5c0b6 100%)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)'
+        boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
+        maxHeight: isDesktop ? '400px' : undefined
       }}
     >
-      {prevImg && <img src={prevImg} alt="prev" className="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-500" />}
+      {prevImg && <img src={prevImg} alt="prev" className="absolute inset-0 w-full h-full object-contain opacity-0 transition-opacity duration-500" />}
       <img 
         src={currentImg} 
         alt={product.name} 
-        className="absolute inset-0 w-full h-full object-cover transition-all duration-[900ms] ease-[cubic-bezier(.22,.8,.12,.99)] opacity-0 group-hover:scale-[1.02]" 
+        className="absolute inset-0 w-full h-full object-contain transition-all duration-[900ms] ease-[cubic-bezier(.22,.8,.12,.99)] opacity-0 group-hover:scale-[1.02]" 
         style={{ transform:`scale(${baseZoom})`, animation:'fadeInHero 600ms forwards' }} 
       />
       {/* Refined gradient overlay */}
@@ -316,12 +429,17 @@ const ErrorState = ({ theme, message='The requested item does not exist.' }) => 
 
 export const ProductComparisonScreen = ({ categoryId, onNavigate, theme }) => {
   const categoryData = PRODUCT_DATA?.[categoryId];
+  const isDesktop = useIsDesktop();
   const [activeProduct,setActiveProduct]=useState(categoryData?.products?.[0]);
   const isGuest = categoryId==='guest';
   const isCasegoods = categoryId==='casegoods';
   const isConference = categoryId==='conference-tables';
   const isLounge = categoryId==='lounge';
   const isTraining = categoryId==='training-tables';
+
+  // Filter states
+  const [verticalFilter, setVerticalFilter] = useState(null);
+  const [gsaOnly, setGsaOnly] = useState(false);
 
   // States for configurations
   const [materialMode,setMaterialMode]=useState(isGuest?'wood':'laminate'); // wood/metal only used for guest filtering; laminate default for others
@@ -333,23 +451,80 @@ export const ProductComparisonScreen = ({ categoryId, onNavigate, theme }) => {
   const handleProductSelect = useCallback(p=>setActiveProduct(p),[]);
   if(!categoryData) return <ErrorState theme={theme} />;
 
-  // Visible products filtering for guest
+  // Apply vertical and GSA filters first
+  const filteredByMarket = useMemo(() => {
+    let products = categoryData.products;
+    
+    // Filter by vertical
+    if (verticalFilter) {
+      products = products.filter(p => p.verticals?.includes(verticalFilter));
+    }
+    
+    // Filter by GSA (only when government is selected and GSA checkbox is on)
+    if (gsaOnly && verticalFilter === 'government') {
+      products = products.filter(p => p.gsaApproved === true);
+    }
+    
+    return products;
+  }, [categoryData, verticalFilter, gsaOnly]);
+
+  // Visible products filtering for guest (leg type) on top of market filters
   const visibleProducts = useMemo(()=>{
     if(isGuest){
-      return categoryData.products.filter(p => p.legType === guestLegType);
+      return filteredByMarket.filter(p => p.legType === guestLegType);
     }
-    return categoryData.products;
-  },[categoryData,isGuest,guestLegType]);
+    return filteredByMarket;
+  },[filteredByMarket,isGuest,guestLegType]);
 
-  useEffect(()=>{ if(isGuest && activeProduct && !visibleProducts.includes(activeProduct)){ const next=visibleProducts[0]; if(next) setActiveProduct(next);} },[isGuest,activeProduct,visibleProducts]);
+  // Reset active product if it's no longer in visible products
+  useEffect(()=>{ 
+    if(activeProduct && !visibleProducts.find(p => p.id === activeProduct.id)){ 
+      const next=visibleProducts[0]; 
+      if(next) setActiveProduct(next);
+    } 
+  },[activeProduct,visibleProducts]);
+
+  // Reset GSA when vertical changes away from government
+  useEffect(() => {
+    if (verticalFilter !== 'government') {
+      setGsaOnly(false);
+    }
+  }, [verticalFilter]);
+
+  // Content max-width for desktop
+  const contentMaxWidth = isDesktop ? 'max-w-4xl mx-auto w-full' : '';
 
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className="p-4 pb-28 space-y-5">
-          <ProductTabs products={visibleProducts} activeProduct={activeProduct} onProductSelect={handleProductSelect} theme={theme} categoryName={categoryData.name} />
-          <ProductHero product={activeProduct} theme={theme} categoryId={categoryId} onNavigate={onNavigate} categoryName={categoryData.name} />
-          <PricingTable products={visibleProducts} activeProduct={activeProduct} onSelectProduct={handleProductSelect} theme={theme} categoryId={categoryId} typicalLayout={typicalLayout} onTypicalLayoutChange={setTypicalLayout} conferenceSize={conferenceSize} onConferenceSizeChange={setConferenceSize} loungeConfig={loungeConfig} onLoungeConfigChange={setLoungeConfig} guestLegType={guestLegType} onGuestLegTypeChange={setGuestLegType} materialMode={materialMode} onMaterialModeChange={setMaterialMode} />
+        <div className={`p-4 pb-28 space-y-4 ${contentMaxWidth}`}>
+          {/* Filter row */}
+          <div className="flex items-center justify-between">
+            <FilterDropdown
+              vertical={verticalFilter}
+              gsaOnly={gsaOnly}
+              onVerticalChange={setVerticalFilter}
+              onGsaChange={setGsaOnly}
+              theme={theme}
+              productCount={visibleProducts.length}
+            />
+          </div>
+          
+          {visibleProducts.length === 0 ? (
+            <GlassCard theme={theme} className="p-8 text-center">
+              <Package className="w-12 h-12 mx-auto mb-4" style={{ color: theme.colors.textSecondary }} />
+              <p className="font-semibold mb-2" style={{ color: theme.colors.textPrimary }}>No Products Available</p>
+              <p className="text-sm" style={{ color: theme.colors.textSecondary }}>
+                Try adjusting your filters to see more products
+              </p>
+            </GlassCard>
+          ) : (
+            <>
+              <ProductTabs products={visibleProducts} activeProduct={activeProduct} onProductSelect={handleProductSelect} theme={theme} categoryName={categoryData.name} />
+              <ProductHero product={activeProduct} theme={theme} categoryId={categoryId} onNavigate={onNavigate} categoryName={categoryData.name} isDesktop={isDesktop} />
+              <PricingTable products={visibleProducts} activeProduct={activeProduct} onSelectProduct={handleProductSelect} theme={theme} categoryId={categoryId} typicalLayout={typicalLayout} onTypicalLayoutChange={setTypicalLayout} conferenceSize={conferenceSize} onConferenceSizeChange={setConferenceSize} loungeConfig={loungeConfig} onLoungeConfigChange={setLoungeConfig} guestLegType={guestLegType} onGuestLegTypeChange={setGuestLegType} materialMode={materialMode} onMaterialModeChange={setMaterialMode} />
+            </>
+          )}
         </div>
       </div>
     </div>

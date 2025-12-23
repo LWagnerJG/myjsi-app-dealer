@@ -6,16 +6,24 @@ const localImage = (path) => path; // helper passthrough for public assets
 // Helper to build competitor entry (placeholder illustrative only)
 const comp = (name, laminate, advantage) => ({ id: name.toLowerCase().replace(/[^a-z0-9]+/g,'-'), name, laminate, adv: advantage });
 
+// Vertical market definitions
+export const VERTICALS = [
+    { key: 'corporate', label: 'Corporate' },
+    { key: 'education', label: 'Education' },
+    { key: 'healthcare', label: 'Healthcare' },
+    { key: 'government', label: 'Government' }
+];
+
 export const PRODUCT_DATA = {
     'benches': {
         name: 'Benches',
         products: [
             // Only benches with actual bench images
-            { id: 'poet', name: 'Poet', price: 780, image: localImage('/category-images/bench-images/jsi_poet_comp_00050.jpg'), thumbScale: 1.3, heroScale: 1.15 },
-            { id: 'indie', name: 'Indie', price: 920, image: localImage('/category-images/bench-images/jsi_indie_comp_00040.jpg'), thumbScale: 1.3, heroScale: 1.15 },
-            { id: 'oxley', name: 'Oxley', price: 1050, image: localImage('/category-images/bench-images/jsi_oxley_comp_00001_5ueHuWt.jpg'), thumbScale: 1.35, heroScale: 1.18 },
-            { id: 'native', name: 'Native', price: 1200, image: localImage('/category-images/bench-images/jsi_native_comp_00028.jpg'), thumbScale: 1.4, heroScale: 1.2 },
-            { id: 'americana', name: 'Americana', price: 1350, image: localImage('/category-images/bench-images/jsi_americana_comp_00026.jpg'), thumbScale: 1.4, heroScale: 1.2 },
+            { id: 'poet', name: 'Poet', price: 780, image: localImage('/category-images/bench-images/jsi_poet_comp_00050.jpg'), thumbScale: 1.3, heroScale: 1.15, verticals: ['corporate', 'education', 'healthcare', 'government'], gsaApproved: true },
+            { id: 'indie', name: 'Indie', price: 920, image: localImage('/category-images/bench-images/jsi_indie_comp_00040.jpg'), thumbScale: 1.3, heroScale: 1.15, verticals: ['corporate', 'education', 'healthcare', 'government'], gsaApproved: true },
+            { id: 'oxley', name: 'Oxley', price: 1050, image: localImage('/category-images/bench-images/jsi_oxley_comp_00001_5ueHuWt.jpg'), thumbScale: 1.35, heroScale: 1.18, verticals: ['corporate', 'education', 'government'], gsaApproved: true },
+            { id: 'native', name: 'Native', price: 1200, image: localImage('/category-images/bench-images/jsi_native_comp_00028.jpg'), thumbScale: 1.4, heroScale: 1.2, verticals: ['corporate', 'healthcare'], gsaApproved: true },
+            { id: 'americana', name: 'Americana', price: 1350, image: localImage('/category-images/bench-images/jsi_americana_comp_00026.jpg'), thumbScale: 1.4, heroScale: 1.2, verticals: ['corporate', 'government'], gsaApproved: true },
         ],
         competition: [],
         competitionByProduct: {
@@ -29,12 +37,12 @@ export const PRODUCT_DATA = {
     'casegoods': {
         name: 'Casegoods',
         products: [
-            { id: 'vision', name: 'Vision', price: 3200, image: localImage('/category-images/casegood-images/jsi_vision_config_000007.jpg') },
-            { id: 'flux', name: 'Flux', price: 3700, image: localImage('/category-images/casegood-images/jsi_flux_config_00008.jpg') },
-            { id: 'brogan', name: 'Brogan', price: 4200, image: localImage('/category-images/casegood-images/jsi_brogan_config_0015.jpg') },
-            { id: 'finale', name: 'Finale', price: 4700, image: localImage('/category-images/casegood-images/jsi_finale_config_00013_UWjv5eM.jpg') },
-            { id: 'walden', name: 'Walden', price: 5200, image: localImage('/category-images/casegood-images/jsi_walden_config_00001.jpg') },
-            { id: 'wellington', name: 'Wellington', price: 5700, image: localImage('/category-images/casegood-images/jsi_wellington_config_00006.jpg') },
+            { id: 'vision', name: 'Vision', price: 3200, image: localImage('/category-images/casegood-images/jsi_vision_config_000007.jpg'), verticals: ['corporate', 'education', 'healthcare', 'government'], gsaApproved: true },
+            { id: 'flux', name: 'Flux', price: 3700, image: localImage('/category-images/casegood-images/jsi_flux_config_00008.jpg'), verticals: ['corporate', 'education', 'healthcare', 'government'], gsaApproved: true },
+            { id: 'brogan', name: 'Brogan', price: 4200, image: localImage('/category-images/casegood-images/jsi_brogan_config_0015.jpg'), verticals: ['corporate', 'government'], gsaApproved: true },
+            { id: 'finale', name: 'Finale', price: 4700, image: localImage('/category-images/casegood-images/jsi_finale_config_00013_UWjv5eM.jpg'), verticals: ['corporate', 'healthcare'], gsaApproved: true },
+            { id: 'walden', name: 'Walden', price: 5200, image: localImage('/category-images/casegood-images/jsi_walden_config_00001.jpg'), verticals: ['corporate'], gsaApproved: false },
+            { id: 'wellington', name: 'Wellington', price: 5700, image: localImage('/category-images/casegood-images/jsi_wellington_config_00006.jpg'), verticals: ['corporate', 'government'], gsaApproved: true },
         ],
         competition: [],
         competitionByProduct: {
@@ -49,9 +57,9 @@ export const PRODUCT_DATA = {
     'conference-tables': {
         name: 'Conference Tables',
         products: [
-            { id: 'vision-table', name: 'Vision', price: 4500, image: localImage('/category-images/conference-images/jsi_anthology_comp_0003_NBW46kS.jpg') },
-            { id: 'reef', name: 'Reef', price: 4200, image: localImage('/category-images/conference-images/jsi_anthology_comp_0004_OlfZHks.jpg') },
-            { id: 'moto', name: 'Moto', price: 4000, image: localImage('/category-images/conference-images/jsi_anthology_comp_0006.jpg') },
+            { id: 'vision-table', name: 'Vision', price: 4500, image: localImage('/category-images/conference-images/jsi_anthology_comp_0003_NBW46kS.jpg'), verticals: ['corporate', 'education', 'healthcare', 'government'], gsaApproved: true },
+            { id: 'reef', name: 'Reef', price: 4200, image: localImage('/category-images/conference-images/jsi_anthology_comp_0004_OlfZHks.jpg'), verticals: ['corporate', 'education', 'government'], gsaApproved: true },
+            { id: 'moto', name: 'Moto', price: 4000, image: localImage('/category-images/conference-images/jsi_anthology_comp_0006.jpg'), verticals: ['corporate', 'education'], gsaApproved: true },
         ],
         competition: [],
         competitionByProduct: {
@@ -63,24 +71,24 @@ export const PRODUCT_DATA = {
     'guest': {
         name: 'Guest',
         products: [
-            { id: 'arwyn-guest', name: 'Arwyn', price: 520, legType: 'wood', image: localImage('/category-images/guest-images/jsi_arwyn_comp_00032.jpg'), thumbScale: 1.4, heroScale: 1.2 },
-            { id: 'bourne', name: 'Bourne', price: 560, legType: 'wood', image: localImage('/category-images/guest-images/jsi_bourne_comp_00002_k6eFRce.jpg'), thumbScale: 1.3, heroScale: 1.15 },
-            { id: 'cosgrove', name: 'Cosgrove', price: 610, legType: 'metal', image: localImage('/category-images/guest-images/jsi_cosgrove_comp_guest_midback_arms_00004.jpg'), thumbScale: 1.5, heroScale: 1.25 },
-            { id: 'henley', name: 'Henley', price: 630, legType: 'wood', image: localImage('/category-images/guest-images/jsi_henley_comp_00001.jpg'), thumbScale: 1.5, heroScale: 1.25 },
-            { id: 'knox', name: 'Knox', price: 640, legType: 'metal', image: localImage('/category-images/guest-images/jsi_knox_comp_00020.jpg'), thumbScale: 1.8, heroScale: 1.35 },
-            { id: 'ramona', name: 'Ramona', price: 660, legType: 'wood', image: localImage('/category-images/guest-images/jsi_ramona_comp_rotation_ra2581f_00001.jpg'), thumbScale: 1.6, heroScale: 1.3 },
-            { id: 'ria', name: 'Ria', price: 680, legType: 'metal', image: localImage('/category-images/guest-images/jsi_ria_comp_00007.jpg'), thumbScale: 1.9, heroScale: 1.4 },
-            { id: 'satisse', name: 'Satisse', price: 705, legType: 'metal', image: localImage('/category-images/guest-images/jsi_satisse_comp_00001_LwTdLhw.jpg'), thumbScale: 2.0, heroScale: 1.5 },
-            { id: 'sosa', name: 'Sosa', price: 720, legType: 'metal', image: localImage('/category-images/guest-images/jsi_sosa_comp_00020.jpg'), thumbScale: 1.7, heroScale: 1.3 },
-            { id: 'wink', name: 'Wink', price: 740, legType: 'wood', image: localImage('/category-images/guest-images/jsi_wink_comp_00070.jpg'), thumbScale: 1.9, heroScale: 1.4 },
-            { id: 'avini', name: 'Avini', price: 760, legType: 'wood', image: localImage('/category-images/guest-images/jsi_avini_comp_00007.jpg'), thumbScale: 1.7, heroScale: 1.35 },
-            { id: 'boston', name: 'Boston', price: 780, legType: 'wood', image: localImage('/category-images/guest-images/jsi_boston_comp_0007_jBfEUNr.jpg'), thumbScale: 1.65, heroScale: 1.3 },
-            { id: 'collective-motion', name: 'Collective Motion', price: 800, legType: 'metal', image: localImage('/category-images/guest-images/jsi_collectivemotion_comp_00014.jpg'), thumbScale: 1.6, heroScale: 1.25 },
-            { id: 'madison', name: 'Madison', price: 820, legType: 'wood', image: localImage('/category-images/guest-images/jsi_madison_comp_00003.jpg'), thumbScale: 1.6, heroScale: 1.3 },
-            { id: 'millie', name: 'Millie', price: 840, legType: 'wood', image: localImage('/category-images/guest-images/jsi_millie_comp_00005_g77W9GX.jpg'), thumbScale: 1.75, heroScale: 1.35 },
-            { id: 'totem', name: 'Totem', price: 860, legType: 'wood', image: localImage('/category-images/guest-images/jsi_totem_comp_00003.jpg'), thumbScale: 1.5, heroScale: 1.2 },
-            { id: 'harbor', name: 'Harbor', price: 880, legType: 'wood', image: localImage('/category-images/guest-images/jsi_harbor_comp_00010_7pPSeR6.jpg'), thumbScale: 1.55, heroScale: 1.25 },
-            { id: 'bryn', name: 'Bryn', price: 900, legType: 'wood', image: localImage('/category-images/guest-images/jsi_bryn_comp_00023.jpg'), thumbScale: 1.6, heroScale: 1.3 }
+            { id: 'arwyn-guest', name: 'Arwyn', price: 520, legType: 'wood', image: localImage('/category-images/guest-images/jsi_arwyn_comp_00032.jpg'), thumbScale: 1.4, heroScale: 1.2, verticals: ['corporate', 'education', 'healthcare', 'government'], gsaApproved: true },
+            { id: 'bourne', name: 'Bourne', price: 560, legType: 'wood', image: localImage('/category-images/guest-images/jsi_bourne_comp_00002_k6eFRce.jpg'), thumbScale: 1.3, heroScale: 1.15, verticals: ['corporate', 'education', 'healthcare', 'government'], gsaApproved: true },
+            { id: 'cosgrove', name: 'Cosgrove', price: 610, legType: 'metal', image: localImage('/category-images/guest-images/jsi_cosgrove_comp_guest_midback_arms_00004.jpg'), thumbScale: 1.5, heroScale: 1.25, verticals: ['corporate', 'healthcare'], gsaApproved: true },
+            { id: 'henley', name: 'Henley', price: 630, legType: 'wood', image: localImage('/category-images/guest-images/jsi_henley_comp_00001.jpg'), thumbScale: 1.5, heroScale: 1.25, verticals: ['corporate', 'education'], gsaApproved: false },
+            { id: 'knox', name: 'Knox', price: 640, legType: 'metal', image: localImage('/category-images/guest-images/jsi_knox_comp_00020.jpg'), thumbScale: 1.8, heroScale: 1.35, verticals: ['corporate', 'healthcare', 'government'], gsaApproved: true },
+            { id: 'ramona', name: 'Ramona', price: 660, legType: 'wood', image: localImage('/category-images/guest-images/jsi_ramona_comp_rotation_ra2581f_00001.jpg'), thumbScale: 1.6, heroScale: 1.3, verticals: ['corporate', 'education', 'healthcare'], gsaApproved: true },
+            { id: 'ria', name: 'Ria', price: 680, legType: 'metal', image: localImage('/category-images/guest-images/jsi_ria_comp_00007.jpg'), thumbScale: 1.9, heroScale: 1.4, verticals: ['corporate', 'healthcare'], gsaApproved: true },
+            { id: 'satisse', name: 'Satisse', price: 705, legType: 'metal', image: localImage('/category-images/guest-images/jsi_satisse_comp_00001_LwTdLhw.jpg'), thumbScale: 2.0, heroScale: 1.5, verticals: ['corporate'], gsaApproved: false },
+            { id: 'sosa', name: 'Sosa', price: 720, legType: 'metal', image: localImage('/category-images/guest-images/jsi_sosa_comp_00020.jpg'), thumbScale: 1.7, heroScale: 1.3, verticals: ['corporate', 'education', 'government'], gsaApproved: true },
+            { id: 'wink', name: 'Wink', price: 740, legType: 'wood', image: localImage('/category-images/guest-images/jsi_wink_comp_00070.jpg'), thumbScale: 1.9, heroScale: 1.4, verticals: ['corporate', 'education', 'healthcare', 'government'], gsaApproved: true },
+            { id: 'avini', name: 'Avini', price: 760, legType: 'wood', image: localImage('/category-images/guest-images/jsi_avini_comp_00007.jpg'), thumbScale: 1.7, heroScale: 1.35, verticals: ['corporate', 'education', 'healthcare'], gsaApproved: true },
+            { id: 'boston', name: 'Boston', price: 780, legType: 'wood', image: localImage('/category-images/guest-images/jsi_boston_comp_0007_jBfEUNr.jpg'), thumbScale: 1.65, heroScale: 1.3, verticals: ['corporate', 'education'], gsaApproved: true },
+            { id: 'collective-motion', name: 'Collective Motion', price: 800, legType: 'metal', image: localImage('/category-images/guest-images/jsi_collectivemotion_comp_00014.jpg'), thumbScale: 1.6, heroScale: 1.25, verticals: ['corporate', 'healthcare'], gsaApproved: true },
+            { id: 'madison', name: 'Madison', price: 820, legType: 'wood', image: localImage('/category-images/guest-images/jsi_madison_comp_00003.jpg'), thumbScale: 1.6, heroScale: 1.3, verticals: ['corporate', 'education', 'healthcare', 'government'], gsaApproved: true },
+            { id: 'millie', name: 'Millie', price: 840, legType: 'wood', image: localImage('/category-images/guest-images/jsi_millie_comp_00005_g77W9GX.jpg'), thumbScale: 1.75, heroScale: 1.35, verticals: ['corporate', 'education'], gsaApproved: true },
+            { id: 'totem', name: 'Totem', price: 860, legType: 'wood', image: localImage('/category-images/guest-images/jsi_totem_comp_00003.jpg'), thumbScale: 1.5, heroScale: 1.2, verticals: ['corporate', 'education', 'government'], gsaApproved: true },
+            { id: 'harbor', name: 'Harbor', price: 880, legType: 'wood', image: localImage('/category-images/guest-images/jsi_harbor_comp_00010_7pPSeR6.jpg'), thumbScale: 1.55, heroScale: 1.25, verticals: ['corporate', 'healthcare'], gsaApproved: true },
+            { id: 'bryn', name: 'Bryn', price: 900, legType: 'wood', image: localImage('/category-images/guest-images/jsi_bryn_comp_00023.jpg'), thumbScale: 1.6, heroScale: 1.3, verticals: ['corporate', 'education', 'healthcare', 'government'], gsaApproved: true }
         ],
         competition: [],
         competitionByProduct: {
@@ -107,9 +115,9 @@ export const PRODUCT_DATA = {
     'lounge': {
         name: 'Lounge',
         products: [
-            { id: 'arwyn', name: 'Arwyn', price: 1500, image: localImage('/category-images/lounge-images/jsi_arwyn_comp_00002.jpg'), thumbScale: 1.3, heroScale: 1.15 },
-            { id: 'indie-lounge', name: 'Indie', price: 1350, image: localImage('/category-images/lounge-images/jsi_indie_comp_00060.jpg'), thumbScale: 1.3, heroScale: 1.15 },
-            { id: 'poet-lounge', name: 'Poet', price: 1200, image: localImage('/category-images/lounge-images/jsi_poet_component_00008.jpg'), thumbScale: 1.3, heroScale: 1.15 },
+            { id: 'arwyn', name: 'Arwyn', price: 1500, image: localImage('/category-images/lounge-images/jsi_arwyn_comp_00002.jpg'), thumbScale: 1.3, heroScale: 1.15, verticals: ['corporate', 'education', 'healthcare', 'government'], gsaApproved: true },
+            { id: 'indie-lounge', name: 'Indie', price: 1350, image: localImage('/category-images/lounge-images/jsi_indie_comp_00060.jpg'), thumbScale: 1.3, heroScale: 1.15, verticals: ['corporate', 'education', 'healthcare'], gsaApproved: true },
+            { id: 'poet-lounge', name: 'Poet', price: 1200, image: localImage('/category-images/lounge-images/jsi_poet_component_00008.jpg'), thumbScale: 1.3, heroScale: 1.15, verticals: ['corporate', 'education', 'healthcare', 'government'], gsaApproved: true },
         ],
         competition: [],
         competitionByProduct: {
@@ -121,9 +129,9 @@ export const PRODUCT_DATA = {
     'swivels': {
         name: 'Swivels',
         products: [
-            { id: 'arwyn-swivel', name: 'Arwyn Conference', price: 1300, image: localImage('/category-images/swivel-images/jsi_arwynconference_comp_0001_7U1AfYF.jpg'), thumbScale: 1.5, heroScale: 1.25 },
-            { id: 'cosgrove-swivel', name: 'Cosgrove', price: 850, image: localImage('/category-images/swivel-images/jsi_cosgrove_comp_highback_arms_00002_KAky10n.jpg'), thumbScale: 1.5, heroScale: 1.25 },
-            { id: 'garvey', name: 'Garvey', price: 680, image: localImage('/category-images/swivel-images/jsi_garveyr5_comp_00002.jpg'), thumbScale: 1.5, heroScale: 1.25 },
+            { id: 'arwyn-swivel', name: 'Arwyn Conference', price: 1300, image: localImage('/category-images/swivel-images/jsi_arwynconference_comp_0001_7U1AfYF.jpg'), thumbScale: 1.5, heroScale: 1.25, verticals: ['corporate', 'education', 'healthcare', 'government'], gsaApproved: true },
+            { id: 'cosgrove-swivel', name: 'Cosgrove', price: 850, image: localImage('/category-images/swivel-images/jsi_cosgrove_comp_highback_arms_00002_KAky10n.jpg'), thumbScale: 1.5, heroScale: 1.25, verticals: ['corporate', 'healthcare'], gsaApproved: true },
+            { id: 'garvey', name: 'Garvey', price: 680, image: localImage('/category-images/swivel-images/jsi_garveyr5_comp_00002.jpg'), thumbScale: 1.5, heroScale: 1.25, verticals: ['corporate', 'education', 'government'], gsaApproved: true },
         ],
         competition: [],
         competitionByProduct: {
@@ -135,9 +143,9 @@ export const PRODUCT_DATA = {
     'training-tables': {
         name: 'Training Tables',
         products: [
-            { id: 'lok', name: 'Lok', price: 950, image: localImage('/category-images/training-images/jsi_lok_comp_00001.jpg'), thumbScale: 1.2, heroScale: 1.1 },
-            { id: 'lok-quickship', name: 'Lok QuickShip', price: 900, image: localImage('/category-images/training-images/jsi_lokquickship_comp_0004_scnOitC.jpg'), thumbScale: 1.2, heroScale: 1.1 },
-            { id: 'nosh', name: 'Nosh', price: 850, image: localImage('/category-images/training-images/jsi_nosh_comp_00011.jpg'), thumbScale: 1.2, heroScale: 1.1 },
+            { id: 'lok', name: 'Lok', price: 950, image: localImage('/category-images/training-images/jsi_lok_comp_00001.jpg'), thumbScale: 1.2, heroScale: 1.1, verticals: ['corporate', 'education', 'healthcare', 'government'], gsaApproved: true },
+            { id: 'lok-quickship', name: 'Lok QuickShip', price: 900, image: localImage('/category-images/training-images/jsi_lokquickship_comp_0004_scnOitC.jpg'), thumbScale: 1.2, heroScale: 1.1, verticals: ['corporate', 'education', 'government'], gsaApproved: true },
+            { id: 'nosh', name: 'Nosh', price: 850, image: localImage('/category-images/training-images/jsi_nosh_comp_00011.jpg'), thumbScale: 1.2, heroScale: 1.1, verticals: ['corporate', 'education'], gsaApproved: true },
         ],
         competition: [],
         competitionByProduct: {
