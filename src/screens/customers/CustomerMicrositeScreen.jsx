@@ -7,13 +7,14 @@ import { GlassCard } from '../../components/common/GlassCard.jsx';
 import { 
   FileText, Package, Image, Users, ChevronRight, Download, Plus, 
   CheckCircle, X, Send, MapPin, Shield, Phone, Mail, Share2, 
-  Eye, Edit3, UserCog, Copy, Link2, Check
+  Eye, Edit3, UserCog, Copy, Link2, Check, Box, FileCheck, DollarSign
 } from 'lucide-react';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
 import { useModalState } from '../../hooks/useModalState.js';
 import { DESIGN_TOKENS } from '../../design-system/tokens.js';
 import { 
   getCustomerById, 
+  getTypicalsForCustomer,
   STATUS_COLORS, 
   MATERIAL_CATEGORIES, 
   SPACE_TYPES
@@ -498,6 +499,244 @@ const ShareModal = ({ isOpen, onClose, theme, customerName, customerId }) => {
   );
 };
 
+// ============================================
+// TYPICALS SECTION - Vision Casegood Configurations
+// ============================================
+const TypicalCard = ({ typical, theme, onClick }) => {
+  const [imageError, setImageError] = useState(false);
+  const lowestPrice = Math.min(...typical.configurations.map(c => c.listPrice));
+  
+  return (
+    <button
+      onClick={onClick}
+      className="group flex flex-col rounded-2xl overflow-hidden transition-all hover:shadow-lg"
+      style={{ 
+        backgroundColor: theme.colors.surface,
+        border: `1px solid ${theme.colors.border}`
+      }}
+    >
+      {/* Image */}
+      <div 
+        className="aspect-[4/3] relative overflow-hidden flex items-center justify-center"
+        style={{ backgroundColor: theme.colors.subtle }}
+      >
+        {!imageError ? (
+          <img 
+            src={typical.imageUrl}
+            alt={typical.name}
+            className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center text-center p-4">
+            <Box className="w-12 h-12 mb-2" style={{ color: theme.colors.border }} />
+            <span className="text-xs" style={{ color: theme.colors.textSecondary }}>3D Preview</span>
+          </div>
+        )}
+      </div>
+      
+      {/* Info */}
+      <div className="p-3 text-left">
+        <h4 className="font-bold text-sm mb-0.5" style={{ color: theme.colors.textPrimary }}>
+          {typical.name}
+        </h4>
+        <p className="text-[11px] mb-2" style={{ color: theme.colors.textSecondary }}>
+          {typical.dimensions}
+        </p>
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-semibold" style={{ color: theme.colors.accent }}>
+            From ${lowestPrice.toLocaleString()}
+          </span>
+          <ChevronRight className="w-4 h-4" style={{ color: theme.colors.border }} />
+        </div>
+      </div>
+    </button>
+  );
+};
+
+const TypicalDetailModal = ({ typical, isOpen, onClose, theme }) => {
+  const { openModal, closeModal } = useModalState();
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      openModal();
+      document.body.style.overflow = 'hidden';
+      return () => {
+        closeModal();
+        document.body.style.overflow = '';
+      };
+    } else {
+      closeModal();
+    }
+  }, [isOpen, openModal, closeModal]);
+
+  if (!isOpen || !typical) return null;
+
+  const mobileNavHeight = 80;
+  const safeAreaBottom = typeof window !== 'undefined' ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom') || '0', 10) : 0;
+  const bottomPadding = typeof window !== 'undefined' && window.innerWidth < 1024 
+        ? mobileNavHeight + safeAreaBottom + 16 
+        : 0;
+
+  return createPortal(
+    <>
+      <div 
+        className="fixed inset-0 transition-opacity duration-300 pointer-events-auto"
+        style={{ 
+          top: 76,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          zIndex: DESIGN_TOKENS.zIndex.overlay 
+        }}
+        onClick={onClose}
+      />
+      <div 
+        className="fixed inset-x-0 flex items-end sm:items-center justify-center transition-transform duration-300 pointer-events-none"
+        style={{ 
+          top: 76,
+          bottom: typeof window !== 'undefined' && window.innerWidth < 1024 ? `${bottomPadding}px` : 0,
+          padding: typeof window !== 'undefined' && window.innerWidth < 1024 ? '1rem' : '1.5rem',
+          zIndex: DESIGN_TOKENS.zIndex.modal 
+        }}
+        onClick={onClose}
+      >
+        <div 
+          className="w-full max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden pointer-events-auto flex flex-col shadow-2xl"
+          style={{ 
+            backgroundColor: theme.colors.background,
+            maxHeight: typeof window !== 'undefined' && window.innerWidth < 1024
+              ? `calc(100vh - ${76 + bottomPadding}px)`
+              : '85vh',
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: theme.colors.border }}>
+            <div>
+              <h2 className="font-bold text-lg" style={{ color: theme.colors.textPrimary }}>{typical.name}</h2>
+              <p className="text-xs" style={{ color: theme.colors.textSecondary }}>{typical.dimensions}</p>
+            </div>
+            <button onClick={onClose} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.colors.subtle }}>
+              <X className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto scrollbar-hide">
+            {/* Image */}
+            <div 
+              className="aspect-square flex items-center justify-center p-6"
+              style={{ backgroundColor: theme.colors.subtle }}
+            >
+              {!imageError ? (
+                <img 
+                  src={typical.imageUrl}
+                  alt={typical.name}
+                  className="max-w-full max-h-full object-contain"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center">
+                  <Box className="w-20 h-20 mb-3" style={{ color: theme.colors.border }} />
+                  <span className="text-sm" style={{ color: theme.colors.textSecondary }}>3D Preview</span>
+                </div>
+              )}
+            </div>
+
+            {/* Description */}
+            <div className="p-4 border-b" style={{ borderColor: theme.colors.border }}>
+              <p className="text-sm" style={{ color: theme.colors.textSecondary }}>
+                {typical.description}
+              </p>
+            </div>
+
+            {/* Configurations/Pricing */}
+            <div className="p-4 space-y-3">
+              <h3 className="font-bold text-sm flex items-center gap-2" style={{ color: theme.colors.textPrimary }}>
+                <DollarSign className="w-4 h-4" style={{ color: theme.colors.accent }} />
+                Configuration Pricing
+              </h3>
+              {typical.configurations.map(config => (
+                <div 
+                  key={config.id}
+                  className="flex items-center justify-between p-3 rounded-xl"
+                  style={{ backgroundColor: theme.colors.subtle }}
+                >
+                  <div>
+                    <p className="font-semibold text-sm" style={{ color: theme.colors.textPrimary }}>
+                      {config.sku} <span className="font-normal" style={{ color: theme.colors.textSecondary }}>{config.finish}</span>
+                    </p>
+                  </div>
+                  <p className="font-bold text-base" style={{ color: theme.colors.accent }}>
+                    ${config.listPrice.toLocaleString()}
+                  </p>
+                </div>
+              ))}
+              <p className="text-[10px] text-center pt-2" style={{ color: theme.colors.textSecondary }}>
+                List pricing shown. Contact your JSI rep for discounted pricing.
+              </p>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="p-4 border-t" style={{ borderColor: theme.colors.border }}>
+            <button
+              onClick={onClose}
+              className="w-full py-3 rounded-full font-semibold text-sm"
+              style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textPrimary }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </>,
+    document.body
+  );
+};
+
+const TypicalsSection = ({ customerId, theme, isDesktop }) => {
+  const typicals = useMemo(() => getTypicalsForCustomer(customerId), [customerId]);
+  const [selectedTypical, setSelectedTypical] = useState(null);
+
+  if (typicals.length === 0) return null;
+
+  return (
+    <>
+      <SectionCard title="Typicals" icon={Box} theme={theme}>
+        <p className="text-xs mb-4" style={{ color: theme.colors.textSecondary }}>
+          Pre-configured Vision casegood workstations with list pricing
+        </p>
+        <div className={`grid gap-3 ${isDesktop ? 'grid-cols-3' : 'grid-cols-2'}`}>
+          {typicals.slice(0, isDesktop ? 6 : 4).map(typical => (
+            <TypicalCard 
+              key={typical.id}
+              typical={typical}
+              theme={theme}
+              onClick={() => setSelectedTypical(typical)}
+            />
+          ))}
+        </div>
+        {typicals.length > (isDesktop ? 6 : 4) && (
+          <button 
+            className="w-full mt-4 py-2.5 rounded-full text-xs font-semibold"
+            style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textSecondary }}
+          >
+            View All {typicals.length} Typicals
+          </button>
+        )}
+      </SectionCard>
+
+      <TypicalDetailModal
+        typical={selectedTypical}
+        isOpen={!!selectedTypical}
+        onClose={() => setSelectedTypical(null)}
+        theme={theme}
+      />
+    </>
+  );
+};
+
 // Main Customer Microsite Component
 export const CustomerMicrositeScreen = ({ customerId, theme, onNavigate, onBack }) => {
   const customer = useMemo(() => getCustomerById(customerId), [customerId]);
@@ -606,7 +845,7 @@ export const CustomerMicrositeScreen = ({ customerId, theme, onNavigate, onBack 
     <div className="h-full flex flex-col" style={{ backgroundColor: theme.colors.background }}>
       {/* Content */}
       <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto scrollbar-hide">
-        <div className={`px-4 lg:px-6 ${isDesktop ? 'flex gap-6 max-w-6xl mx-auto pb-8' : 'pb-36'}`}>
+        <div className={`px-4 lg:px-6 ${isDesktop ? 'flex gap-6 max-w-6xl mx-auto pb-8' : 'pb-44'}`}>
           {/* Main Content Column */}
           <div className={`space-y-4 ${isDesktop ? 'flex-1' : ''}`}>
             
@@ -629,15 +868,18 @@ export const CustomerMicrositeScreen = ({ customerId, theme, onNavigate, onBack 
                     </span>
                   </div>
                 </div>
-                {/* Share button */}
+                {/* Share button - emphasized with accent styling */}
                 <button
                   onClick={() => setShowShareModal(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-full transition-all active:scale-95"
-                  style={{ backgroundColor: theme.colors.subtle }}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-full transition-all active:scale-95 shadow-sm"
+                  style={{ 
+                    backgroundColor: theme.colors.surface,
+                    border: `1.5px solid ${theme.colors.accent}30`
+                  }}
                   title="Share access to this customer"
                 >
-                  <Share2 className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
-                  <span className="text-xs font-medium hidden sm:inline" style={{ color: theme.colors.textSecondary }}>
+                  <Share2 className="w-4 h-4" style={{ color: theme.colors.accent }} />
+                  <span className="text-xs font-semibold" style={{ color: theme.colors.accent }}>
                     Share
                   </span>
                 </button>
@@ -697,37 +939,112 @@ export const CustomerMicrositeScreen = ({ customerId, theme, onNavigate, onBack 
               </div>
             </SectionCard>
 
-            {/* Standards Programs & Contracts - THIRD */}
-            <SectionCard title="Standards Programs & Contracts" icon={Shield} theme={theme}>
+            {/* Standards Programs & Contracts - THIRD - Reorganized with categories */}
+            <SectionCard title="Standards Programs" icon={Shield} theme={theme}>
               {customer.standardsPrograms.length > 0 ? (
-                <div className="space-y-2">
-                  {customer.standardsPrograms.map(program => (
-                    <button
-                      key={program.id}
-                      onClick={() => setSelectedProgramId(program.id)}
-                      className="w-full text-left p-2.5 rounded-lg transition-colors hover:bg-black/5"
-                      style={{ backgroundColor: theme.colors.subtle }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <CodeChip code={program.code} theme={theme} />
-                            {program.poRequirementText && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold" 
-                                style={{ backgroundColor: theme.colors.accent + '20', color: theme.colors.accent }}>
-                                CONTRACT
-                              </span>
-                            )}
-                            <StatusBadge status={program.status} size="sm" />
-                          </div>
-                          <p className="font-medium text-sm truncate" style={{ color: theme.colors.textPrimary }}>
-                            {program.title}
-                          </p>
-                        </div>
-                        <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
+                <div className="space-y-4">
+                  {/* Active Programs */}
+                  {customer.standardsPrograms.filter(p => p.status === 'Active' && !p.poRequirementText).length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: theme.colors.textSecondary }}>
+                        Programs
+                      </p>
+                      <div className="space-y-2">
+                        {customer.standardsPrograms.filter(p => p.status === 'Active' && !p.poRequirementText).map(program => (
+                          <button
+                            key={program.id}
+                            onClick={() => setSelectedProgramId(program.id)}
+                            className="w-full text-left p-3 rounded-xl transition-colors hover:bg-black/5"
+                            style={{ backgroundColor: theme.colors.subtle }}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <CodeChip code={program.code} theme={theme} />
+                                  <StatusBadge status={program.status} size="sm" />
+                                </div>
+                                <p className="font-medium text-sm truncate" style={{ color: theme.colors.textPrimary }}>
+                                  {program.title}
+                                </p>
+                              </div>
+                              <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
+                            </div>
+                          </button>
+                        ))}
                       </div>
-                    </button>
-                  ))}
+                    </div>
+                  )}
+
+                  {/* Contracts (programs with PO requirement) */}
+                  {customer.standardsPrograms.filter(p => p.poRequirementText).length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-2 flex items-center gap-1.5" style={{ color: theme.colors.textSecondary }}>
+                        <FileCheck className="w-3.5 h-3.5" />
+                        Contracts
+                      </p>
+                      <div className="space-y-2">
+                        {customer.standardsPrograms.filter(p => p.poRequirementText).map(program => (
+                          <button
+                            key={program.id}
+                            onClick={() => setSelectedProgramId(program.id)}
+                            className="w-full text-left p-3 rounded-xl transition-colors hover:bg-black/5"
+                            style={{ 
+                              backgroundColor: theme.colors.accent + '08',
+                              border: `1px solid ${theme.colors.accent}20`
+                            }}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <CodeChip code={program.code} theme={theme} />
+                                  <StatusBadge status={program.status} size="sm" />
+                                </div>
+                                <p className="font-medium text-sm truncate" style={{ color: theme.colors.textPrimary }}>
+                                  {program.title}
+                                </p>
+                                <p className="text-[10px] mt-1 truncate" style={{ color: theme.colors.accent }}>
+                                  {program.poRequirementText}
+                                </p>
+                              </div>
+                              <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Expiring/Expired Programs */}
+                  {customer.standardsPrograms.filter(p => p.status === 'Expiring' || p.status === 'Expired').length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: theme.colors.textSecondary }}>
+                        Expiring / Expired
+                      </p>
+                      <div className="space-y-2">
+                        {customer.standardsPrograms.filter(p => p.status === 'Expiring' || p.status === 'Expired').map(program => (
+                          <button
+                            key={program.id}
+                            onClick={() => setSelectedProgramId(program.id)}
+                            className="w-full text-left p-2.5 rounded-lg transition-colors hover:bg-black/5 opacity-75"
+                            style={{ backgroundColor: theme.colors.subtle }}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                  <CodeChip code={program.code} theme={theme} />
+                                  <StatusBadge status={program.status} size="sm" />
+                                </div>
+                                <p className="font-medium text-sm truncate" style={{ color: theme.colors.textPrimary }}>
+                                  {program.title}
+                                </p>
+                              </div>
+                              <ChevronRight className="w-4 h-4 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-sm text-center py-4" style={{ color: theme.colors.textSecondary }}>
@@ -735,6 +1052,9 @@ export const CustomerMicrositeScreen = ({ customerId, theme, onNavigate, onBack 
                 </p>
               )}
             </SectionCard>
+
+            {/* Typicals - Vision Casegood Configurations */}
+            <TypicalsSection customerId={customerId} theme={theme} isDesktop={isDesktop} />
 
             {/* Install Gallery */}
             <SectionCard 

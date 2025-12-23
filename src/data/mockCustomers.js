@@ -415,4 +415,130 @@ export const STATUS_COLORS = {
   'Pending': { bg: '#FEF3C7', text: '#D97706' }
 };
 
+// ============================================
+// TYPICALS DATA - Vision Casegood Configurations
+// ============================================
+export const VISION_TYPICALS = [
+  {
+    id: 'typ-100',
+    name: 'Vision 100',
+    dimensions: '120"W × 108"D',
+    description: 'Executive U-shaped workstation with overhead storage and tower',
+    imageUrl: 'https://www.jsifurniture.com/media/typicals/vision/vision_100.png',
+    configurations: [
+      { id: 'vsv100', sku: 'VSV100', finish: 'Veneer', listPrice: 20141 },
+      { id: 'vst100', sku: 'VST100', finish: 'Laminate', listPrice: 12292 }
+    ]
+  },
+  {
+    id: 'typ-101',
+    name: 'Vision 101',
+    dimensions: '72"W × 108"D',
+    description: 'L-shaped desk with overhead hutch and bookcase',
+    imageUrl: 'https://www.jsifurniture.com/media/typicals/vision/vision_101.png',
+    configurations: [
+      { id: 'vsv101', sku: 'VSV101', finish: 'Veneer', listPrice: 14850 },
+      { id: 'vst101', sku: 'VST101', finish: 'Laminate', listPrice: 9245 }
+    ]
+  },
+  {
+    id: 'typ-102',
+    name: 'Vision 102',
+    dimensions: '66"W × 78"D',
+    description: 'Compact L-desk with mobile pedestal',
+    imageUrl: 'https://www.jsifurniture.com/media/typicals/vision/vision_102.png',
+    configurations: [
+      { id: 'vsv102', sku: 'VSV102', finish: 'Veneer', listPrice: 8960 },
+      { id: 'vst102', sku: 'VST102', finish: 'Laminate', listPrice: 5480 }
+    ]
+  },
+  {
+    id: 'typ-103',
+    name: 'Vision 103',
+    dimensions: '96"W × 84"D',
+    description: 'Manager station with return and lateral file',
+    imageUrl: 'https://www.jsifurniture.com/media/typicals/vision/vision_103.png',
+    configurations: [
+      { id: 'vsv103', sku: 'VSV103', finish: 'Veneer', listPrice: 12340 },
+      { id: 'vst103', sku: 'VST103', finish: 'Laminate', listPrice: 7625 }
+    ]
+  },
+  {
+    id: 'typ-104',
+    name: 'Vision 104',
+    dimensions: '144"W × 120"D',
+    description: 'Executive suite with credenza and dual pedestals',
+    imageUrl: 'https://www.jsifurniture.com/media/typicals/vision/vision_104.png',
+    configurations: [
+      { id: 'vsv104', sku: 'VSV104', finish: 'Veneer', listPrice: 26780 },
+      { id: 'vst104', sku: 'VST104', finish: 'Laminate', listPrice: 16450 }
+    ]
+  },
+  {
+    id: 'typ-105',
+    name: 'Vision 105',
+    dimensions: '60"W × 30"D',
+    description: 'Single desk with box/file pedestal',
+    imageUrl: 'https://www.jsifurniture.com/media/typicals/vision/vision_105.png',
+    configurations: [
+      { id: 'vsv105', sku: 'VSV105', finish: 'Veneer', listPrice: 4250 },
+      { id: 'vst105', sku: 'VST105', finish: 'Laminate', listPrice: 2680 }
+    ]
+  },
+  {
+    id: 'typ-106',
+    name: 'Vision 106',
+    dimensions: '84"W × 42"D',
+    description: 'Bow-front desk with storage tower',
+    imageUrl: 'https://www.jsifurniture.com/media/typicals/vision/vision_106.png',
+    configurations: [
+      { id: 'vsv106', sku: 'VSV106', finish: 'Veneer', listPrice: 11520 },
+      { id: 'vst106', sku: 'VST106', finish: 'Laminate', listPrice: 7080 }
+    ]
+  },
+  {
+    id: 'typ-107',
+    name: 'Vision 107',
+    dimensions: '108"W × 96"D',
+    description: 'U-desk with bridge and hutch',
+    imageUrl: 'https://www.jsifurniture.com/media/typicals/vision/vision_107.png',
+    configurations: [
+      { id: 'vsv107', sku: 'VSV107', finish: 'Veneer', listPrice: 18450 },
+      { id: 'vst107', sku: 'VST107', finish: 'Laminate', listPrice: 11280 }
+    ]
+  },
+  {
+    id: 'typ-108',
+    name: 'Vision 108',
+    dimensions: '72"W × 36"D',
+    description: 'Reception desk with transaction counter',
+    imageUrl: 'https://www.jsifurniture.com/media/typicals/vision/vision_108.png',
+    configurations: [
+      { id: 'vsv108', sku: 'VSV108', finish: 'Veneer', listPrice: 9875 },
+      { id: 'vst108', sku: 'VST108', finish: 'Laminate', listPrice: 6120 }
+    ]
+  },
+  {
+    id: 'typ-109',
+    name: 'Vision 109',
+    dimensions: '60"W × 24"D',
+    description: 'Wall-mounted credenza with open shelving',
+    imageUrl: 'https://www.jsifurniture.com/media/typicals/vision/vision_109.png',
+    configurations: [
+      { id: 'vsv109', sku: 'VSV109', finish: 'Veneer', listPrice: 5640 },
+      { id: 'vst109', sku: 'VST109', finish: 'Laminate', listPrice: 3480 }
+    ]
+  }
+];
+
+// Get typicals for a customer (all Vision typicals for now, could be filtered by standards)
+export const getTypicalsForCustomer = (customerId) => {
+  // In a real app, this would filter based on customer's standards programs
+  // For now, return all Vision typicals for customers with active standards
+  const customer = getCustomerById(customerId);
+  if (!customer) return [];
+  const hasActiveStandards = customer.standardsPrograms.some(p => p.status === 'Active');
+  return hasActiveStandards ? VISION_TYPICALS : [];
+};
+
 export default MOCK_CUSTOMERS;
