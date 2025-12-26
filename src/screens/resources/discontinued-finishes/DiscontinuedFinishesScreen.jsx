@@ -146,8 +146,8 @@ export const DiscontinuedFinishesScreen = ({ theme, onNavigate, onUpdateCart }) 
                             Add a sample of the replacement finish <span className="font-bold">{formatFinishName(selectedFinish?.NewFinishName)}</span> to your samples cart?
                         </p>
                         <div className="flex justify-end space-x-3 pt-4 mt-4 border-t" style={{ borderColor: theme.colors.border }}>
-                            <button onClick={() => setSelectedFinish(null)} className="font-bold py-2 px-5 rounded-lg" style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textPrimary }}>Cancel</button>
-                            <button onClick={handleOrderClick} className="font-bold py-2 px-5 rounded-lg text-white" style={{ backgroundColor: theme.colors.accent }}>Add to Cart</button>
+                            <button onClick={() => setSelectedFinish(null)} className="font-bold py-2 px-5 rounded-full" style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textPrimary }}>Cancel</button>
+                            <button onClick={handleOrderClick} className="font-bold py-2 px-5 rounded-full text-white" style={{ backgroundColor: theme.colors.charcoal || '#353535' }}>Add to Cart</button>
                         </div>
                     </>
                 )}

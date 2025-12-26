@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Paperclip, X } from 'lucide-react';
+import { Send, Paperclip, X, CheckCircle } from 'lucide-react';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 
 // Shadow tokens (button interactions remain local)
@@ -12,6 +12,7 @@ export const FeedbackScreen = ({ theme }) => {
     const [subject, setSubject] = useState('');
     const [message, setMessage] = useState('');
     const [files, setFiles] = useState([]);
+    const [submitted, setSubmitted] = useState(false);
 
     const feedbackTypes = [
         { value: 'general', label: 'General' },
@@ -33,9 +34,18 @@ export const FeedbackScreen = ({ theme }) => {
     function handleSubmit(e) {
         e.preventDefault();
         if (!subject.trim() || !message.trim()) return;
-        const payload = { type: feedbackType, subject: subject.trim(), message: message.trim(), attachments: files.map(f => ({ name: f.name, size: f.size, type: f.type })), timestamp: new Date().toISOString() };
-        console.log('Feedback submitted:', payload);
-        setSubject(''); setMessage(''); setFiles([]); setFeedbackType('general');
+        
+        // In production, this would be an API call
+        // const payload = { type: feedbackType, subject: subject.trim(), message: message.trim(), attachments: files.map(f => ({ name: f.name, size: f.size, type: f.type })), timestamp: new Date().toISOString() };
+        
+        setSubmitted(true);
+        setSubject(''); 
+        setMessage(''); 
+        setFiles([]); 
+        setFeedbackType('general');
+        
+        // Reset success message after delay
+        setTimeout(() => setSubmitted(false), 3000);
     }
 
     const innerBorder = 'rgba(0,0,0,0.06)';
@@ -47,6 +57,21 @@ export const FeedbackScreen = ({ theme }) => {
         borderRadius: RADIUS_INNER,
         boxShadow: '0 0 0 2px rgba(255,255,255,0.4) inset, 0 1px 2px rgba(0,0,0,0.04)'
     };
+
+    // Success message
+    if (submitted) {
+        return (
+            <div className="flex flex-col h-full items-center justify-center" style={{ backgroundColor: theme.colors.background }}>
+                <div className="text-center p-8">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center" style={{ backgroundColor: '#4A7C59' + '20' }}>
+                        <CheckCircle className="w-8 h-8" style={{ color: '#4A7C59' }} />
+                    </div>
+                    <h2 className="text-xl font-bold mb-2" style={{ color: theme.colors.textPrimary }}>Thank You!</h2>
+                    <p className="text-sm" style={{ color: theme.colors.textSecondary }}>Your feedback has been submitted successfully.</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>

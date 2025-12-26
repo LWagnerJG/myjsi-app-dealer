@@ -350,7 +350,7 @@ export const OrdersScreen = ({ theme, onNavigate }) => {
             <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4 border border-dashed border-gray-200">
                 <Search className="w-8 h-8 text-gray-300" />
             </div>
-            <h3 className="font-bold text-lg text-black">No orders found</h3>
+            <h3 className="font-bold text-lg\" style={{ color: '#353535' }}>No orders found</h3>
             <p className="text-sm text-gray-400 max-w-xs mx-auto mt-2">Try adjusting your search or filters to find what you're looking for.</p>
           </div>
         )

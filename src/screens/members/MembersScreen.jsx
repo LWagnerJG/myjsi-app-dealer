@@ -225,7 +225,7 @@ const MemberRow = ({
 /* ==================
    Screen component
    ================== */
-const MembersScreenContent = ({ theme }) => {
+const MembersScreenContent = ({ theme, onNavigate }) => {
     const [original, setOriginal] = useState(INITIAL_MEMBERS);
     const [members, setMembers] = useState(INITIAL_MEMBERS);
     const [expandedId, setExpandedId] = useState(null);
@@ -266,8 +266,8 @@ const MembersScreenContent = ({ theme }) => {
     }, []);
 
     const saveAll = useCallback(() => {
-        // TODO: replace with API
-        console.log('Saved members:', members);
+        // TODO: Replace with API call when backend is ready
+        // await api.saveMembers(members);
         setOriginal(members);
         setDirty(false);
     }, [members]);
@@ -301,8 +301,11 @@ const MembersScreenContent = ({ theme }) => {
                     <DropdownMenu
                         options={dropdownOptions}
                         onSelect={(value) => {
-                            console.log('Selected:', value);
                             setShowDropdown(false);
+                            // Handle navigation based on selection
+                            if (value === 'settings' || value === 'help' || value === 'logout') {
+                                onNavigate?.(value);
+                            }
                         }}
                         theme={theme}
                     />

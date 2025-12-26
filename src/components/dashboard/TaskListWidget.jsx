@@ -62,10 +62,11 @@ export const TaskListWidget = ({ theme, opportunities = [], orders = [], onNavig
 
   if (tasks.length === 0) return null;
 
+  // JSI brand colors for priority indicators
   const priorityColors = {
-    high: '#EF4444',
-    medium: '#F59E0B',
-    low: '#6B7280'
+    high: '#B85C5C',     // JSI error/urgent
+    medium: '#C4956A',   // JSI warning/amber
+    low: '#5B7B8C'       // JSI info/slate
   };
 
   return (
@@ -121,7 +122,7 @@ export const TaskListWidget = ({ theme, opportunities = [], orders = [], onNavig
                     {task.priority}
                   </span>
                   <span className="text-[10px]" style={{ color: theme.colors.textSecondary }}>
-                    • {task.dueDate}
+                    ï¿½ {task.dueDate}
                   </span>
                 </div>
               </div>

@@ -125,7 +125,7 @@ const QuickAccessGrid = React.memo(({ theme, onNavigate, activeAppIds, onCustomi
                         Quick Access
                     </h3>
                 </div>
-                <button onClick={onCustomize} className="flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all hover:bg-black/5 dark:hover:bg-white/5" style={{ color: theme.colors.textSecondary }} title="Reconfigure Quick Access">
+                <button onClick={onCustomize} className="flex items-center gap-1.5 px-2 py-1 rounded-full transition-all hover:bg-[#353535]/5 dark:hover:bg-white/5" style={{ color: theme.colors.textSecondary }} title="Reconfigure Quick Access">
                     <SlidersHorizontal className="w-4 h-4" />
                     <span className={`text-xs font-medium ${isDesktop ? 'inline' : 'hidden sm:inline'}`}>Reconfigure</span>
                 </button>
@@ -428,7 +428,7 @@ const RecentActivityFeed = React.memo(({ theme, opportunities = [], orders = [],
                 value: `$${(order.net || 0).toLocaleString()}`,
                 action: () => onNavigate(`orders/${order.orderNumber || order.po}`),
                 icon: Package,
-                color: '#10B981'
+                color: '#4A7C59'  // JSI success green
             });
         });
         return items.slice(0, 5);

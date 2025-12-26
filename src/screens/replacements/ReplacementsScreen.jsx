@@ -325,10 +325,10 @@ export const ReplacementsScreen = ({ theme }) => {
                                 )}
                                 {isScanning && (
                                     <>
-                                        <div className="absolute top-2 left-2 text-[9px] px-2 py-1 rounded-full font-semibold" style={{ backgroundColor: '#0009', color: '#fff' }}>
+                                        <div className="absolute top-2 left-2 text-[9px] px-2 py-1 rounded-full font-semibold" style={{ backgroundColor: 'rgba(53, 53, 53, 0.9)', color: '#fff' }}>
                                             Scanning…
                                         </div>
-                                        <button onClick={stopScanning} className="absolute bottom-2 right-2 px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-white active:scale-95" style={{ backgroundColor: '#ef4444' }}>
+                                        <button onClick={stopScanning} className="absolute bottom-2 right-2 px-2.5 py-1.5 rounded-full text-[10px] font-bold text-white active:scale-95" style={{ backgroundColor: '#B85C5C' }}>
                                             Cancel
                                         </button>
                                         <canvas ref={canvasRef} className="hidden" />

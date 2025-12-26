@@ -219,9 +219,7 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
     }, [searchTerm]);
 
     const handleCategoryClick = useCallback((category) => {
-        console.log('Category clicked:', category.name, 'nav:', category.nav);
         if (category.nav) {
-            console.log('Navigating to:', category.nav);
             onNavigate(category.nav);
         }
     }, [onNavigate]);

@@ -44,7 +44,7 @@ export const UpcomingEventsWidget = ({ theme, opportunities = [], orders = [], o
           date: new Date(now.getTime() + estimatedDays * 24 * 60 * 60 * 1000),
           dateLabel: opp.poTimeframe === 'Within 30 Days' ? '~2 weeks' : '~6 weeks',
           action: () => onNavigate('projects'),
-          color: '#10B981'
+          color: '#4A7C59'  // JSI success green
         });
       });
     

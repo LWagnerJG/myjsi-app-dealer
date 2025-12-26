@@ -46,7 +46,7 @@ export const KPIWidget = ({ theme, opportunities = [], orders = [], customerDire
         format: 'percentage',
         icon: Target,
         trend: winRate > 50 ? 'up' : winRate > 30 ? 'neutral' : 'down',
-        color: '#10B981'
+        color: '#4A7C59'  // JSI success green
       },
       {
         label: 'Customer Velocity',
@@ -84,10 +84,10 @@ export const KPIWidget = ({ theme, opportunities = [], orders = [], customerDire
             <div className="flex items-center justify-between mb-2">
               <kpi.icon className="w-4 h-4" style={{ color: kpi.color }} />
               {kpi.trend === 'up' && (
-                <TrendingUp className="w-3 h-3" style={{ color: '#10B981' }} />
+                <TrendingUp className="w-3 h-3" style={{ color: '#4A7C59' }} />
               )}
               {kpi.trend === 'down' && (
-                <TrendingDown className="w-3 h-3" style={{ color: '#EF4444' }} />
+                <TrendingDown className="w-3 h-3" style={{ color: '#B85C5C' }} />
               )}
             </div>
             <p className="text-xs mb-1" style={{ color: theme.colors.textSecondary }}>

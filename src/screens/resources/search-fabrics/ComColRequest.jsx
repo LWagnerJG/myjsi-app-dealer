@@ -3,7 +3,7 @@ import { GlassCard } from '../../../components/common/GlassCard.jsx';
 import { ExternalLink, CheckCircle } from 'lucide-react';
 
 /* COM / COL Pattern Submission Form
-   Lightweight in–app version of the PDF. Captures core details needed to start an evaluation.
+   Lightweight inï¿½app version of the PDF. Captures core details needed to start an evaluation.
 */
 export const ComColRequest = ({ theme, onBack, showAlert }) => {
   const [form, setForm] = useState({
@@ -32,15 +32,14 @@ export const ComColRequest = ({ theme, onBack, showAlert }) => {
     if (!canSubmit) return;
     setSubmitting(true);
     try {
-      // For now just log; could be wired to flow similar to Yardage request.
-      console.log('COM/COL Pattern Submission', form);
+      // TODO: Wire to API endpoint when backend is ready
+      // await api.submitComColRequest(form);
       setSubmitted(true);
       showAlert && showAlert('COM / COL Pattern request submitted');
       setTimeout(() => setSubmitted(false), 2500);
       setForm(f => ({ ...f, notes: '' }));
     } catch (err) {
-      console.error(err);
-      showAlert && showAlert('Submission failed');
+      showAlert && showAlert('Submission failed. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -66,7 +65,7 @@ export const ComColRequest = ({ theme, onBack, showAlert }) => {
               <h2 className="text-xl font-bold leading-tight" style={{ color: theme.colors.textPrimary }}>COM / COL Pattern Submission</h2>
               <p className="text-sm leading-relaxed" style={{ color: theme.colors.textSecondary }}>
                 Use this form to submit a Customer&apos;s Own Material / Leather pattern for testing and approval.
-                Provide as much detail as possible. After submission you will receive next–step instructions
+                Provide as much detail as possible. After submission you will receive nextï¿½step instructions
                 (ship sample memo, performance requirements, fire code, etc.). Fields marked * are required.
               </p>
             </div>

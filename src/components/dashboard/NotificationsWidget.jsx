@@ -23,7 +23,7 @@ export const NotificationsWidget = ({ theme, opportunities = [], orders = [], cu
             title: 'Large opportunity closing',
             message: `${opp.name || opp.project || 'Untitled'} ($${value.toLocaleString()}) in ${opp.stage}`,
             time: '2h ago',
-            color: '#10B981'
+            color: '#4A7C59'  // JSI success green
           });
         }
       });
@@ -55,7 +55,7 @@ export const NotificationsWidget = ({ theme, opportunities = [], orders = [], cu
         title: 'Strong win rate!',
         message: `${winRate.toFixed(0)}% of recent projects won`,
         time: 'Today',
-        color: '#10B981'
+        color: '#4A7C59'  // JSI success green
       });
     }
     

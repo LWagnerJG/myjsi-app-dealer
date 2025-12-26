@@ -147,7 +147,7 @@ const StageTimeline = ({ stages, currentStage, onStageChange, theme }) => {
             }`}
             style={{
               backgroundColor: isActive 
-                ? (isWon ? '#10B981' : isLost ? '#EF4444' : theme.colors.accent)
+                ? (isWon ? '#4A7C59' : isLost ? '#B85C5C' : theme.colors.accent)
                 : isPast 
                   ? `${theme.colors.accent}20`
                   : theme.colors.subtle,
@@ -535,7 +535,7 @@ const OpportunityDetail = ({ opp, theme, onBack, onUpdate, customDesignFirms = [
 
       {/* Autosave indicator */}
       <div className="flex items-center justify-center gap-2 py-2">
-        <CheckCircle className="w-3.5 h-3.5" style={{ color: '#10B981' }} />
+        <CheckCircle className="w-3.5 h-3.5" style={{ color: '#4A7C59' }} />
         <span className="text-[11px] font-medium" style={{ color: theme.colors.textSecondary }}>Changes saved automatically</span>
       </div>
 
