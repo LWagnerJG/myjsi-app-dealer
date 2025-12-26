@@ -4,9 +4,10 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
-    Plus, Minus, ChevronDown, X, Search, ChevronRight, Trash2, Check, ShoppingCart, Package
+    Plus, Minus, ChevronDown, X, Search, ChevronRight, Trash2, Check, ShoppingCart, Package, User
 } from 'lucide-react';
-import { SAMPLE_PRODUCTS, SAMPLE_CATEGORIES, FINISH_CATEGORIES, FINISH_SAMPLES } from './data.js';
+import { SAMPLE_PRODUCTS, SAMPLE_CATEGORIES, FINISH_CATEGORIES, FINISH_SAMPLES, TEXTILE_SAMPLES } from './data.js';
+import { MOCK_CUSTOMERS } from '../../data/mockCustomers.js';
 import { getSampleProduct } from './sampleIndex.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -25,72 +26,69 @@ const MAX_CONTENT_WIDTH = 896;
 
 const idOf = (x) => String(x);
 
-/* ====================== Directory Modal ====================== */
-const DirectoryModal = ({ show, onClose, onSelect, theme, dealers = [], designFirms = [] }) => {
+/* ====================== Directory Modal (no extra blur - overlays existing modal) ====================== */
+const DirectoryModal = ({ show, onClose, onSelect, theme, customers = [] }) => {
     const [q, setQ] = useState('');
+    
+    // Use MOCK_CUSTOMERS data with proper address formatting
     const items = useMemo(() => {
-        const normalize = (x, idx) => ({
-            key: `${x?.id ?? x?.name ?? 'item'}-${idx}`,
-            name: x?.name ?? x?.company ?? x?.title ?? 'Unknown',
-            address: x?.address ?? x?.Address ?? x?.location ?? x?.street ?? x?.office ?? '',
-        });
-        const list = [...(dealers || []), ...(designFirms || [])].map(normalize);
+        const customerList = customers.length > 0 ? customers : MOCK_CUSTOMERS;
+        const normalized = customerList.map((c, idx) => ({
+            key: c.id || `customer-${idx}`,
+            name: c.name,
+            address: c.location ? `${c.location.city}, ${c.location.state}` : '',
+            vertical: c.vertical
+        }));
         const k = q.trim().toLowerCase();
-        return k ? list.filter((i) => i.name.toLowerCase().includes(k)) : list;
-    }, [q, dealers, designFirms]);
+        return k ? normalized.filter((i) => i.name.toLowerCase().includes(k)) : normalized;
+    }, [q, customers]);
 
     if (!show) return null;
 
-    return createPortal(
-        <>
+    // No backdrop blur here - just an overlay modal on top of existing cart modal
+    return (
+        <div 
+            className="fixed inset-0 flex items-center justify-center p-4"
+            style={{ zIndex: DESIGN_TOKENS.zIndex.modal + 100 }}
+            onClick={onClose}
+        >
             <motion.div 
-                initial={{ opacity: 0 }} 
-                animate={{ opacity: 1 }} 
-                exit={{ opacity: 0 }} 
-                className="fixed inset-0 transition-opacity duration-300"
-                style={{ 
-                    backgroundColor: 'rgba(0,0,0,0.6)',
-                    backdropFilter: 'blur(8px)',
-                    WebkitBackdropFilter: 'blur(8px)',
-                    zIndex: DESIGN_TOKENS.zIndex.overlay
-                }}
-                onClick={onClose} 
-            />
-            <motion.div 
-                initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+                initial={{ opacity: 0, scale: 0.95, y: 10 }} 
                 animate={{ opacity: 1, scale: 1, y: 0 }} 
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                transition={{ type: 'spring', duration: 0.4 }}
-                className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none"
-                style={{ zIndex: DESIGN_TOKENS.zIndex.modal }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                transition={{ type: 'spring', duration: 0.3 }}
+                className="w-full max-w-[420px] bg-white rounded-2xl overflow-hidden shadow-2xl border border-gray-200" 
+                style={{ maxHeight: '60vh' }}
+                onClick={e => e.stopPropagation()}
             >
-                <div 
-                    className="w-full max-w-[500px] bg-white rounded-3xl overflow-hidden shadow-2xl pointer-events-auto" 
-                    style={{ maxHeight: '80vh' }}
-                    onClick={e => e.stopPropagation()}
-                >
-                <div className="p-5 space-y-4">
+                <div className="p-4 space-y-3">
                     <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-lg text-[#353535]">Select Address</h3>
-                        <div onClick={onClose} className="p-2 cursor-pointer bg-black/5 rounded-full hover:bg-black/10 transition"><X className="w-5 h-5" /></div>
+                        <h3 className="font-bold text-base text-[#353535]">Select Customer</h3>
+                        <button onClick={onClose} className="p-1.5 cursor-pointer bg-gray-100 rounded-full hover:bg-gray-200 transition"><X className="w-4 h-4" /></button>
                     </div>
                     <div className="relative">
-                        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search..." className="w-full rounded-xl pl-10 pr-4 py-3 text-sm outline-none border focus:ring-2 focus:ring-[#353535]/10 bg-gray-50 text-[#353535] border-gray-200" />
-                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-50 text-[#353535]" />
+                        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search customers..." className="w-full rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none border focus:ring-2 focus:ring-[#353535]/10 bg-gray-50 text-[#353535] border-gray-200" />
+                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-40 text-[#353535]" />
                     </div>
-                    <div className="overflow-y-auto" style={{ maxHeight: '40vh' }}>
-                        {items.map((it) => (
-                            <button key={it.key} onClick={() => { onSelect({ name: it.name, address1: it.address || '' }); onClose(); }} className="w-full text-left px-4 py-3 rounded-xl hover:bg-[#353535]/5 transition-colors border-b last:border-0 border-dashed border-gray-100">
-                                <div className="font-bold text-sm text-[#353535]">{it.name}</div>
-                                {it.address && <div className="text-xs opacity-70 text-gray-600">{it.address}</div>}
+                    <div className="overflow-y-auto -mx-1 px-1" style={{ maxHeight: '35vh' }}>
+                        {items.length === 0 ? (
+                            <p className="text-center text-sm text-gray-400 py-4">No customers found</p>
+                        ) : items.map((it) => (
+                            <button key={it.key} onClick={() => { onSelect({ name: it.name, address1: it.address || '' }); onClose(); }} className="w-full text-left px-3 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-3 group">
+                                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200 transition">
+                                    <span className="text-xs font-bold text-gray-500">{it.name.substring(0, 2).toUpperCase()}</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="font-semibold text-sm text-[#353535] truncate">{it.name}</div>
+                                    {it.address && <div className="text-xs text-gray-400">{it.address}</div>}
+                                </div>
+                                {it.vertical && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">{it.vertical}</span>}
                             </button>
                         ))}
                     </div>
                 </div>
-                </div>
             </motion.div>
-        </>,
-        document.body
+        </div>
     );
 };
 
@@ -117,10 +115,10 @@ const SuccessModal = ({ isOpen }) => {
 
 /* ====================== Cart Logic & Components ====================== */
 
-const CartDrawer = ({ cart, onUpdateCart, theme, userSettings, dealers, designFirms, initialOpen = false, onNavigate, isDesktop = false }) => {
-    const [isExpanded, setIsExpanded] = useState(initialOpen);
+const CartDrawer = ({ cart, onUpdateCart, theme, userSettings, customers = [], isOpen, onClose, onNavigate, isDesktop = false }) => {
     const [showDir, setShowDir] = useState(false);
-    const [shipToName, setShipToName] = useState('');
+    // Default to user's name and address from settings
+    const [shipToName, setShipToName] = useState(userSettings?.firstName && userSettings?.lastName ? `${userSettings.firstName} ${userSettings.lastName}` : '');
     const [address1, setAddress1] = useState(userSettings?.homeAddress || '');
     const [isSuccess, setIsSuccess] = useState(false);
 
@@ -143,73 +141,46 @@ const CartDrawer = ({ cart, onUpdateCart, theme, userSettings, dealers, designFi
         setIsSuccess(true);
         setTimeout(() => {
             setIsSuccess(false);
-            setIsExpanded(false);
+            onClose();
             Object.keys(cart).forEach(k => onUpdateCart({ id: idOf(k) }, -999));
             if (onNavigate) onNavigate('home');
         }, 2000);
     };
 
+    // Don't render anything if modal is closed
+    if (!isOpen) return null;
+
     return (
         <>
-            <AnimatePresence mode="wait">
-                {totalCartItems > 0 && (
-                    <React.Fragment key="cart-container">
-                        {!isExpanded && (
-                            <motion.button
-                                key="collapsed-btn"
-                                layout
-                                initial={{ scale: 0.9, y: 20, opacity: 0 }}
-                                animate={{ scale: 1, y: 0, opacity: 1 }}
-                                exit={{ scale: 0.9, y: 20, opacity: 0 }}
-                                transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                                onClick={() => setIsExpanded(true)}
-                                className={`fixed z-[2000] h-14 pl-6 pr-2 rounded-full shadow-lg flex items-center gap-4 active:scale-95 transition-all border ${
-                                    isDesktop 
-                                        ? 'bottom-24 right-8 left-auto translate-x-0' 
-                                        : 'bottom-24 left-1/2 -translate-x-1/2'
-                                }`}
-                                style={{ 
-                                    backgroundColor: theme.colors.surface,
-                                    boxShadow: '0 4px 20px rgba(53,53,53,0.12)',
-                                    color: '#353535',
-                                    borderColor: theme.colors.border
-                                }}
-                            >
-                                <ShoppingCart className="w-5 h-5" style={{ color: theme.colors.accent }} />
-                                <span className="font-bold text-sm tracking-tight">View Sample Cart</span>
-                                <div className="w-10 h-10 flex items-center justify-center rounded-full text-sm font-bold" style={{ backgroundColor: theme.colors.accent, color: '#fff' }}>{totalCartItems}</div>
-                            </motion.button>
-                        )}
-
-                        {isExpanded && createPortal(
-                            <>
-                                <motion.div 
-                                    key="cart-backdrop"
-                                    initial={{ opacity: 0 }} 
-                                    animate={{ opacity: 1 }} 
-                                    exit={{ opacity: 0 }} 
-                                    className="fixed inset-0 transition-opacity duration-300"
-                                    style={{ 
-                                        backgroundColor: 'rgba(0,0,0,0.6)',
-                                        backdropFilter: 'blur(8px)',
-                                        WebkitBackdropFilter: 'blur(8px)',
-                                        zIndex: DESIGN_TOKENS.zIndex.overlay
-                                    }}
-                                    onClick={() => setIsExpanded(false)} 
-                                />
-                                <motion.div
-                                    key="cart-modal"
-                                    initial={{ opacity: 0, scale: 0.95, y: 20 }} 
-                                    animate={{ opacity: 1, scale: 1, y: 0 }} 
-                                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                                    transition={{ type: 'spring', duration: 0.4 }}
-                                    className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none"
-                                    style={{ zIndex: DESIGN_TOKENS.zIndex.modal }}
-                                >
-                                    <div 
-                                        className="bg-white rounded-3xl overflow-hidden flex flex-col shadow-2xl w-full max-w-[500px] max-h-[85vh] pointer-events-auto"
-                                        onClick={e => e.stopPropagation()}
-                                    >
+            {createPortal(
+                <>
+                    <motion.div 
+                        key="cart-backdrop"
+                        initial={{ opacity: 0 }} 
+                        animate={{ opacity: 1 }} 
+                        exit={{ opacity: 0 }} 
+                        className="fixed inset-0 transition-opacity duration-300"
+                        style={{ 
+                            backgroundColor: 'rgba(0,0,0,0.6)',
+                            backdropFilter: 'blur(8px)',
+                            WebkitBackdropFilter: 'blur(8px)',
+                            zIndex: DESIGN_TOKENS.zIndex.overlay
+                        }}
+                        onClick={onClose} 
+                    />
+                    <motion.div
+                        key="cart-modal"
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }} 
+                        animate={{ opacity: 1, scale: 1, y: 0 }} 
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        transition={{ type: 'spring', duration: 0.4 }}
+                        className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none"
+                        style={{ zIndex: DESIGN_TOKENS.zIndex.modal }}
+                    >
+                        <div 
+                            className="bg-white rounded-3xl overflow-hidden flex flex-col shadow-2xl w-full max-w-[500px] max-h-[85vh] pointer-events-auto"
+                            onClick={e => e.stopPropagation()}
+                        >
                                     <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white">
                                         <div className="flex items-center gap-3">
                                             <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${theme.colors.accent}10` }}>
@@ -220,7 +191,7 @@ const CartDrawer = ({ cart, onUpdateCart, theme, userSettings, dealers, designFi
                                                 <p className="text-xs text-gray-500 font-medium">{totalCartItems} items selected</p>
                                             </div>
                                         </div>
-                                        <button onClick={() => setIsExpanded(false)} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center active:scale-90 transition hover:bg-gray-200">
+                                        <button onClick={onClose} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center active:scale-90 transition hover:bg-gray-200">
                                             <X className="w-5 h-5 text-gray-600" />
                                         </button>
                                     </div>
@@ -261,39 +232,59 @@ const CartDrawer = ({ cart, onUpdateCart, theme, userSettings, dealers, designFi
                                             <div className="space-y-4 bg-[#F8F9FA] p-5 rounded-[24px] border border-gray-100">
                                                 <div className="flex items-center justify-between">
                                                     <h4 className="text-[11px] font-black uppercase tracking-[0.08em] text-gray-400">Ship To</h4>
-                                                    <div className="flex gap-2">
-                                                        <button 
-                                                            onClick={() => { setShipToName('Luke Wagner'); setAddress1(userSettings?.homeAddress); }} 
-                                                            className="text-[10px] font-bold text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-all hover:bg-gray-50"
-                                                        >
-                                                            Use My Address
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => setShowDir(true)} 
-                                                            className="text-[10px] font-bold text-gray-600 bg-white border border-gray-200 px-3 py-1.5 rounded-full shadow-sm active:scale-95 transition-all hover:bg-gray-50 flex items-center gap-1.5"
-                                                        >
-                                                            <Search className="w-3 h-3" /> Directory
-                                                        </button>
-                                                    </div>
                                                 </div>
+                                                
+                                                {/* Prominent address selection buttons */}
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    <button 
+                                                        onClick={() => { 
+                                                            setShipToName(userSettings?.firstName && userSettings?.lastName ? `${userSettings.firstName} ${userSettings.lastName}` : 'Luke Wagner'); 
+                                                            setAddress1(userSettings?.homeAddress || '5445 N Deerwood Lake Rd, Jasper, IN 47546'); 
+                                                        }} 
+                                                        className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold text-sm transition-all active:scale-95 hover:shadow-md"
+                                                        style={{ 
+                                                            backgroundColor: theme.colors.surface,
+                                                            border: `1.5px solid ${theme.colors.border}`,
+                                                            color: theme.colors.textPrimary
+                                                        }}
+                                                    >
+                                                        <User className="w-4 h-4" style={{ color: theme.colors.accent }} />
+                                                        My Address
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => setShowDir(true)} 
+                                                        className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold text-sm transition-all active:scale-95 hover:shadow-md"
+                                                        style={{ 
+                                                            backgroundColor: theme.colors.surface,
+                                                            border: `1.5px solid ${theme.colors.border}`,
+                                                            color: theme.colors.textPrimary
+                                                        }}
+                                                    >
+                                                        <Search className="w-4 h-4" style={{ color: theme.colors.accent }} />
+                                                        Customer
+                                                    </button>
+                                                </div>
+                                                
                                                 <div className="space-y-3">
                                                     <input value={shipToName} onChange={e => setShipToName(e.target.value)} placeholder="Full Name / Company" className="w-full bg-white rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all focus:ring-2 ring-[#353535]/5 text-[#353535] border border-gray-200 shadow-sm placeholder:text-gray-300" />
                                                     <input value={address1} onChange={e => setAddress1(e.target.value)} placeholder="Street Address" className="w-full bg-white rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all focus:ring-2 ring-[#353535]/5 text-[#353535] border border-gray-200 shadow-sm placeholder:text-gray-300" />
                                                 </div>
                                             </div>
 
-                                            <button
-                                                disabled={!canSubmit}
-                                                onClick={handleSubmit}
-                                                className="w-full py-4 rounded-full font-bold text-white shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-[15px] disabled:opacity-50 disabled:grayscale"
-                                                style={{ 
-                                                    backgroundColor: canSubmit ? theme.colors.accent : '#e5e7eb',
-                                                    boxShadow: canSubmit ? `0 8px 32px ${theme.colors.accent}40` : 'none'
-                                                }}
-                                            >
-                                                <span>Submit Sample Request</span>
-                                                {canSubmit && <ChevronRight className="w-5 h-5" />}
-                                            </button>
+                                            {/* Only show submit button when form is complete */}
+                                            {canSubmit && (
+                                                <button
+                                                    onClick={handleSubmit}
+                                                    className="w-full py-4 rounded-full font-bold text-white shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-[15px]"
+                                                    style={{ 
+                                                        backgroundColor: theme.colors.accent,
+                                                        boxShadow: `0 8px 32px ${theme.colors.accent}40`
+                                                    }}
+                                                >
+                                                    <span>Submit Sample Request</span>
+                                                    <ChevronRight className="w-5 h-5" />
+                                                </button>
+                                            )}
                                         </div>
                                     )}
                                     </div>
@@ -301,27 +292,28 @@ const CartDrawer = ({ cart, onUpdateCart, theme, userSettings, dealers, designFi
                             </>,
                             document.body
                         )}
-                    </React.Fragment>
-                )}
-            </AnimatePresence>
-            <DirectoryModal show={showDir} onClose={() => setShowDir(false)} onSelect={({ name, address1 }) => { setShipToName(name); setAddress1(address1); }} theme={theme} dealers={dealers} designFirms={designFirms} />
+            <DirectoryModal show={showDir} onClose={() => setShowDir(false)} onSelect={({ name, address1: addr }) => { setShipToName(name); setAddress1(addr); }} theme={theme} customers={customers} />
         </>
     );
 };
 
-export const SamplesScreen = ({ theme, onNavigate, cart: cartProp, onUpdateCart: onUpdateCartProp, userSettings, dealerDirectory, designFirms, initialCartOpen = false }) => {
+export const SamplesScreen = ({ theme, onNavigate, cart: cartProp, onUpdateCart: onUpdateCartProp, userSettings, initialCartOpen = false }) => {
     const isDesktop = useIsDesktop();
     const [cartInternal, setCartInternal] = useState({});
+    const [isCartOpen, setIsCartOpen] = useState(initialCartOpen);
     const cart = cartProp ?? cartInternal;
     const onUpdateCart = onUpdateCartProp ?? useCallback((item, delta) => { setCartInternal((prev) => { const id = idOf(item.id); const current = prev[id] || 0; if (delta === -999) { const n = { ...prev }; delete n[id]; return n; } const quantity = Math.max(0, current + delta); const next = { ...prev }; if (quantity === 0) delete next[id]; else next[id] = quantity; return next; }); }, []);
 
     const [selectedCategory, setSelectedCategory] = useState('tfl');
     const categories = useMemo(() => {
-        return [...FINISH_CATEGORIES, ...SAMPLE_CATEGORIES.filter(c => c.id !== 'finishes')].map(c => ({ 
+        return [...FINISH_CATEGORIES, ...SAMPLE_CATEGORIES.filter(c => c.id !== 'finishes' && c.id !== 'textiles')].map(c => ({ 
             key: c.id, 
             label: c.name 
         }));
     }, []);
+
+    // Calculate total cart items for inline display
+    const totalCartItems = useMemo(() => Object.values(cart).reduce((s, q) => s + q, 0), [cart]);
 
     // Check if full set or category set is in cart
     const fullSetInCart = cart['full-jsi-set'] > 0;
@@ -329,6 +321,12 @@ export const SamplesScreen = ({ theme, onNavigate, cart: cartProp, onUpdateCart:
 
     const filteredProducts = useMemo(() => {
         const isFinish = FINISH_CATEGORIES.some(c => c.id === selectedCategory);
+        
+        // Handle textiles category specially
+        if (selectedCategory === 'textiles') {
+            return TEXTILE_SAMPLES;
+        }
+        
         let list = isFinish ? FINISH_SAMPLES.filter(s => s.category === selectedCategory) : SAMPLE_PRODUCTS.filter(p => p.category === selectedCategory && !p.subcategory);
         if (selectedCategory === 'tfl') {
             const order = ['woodgrain', 'stone', 'metallic', 'solid'];
@@ -409,6 +407,8 @@ export const SamplesScreen = ({ theme, onNavigate, cart: cartProp, onUpdateCart:
                 <div className="mt-3 text-center">
                     <div className="text-[12px] font-bold text-[#353535] line-clamp-1 px-1">{product.name}</div>
                     {product.code && <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{product.code}</div>}
+                    {product.collection && <div className="text-[9px] font-medium text-gray-400 mt-0.5">{product.collection}</div>}
+                    {product.grade && <div className="text-[9px] font-semibold text-gray-500 mt-0.5">Grade {product.grade}</div>}
                 </div>
             </div>
         );
@@ -512,18 +512,36 @@ export const SamplesScreen = ({ theme, onNavigate, cart: cartProp, onUpdateCart:
                                 All {categories.find(c => c.key === selectedCategory)?.label}
                             </button>
                         )}
+                        
+                        {/* Cart Button - always visible */}
+                        <button 
+                            onClick={() => setIsCartOpen(true)}
+                            className="h-11 px-4 rounded-full text-[11px] font-black tracking-widest uppercase transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg"
+                            style={{ 
+                                backgroundColor: totalCartItems > 0 ? theme.colors.accent : theme.colors.surface,
+                                color: totalCartItems > 0 ? '#fff' : '#353535',
+                                border: `1.5px solid ${totalCartItems > 0 ? theme.colors.accent : theme.colors.border}`,
+                            }}
+                        >
+                            <ShoppingCart className="w-4 h-4" />
+                            {totalCartItems > 0 ? (
+                                <span>Cart ({totalCartItems})</span>
+                            ) : (
+                                <span>Cart</span>
+                            )}
+                        </button>
                     </div>
                 </div>
 
                 {/* Product grid - constrained width */}
                 <div 
-                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 lg:gap-6 pb-48 mx-auto"
+                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 lg:gap-6 pb-24 mx-auto"
                     style={{ maxWidth: MAX_CONTENT_WIDTH, paddingLeft: isDesktop ? 24 : 16, paddingRight: isDesktop ? 24 : 16, paddingTop: 16 }}
                 >
                     {filteredProducts.map(p => <SampleCard key={p.id} product={p} />)}
                 </div>
             </div>
-            <CartDrawer cart={cart} onUpdateCart={onUpdateCart} theme={theme} userSettings={userSettings} dealers={dealerDirectory} designFirms={designFirms} initialOpen={initialCartOpen} onNavigate={onNavigate} isDesktop={isDesktop} />
+            <CartDrawer cart={cart} onUpdateCart={onUpdateCart} theme={theme} userSettings={userSettings} customers={MOCK_CUSTOMERS} isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} onNavigate={onNavigate} isDesktop={isDesktop} />
         </div>
     );
 };

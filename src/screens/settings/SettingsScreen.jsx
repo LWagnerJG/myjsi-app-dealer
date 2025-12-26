@@ -118,6 +118,7 @@ const CompactSelect = ({ value, onChange, options, theme }) => {
 export const SettingsScreen = ({ theme, isDarkMode, onToggleTheme, customNavItems = [], onUpdateNavItems }) => {
 const [firstName, setFirstName] = useState('Luke');
 const [lastName, setLastName] = useState('Wagner');
+const [homeAddress, setHomeAddress] = useState('5445 N Deerwood Lake Rd, Jasper, IN 47546');
 const [shirtSize, setShirtSize] = useState('L');
 const [profileImage, setProfileImage] = useState(null);
 const fileInputRef = useRef(null);
@@ -316,6 +317,17 @@ const [showScheduleOptions, setShowScheduleOptions] = useState(false);
                   theme={theme}
                 />
               </div>
+            </div>
+            {/* Address field */}
+            <div className="mt-4 space-y-1">
+              <label className="text-[10px] font-semibold uppercase tracking-wider pl-0.5" style={{ color: theme.colors.textSecondary }}>Home Address</label>
+              <input
+                value={homeAddress}
+                onChange={e => setHomeAddress(e.target.value)}
+                placeholder="Street Address, City, State ZIP"
+                className="w-full px-3 py-2 rounded-lg text-sm transition-shadow focus:ring-2 focus:ring-opacity-50 outline-none"
+                style={{ ...getInputStyles(theme), boxShadow: 'none' }}
+              />
             </div>
           </div>
         </GlassCard>
