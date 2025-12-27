@@ -113,8 +113,7 @@ const CategoryCard = React.memo(({
                     className="flex items-end justify-center gap-2"
                     style={{ 
                         padding: isDesktop ? '24px 20px 20px' : '20px 12px 16px',
-                        height: isDesktop ? '160px' : '120px',
-                        backgroundColor: '#fafafa'
+                        height: isDesktop ? '160px' : '120px'
                     }}
                 >
                     {images.map((img, index) => (
