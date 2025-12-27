@@ -15,10 +15,73 @@ import {
     ArrowRight,
     Package,
     Armchair,
-    Filter
+    MoreVertical,
+    ChevronRight,
+    Layers
 } from 'lucide-react';
-import { PRODUCTS_CATEGORIES_DATA, PRODUCT_DATA, FABRICS_DATA, JSI_MODELS } from './data.js';
+import { PRODUCTS_CATEGORIES_DATA, PRODUCT_DATA, FABRICS_DATA, JSI_MODELS, JSI_SERIES } from './data.js';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
+
+// Map category keys to nav paths
+const CATEGORY_NAV_MAP = {
+    'benches': 'products/category/benches',
+    'casegoods': 'products/category/casegoods',
+    'conference-tables': 'products/category/conference-tables',
+    'guest': 'products/category/guest',
+    'lounge': 'products/category/lounge',
+    'swivels': 'products/category/swivels',
+    'training-tables': 'products/category/training-tables'
+};
+
+// Build series data with category info for direct navigation
+const buildSeriesData = () => {
+    const seriesData = [];
+    Object.entries(PRODUCT_DATA).forEach(([categoryKey, categoryData]) => {
+        (categoryData.products || []).forEach(product => {
+            // Avoid duplicates (some series appear in multiple categories)
+            if (!seriesData.find(s => s.name === product.name)) {
+                seriesData.push({
+                    name: product.name,
+                    categoryKey,
+                    categoryName: categoryData.name,
+                    nav: `${CATEGORY_NAV_MAP[categoryKey]}/${product.id}`
+                });
+            }
+        });
+    });
+    return seriesData.sort((a, b) => a.name.localeCompare(b.name));
+};
+
+const SERIES_DATA = buildSeriesData();
+
+// Map category keys to display names
+const CATEGORY_KEY_MAP = {
+    'benches': 'Benches',
+    'casegoods': 'Casegoods',
+    'conference-tables': 'Conference Tables',
+    'guest': 'Guest',
+    'lounge': 'Lounge',
+    'swivels': 'Swivels',
+    'training-tables': 'Training Tables'
+};
+
+// Build a mapping of series name -> category names for search
+const buildSeriesCategoryMap = () => {
+    const map = {};
+    Object.entries(PRODUCT_DATA).forEach(([categoryKey, categoryData]) => {
+        const categoryName = CATEGORY_KEY_MAP[categoryKey] || categoryData.name;
+        (categoryData.products || []).forEach(product => {
+            const seriesName = product.name.toLowerCase();
+            if (!map[seriesName]) map[seriesName] = [];
+            if (!map[seriesName].includes(categoryName)) {
+                map[seriesName].push(categoryName);
+            }
+        });
+    });
+    return map;
+};
+
+const SERIES_CATEGORY_MAP = buildSeriesCategoryMap();
 
 const CategoryCard = React.memo(({
     category,
@@ -50,7 +113,7 @@ const CategoryCard = React.memo(({
                     className="flex items-end justify-evenly"
                     style={{ 
                         padding: isDesktop ? '32px 32px 24px' : '24px 20px 16px',
-                        minHeight: isDesktop ? '140px' : '105px'
+                        minHeight: isDesktop ? '180px' : '140px'
                     }}
                 >
                     {images.map((img, index) => (
@@ -60,8 +123,8 @@ const CategoryCard = React.memo(({
                             alt={`${category.name} ${index + 1}`}
                             className="object-contain"
                             style={{ 
-                                maxHeight: isDesktop ? '95px' : '70px',
-                                maxWidth: isDesktop ? '30%' : '28%',
+                                maxHeight: isDesktop ? '140px' : '105px',
+                                maxWidth: isDesktop ? '32%' : '30%',
                                 flex: '0 1 auto'
                             }}
                             loading="lazy"
@@ -138,6 +201,128 @@ const ViewModeToggle = React.memo(({ viewMode, onToggle, theme }) => (
 ));
 ViewModeToggle.displayName = 'ViewModeToggle';
 
+// Combined Options Menu - View mode toggle + Series quick navigation
+const OptionsMenu = React.memo(({ viewMode, onToggleViewMode, onNavigateToSeries, theme, isDesktop }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isOpen]);
+
+    const handleSeriesClick = (series) => {
+        setIsOpen(false);
+        onNavigateToSeries(series);
+    };
+
+    return (
+        <div className="relative" ref={dropdownRef}>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="p-3.5 rounded-full transition-all duration-200 transform active:scale-90"
+                style={{
+                    backgroundColor: theme.colors.surface,
+                    border: 'none',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)'
+                }}
+                aria-label="Options menu"
+            >
+                <MoreVertical className="w-5 h-5" style={{ color: theme.colors.textPrimary }} />
+            </button>
+
+            {isOpen && (
+                <div
+                    className="absolute right-0 mt-2 rounded-xl overflow-hidden z-50"
+                    style={{
+                        backgroundColor: theme.colors.surface,
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                        width: isDesktop ? '260px' : '240px'
+                    }}
+                >
+                    {/* View Mode Toggle */}
+                    <button
+                        onClick={() => {
+                            onToggleViewMode();
+                            setIsOpen(false);
+                        }}
+                        className="w-full flex items-center justify-between px-4 py-3 transition-colors hover:bg-black/5"
+                    >
+                        <div className="flex items-center">
+                            {viewMode === 'grid' ? (
+                                <List className="w-4 h-4 mr-3" style={{ color: theme.colors.textSecondary }} />
+                            ) : (
+                                <Grid className="w-4 h-4 mr-3" style={{ color: theme.colors.textSecondary }} />
+                            )}
+                            <span className="text-sm" style={{ color: theme.colors.textPrimary }}>
+                                {viewMode === 'grid' ? 'Switch to List View' : 'Switch to Grid View'}
+                            </span>
+                        </div>
+                    </button>
+
+                    {/* Divider */}
+                    <div style={{ height: 1, backgroundColor: theme.colors.border }} />
+
+                    {/* Browse Series Section */}
+                    <div 
+                        className="px-4 py-2.5 flex items-center"
+                        style={{ backgroundColor: theme.colors.background }}
+                    >
+                        <Layers className="w-3.5 h-3.5 mr-2" style={{ color: theme.colors.textSecondary }} />
+                        <span 
+                            className="text-xs font-semibold uppercase tracking-wide"
+                            style={{ color: theme.colors.textSecondary }}
+                        >
+                            Jump to Series
+                        </span>
+                    </div>
+
+                    {/* Series List */}
+                    <div 
+                        className="overflow-y-auto scrollbar-hide"
+                        style={{ 
+                            maxHeight: '280px'
+                        }}
+                    >
+                        {SERIES_DATA.map(series => (
+                            <button
+                                key={series.name}
+                                onClick={() => handleSeriesClick(series)}
+                                className="w-full flex items-center justify-between px-4 py-2.5 transition-colors hover:bg-black/5"
+                            >
+                                <div className="flex flex-col items-start">
+                                    <span 
+                                        className="text-sm font-medium"
+                                        style={{ color: theme.colors.textPrimary }}
+                                    >
+                                        {series.name}
+                                    </span>
+                                    <span 
+                                        className="text-xs"
+                                        style={{ color: theme.colors.textSecondary }}
+                                    >
+                                        {series.categoryName}
+                                    </span>
+                                </div>
+                                <ChevronRight className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+});
+OptionsMenu.displayName = 'OptionsMenu';
+
 const StickyHeader = React.memo(({
     isScrolled,
     theme,
@@ -209,13 +394,25 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
     }, []);
 
     const filteredCategories = useMemo(() => {
-        if (!searchTerm.trim()) return PRODUCTS_CATEGORIES_DATA || [];
+        let categories = PRODUCTS_CATEGORIES_DATA || [];
+
+        // If no search term, return all categories
+        if (!searchTerm.trim()) return categories;
 
         const lowerSearch = searchTerm.toLowerCase();
-        return PRODUCTS_CATEGORIES_DATA.filter(category =>
-            category.name.toLowerCase().includes(lowerSearch) ||
-            category.description?.toLowerCase().includes(lowerSearch)
-        );
+        
+        return categories.filter(category => {
+            // Check category name and description
+            if (category.name.toLowerCase().includes(lowerSearch)) return true;
+            if (category.description?.toLowerCase().includes(lowerSearch)) return true;
+            
+            // Check if search matches any series name in this category
+            const matchingSeries = Object.entries(SERIES_CATEGORY_MAP).find(([seriesName, catNames]) => {
+                return seriesName.includes(lowerSearch) && catNames.includes(category.name);
+            });
+            
+            return !!matchingSeries;
+        });
     }, [searchTerm]);
 
     const handleCategoryClick = useCallback((category) => {
@@ -228,9 +425,19 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
         setViewMode(prev => prev === 'grid' ? 'list' : 'grid');
     }, []);
 
-    const handleSearchChange = useCallback((e) => {
-        setSearchTerm(e.target.value);
+    // Handle search change - StandardSearchBar passes value directly (not event)
+    const handleSearchChange = useCallback((value) => {
+        // Handle both direct value and event object
+        const newValue = typeof value === 'string' ? value : (value?.target?.value ?? '');
+        setSearchTerm(newValue);
     }, []);
+
+    // Navigate to a specific series
+    const handleNavigateToSeries = useCallback((series) => {
+        if (series.nav) {
+            onNavigate(series.nav);
+        }
+    }, [onNavigate]);
 
     // Responsive content max-width
     const contentMaxWidth = isDesktop ? 'max-w-5xl mx-auto w-full' : '';
@@ -240,14 +447,16 @@ export const ProductsScreen = ({ theme, onNavigate }) => {
             <StandardSearchBar
                 value={searchTerm}
                 onChange={handleSearchChange}
-                placeholder="Search products..."
+                placeholder="Search products or series..."
                 theme={theme}
                 className="flex-grow"
             />
-            <ViewModeToggle
+            <OptionsMenu
                 viewMode={viewMode}
-                onToggle={toggleViewMode}
+                onToggleViewMode={toggleViewMode}
+                onNavigateToSeries={handleNavigateToSeries}
                 theme={theme}
+                isDesktop={isDesktop}
             />
         </div>
     );

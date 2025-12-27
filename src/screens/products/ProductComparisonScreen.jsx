@@ -42,7 +42,7 @@ const VerticalDropdown = React.memo(({ vertical, gsaOnly, onVerticalChange, onGs
           color: vertical ? theme.colors.accent : theme.colors.textSecondary,
         }}
       >
-        <span>{activeLabel}{gsaOnly ? '·GSA' : ''}</span>
+        <span>{activeLabel}{gsaOnly ? 'ï¿½GSA' : ''}</span>
         <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
@@ -481,10 +481,28 @@ const ErrorState = ({ theme, message='The requested item does not exist.' }) => 
   <div className="p-4"><GlassCard theme={theme} className="p-8 text-center"><Package className="w-12 h-12 mx-auto mb-4" style={{ color: theme.colors.textSecondary }} /><p style={{ color: theme.colors.textPrimary }}>{message}</p></GlassCard></div>
 );
 
-export const ProductComparisonScreen = ({ categoryId, onNavigate, theme }) => {
+export const ProductComparisonScreen = ({ categoryId, initialProductId, onNavigate, theme }) => {
   const categoryData = PRODUCT_DATA?.[categoryId];
   const isDesktop = useIsDesktop();
-  const [activeProduct,setActiveProduct]=useState(categoryData?.products?.[0]);
+  
+  // Find initial product from URL or default to first product
+  const initialProduct = useMemo(() => {
+    if (initialProductId && categoryData?.products) {
+      const found = categoryData.products.find(p => p.id === initialProductId);
+      if (found) return found;
+    }
+    return categoryData?.products?.[0];
+  }, [initialProductId, categoryData]);
+  
+  const [activeProduct,setActiveProduct]=useState(initialProduct);
+  
+  // Update activeProduct when initialProductId changes (e.g., navigating from dropdown)
+  useEffect(() => {
+    if (initialProduct) {
+      setActiveProduct(initialProduct);
+    }
+  }, [initialProduct]);
+  
   const isGuest = categoryId==='guest';
   const isCasegoods = categoryId==='casegoods';
   const isConference = categoryId==='conference-tables';

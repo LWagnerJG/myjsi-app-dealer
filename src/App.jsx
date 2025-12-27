@@ -106,7 +106,7 @@ const base = parts[0];
 
 if (base === 'projects') return <ProjectsScreen ref={projectsScreenRef} {...rest} />;
 
-// Product category routes: products/category/:categoryId
+// Product category routes: products/category/:categoryId or products/category/:categoryId/:productId
 if (base === 'products' && parts[1] === 'category' && parts.length >= 3) {
     const categoryId = parts[2];
     // Competition view: products/category/:categoryId/competition/:productId
@@ -114,8 +114,9 @@ if (base === 'products' && parts[1] === 'category' && parts.length >= 3) {
         const productId = parts[4] || null;
         return <CompetitiveAnalysisScreen {...rest} categoryId={categoryId} productId={productId} />;
     }
-    // Category product listing
-    return <ProductComparisonScreen {...rest} categoryId={categoryId} />;
+    // Category product listing with optional initial product: products/category/:categoryId/:productId
+    const initialProductId = parts[3] || null;
+    return <ProductComparisonScreen {...rest} categoryId={categoryId} initialProductId={initialProductId} />;
 }
 
 // Order detail routes: orders/:orderNumber
