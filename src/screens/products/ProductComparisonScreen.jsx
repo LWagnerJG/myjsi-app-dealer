@@ -496,12 +496,16 @@ export const ProductComparisonScreen = ({ categoryId, initialProductId, onNaviga
   
   const [activeProduct,setActiveProduct]=useState(initialProduct);
   
-  // Update activeProduct when initialProductId changes (e.g., navigating from dropdown)
+  // Update activeProduct and filters when initialProductId changes (e.g., navigating from dropdown)
   useEffect(() => {
     if (initialProduct) {
       setActiveProduct(initialProduct);
+      // Also update leg type filter for guest to show the correct product
+      if (isGuest && initialProduct.legType) {
+        setGuestLegType(initialProduct.legType);
+      }
     }
-  }, [initialProduct]);
+  }, [initialProduct, isGuest]);
   
   const isGuest = categoryId==='guest';
   const isCasegoods = categoryId==='casegoods';
@@ -518,7 +522,13 @@ export const ProductComparisonScreen = ({ categoryId, initialProductId, onNaviga
   const [typicalLayout,setTypicalLayout]=useState('U-Shape');
   const [conferenceSize,setConferenceSize]=useState('30x72');
   const [loungeConfig,setLoungeConfig]=useState('Single Seater');
-  const [guestLegType,setGuestLegType]=useState('wood');
+  // Set initial leg type based on the initial product (for direct navigation to metal chairs like Cosgrove)
+  const [guestLegType,setGuestLegType]=useState(() => {
+    if (isGuest && initialProduct?.legType) {
+      return initialProduct.legType;
+    }
+    return 'wood';
+  });
 
   const handleProductSelect = useCallback(p=>setActiveProduct(p),[]);
   if(!categoryData) return <ErrorState theme={theme} />;

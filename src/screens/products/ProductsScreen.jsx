@@ -112,8 +112,8 @@ const CategoryCard = React.memo(({
                 <div 
                     className="flex items-end justify-evenly"
                     style={{ 
-                        padding: isDesktop ? '32px 32px 24px' : '24px 20px 16px',
-                        minHeight: isDesktop ? '180px' : '140px'
+                        padding: isDesktop ? '40px 32px 28px' : '28px 16px 20px',
+                        minHeight: isDesktop ? '200px' : '160px'
                     }}
                 >
                     {images.map((img, index) => (
@@ -123,7 +123,7 @@ const CategoryCard = React.memo(({
                             alt={`${category.name} ${index + 1}`}
                             className="object-contain"
                             style={{ 
-                                maxHeight: isDesktop ? '140px' : '105px',
+                                maxHeight: isDesktop ? '160px' : '125px',
                                 maxWidth: isDesktop ? '32%' : '30%',
                                 flex: '0 1 auto'
                             }}
@@ -248,28 +248,32 @@ const OptionsMenu = React.memo(({ viewMode, onToggleViewMode, onNavigateToSeries
                         width: isDesktop ? '260px' : '240px'
                     }}
                 >
-                    {/* View Mode Toggle */}
-                    <button
-                        onClick={() => {
-                            onToggleViewMode();
-                            setIsOpen(false);
-                        }}
-                        className="w-full flex items-center justify-between px-4 py-3 transition-colors hover:bg-black/5"
-                    >
-                        <div className="flex items-center">
-                            {viewMode === 'grid' ? (
-                                <List className="w-4 h-4 mr-3" style={{ color: theme.colors.textSecondary }} />
-                            ) : (
-                                <Grid className="w-4 h-4 mr-3" style={{ color: theme.colors.textSecondary }} />
-                            )}
-                            <span className="text-sm" style={{ color: theme.colors.textPrimary }}>
-                                {viewMode === 'grid' ? 'Switch to List View' : 'Switch to Grid View'}
-                            </span>
-                        </div>
-                    </button>
+                    {/* View Mode Toggle - Only show on desktop */}
+                    {isDesktop && (
+                        <>
+                            <button
+                                onClick={() => {
+                                    onToggleViewMode();
+                                    setIsOpen(false);
+                                }}
+                                className="w-full flex items-center justify-between px-4 py-3 transition-colors hover:bg-black/5"
+                            >
+                                <div className="flex items-center">
+                                    {viewMode === 'grid' ? (
+                                        <List className="w-4 h-4 mr-3" style={{ color: theme.colors.textSecondary }} />
+                                    ) : (
+                                        <Grid className="w-4 h-4 mr-3" style={{ color: theme.colors.textSecondary }} />
+                                    )}
+                                    <span className="text-sm" style={{ color: theme.colors.textPrimary }}>
+                                        {viewMode === 'grid' ? 'Switch to List View' : 'Switch to Grid View'}
+                                    </span>
+                                </div>
+                            </button>
 
-                    {/* Divider */}
-                    <div style={{ height: 1, backgroundColor: theme.colors.border }} />
+                            {/* Divider */}
+                            <div style={{ height: 1, backgroundColor: theme.colors.border }} />
+                        </>
+                    )}
 
                     {/* Browse Series Section */}
                     <div 
@@ -382,10 +386,11 @@ EmptyState.displayName = 'EmptyState';
 
 export const ProductsScreen = ({ theme, onNavigate }) => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [viewMode, setViewMode] = useState('grid');
+    const isDesktop = useIsDesktop();
+    // Default to list view on mobile, grid on desktop
+    const [viewMode, setViewMode] = useState(isDesktop ? 'grid' : 'list');
     const [isScrolled, setIsScrolled] = useState(false);
     const scrollContainerRef = useRef(null);
-    const isDesktop = useIsDesktop();
 
     const handleScroll = useCallback(() => {
         if (scrollContainerRef.current) {
