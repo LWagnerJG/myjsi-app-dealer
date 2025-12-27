@@ -530,7 +530,6 @@ export const ProductComparisonScreen = ({ categoryId, initialProductId, onNaviga
       }
     }
   }, [initialProduct, isGuest]);
-  });
 
   const handleProductSelect = useCallback(p=>setActiveProduct(p),[]);
   if(!categoryData) return <ErrorState theme={theme} />;
