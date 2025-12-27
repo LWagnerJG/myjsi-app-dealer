@@ -485,6 +485,13 @@ export const ProductComparisonScreen = ({ categoryId, initialProductId, onNaviga
   const categoryData = PRODUCT_DATA?.[categoryId];
   const isDesktop = useIsDesktop();
   
+  // Define category type flags FIRST (needed for hooks below)
+  const isGuest = categoryId==='guest';
+  const isCasegoods = categoryId==='casegoods';
+  const isConference = categoryId==='conference-tables';
+  const isLounge = categoryId==='lounge';
+  const isTraining = categoryId==='training-tables';
+  
   // Find initial product from URL or default to first product
   const initialProduct = useMemo(() => {
     if (initialProductId && categoryData?.products) {
@@ -496,6 +503,23 @@ export const ProductComparisonScreen = ({ categoryId, initialProductId, onNaviga
   
   const [activeProduct,setActiveProduct]=useState(initialProduct);
   
+  // Filter states
+  const [verticalFilter, setVerticalFilter] = useState(null);
+  const [gsaOnly, setGsaOnly] = useState(false);
+
+  // States for configurations
+  const [materialMode,setMaterialMode]=useState(isGuest?'wood':'laminate');
+  const [typicalLayout,setTypicalLayout]=useState('U-Shape');
+  const [conferenceSize,setConferenceSize]=useState('30x72');
+  const [loungeConfig,setLoungeConfig]=useState('Single Seater');
+  // Set initial leg type based on the initial product (for direct navigation to metal chairs like Cosgrove)
+  const [guestLegType,setGuestLegType]=useState(() => {
+    if (isGuest && initialProduct?.legType) {
+      return initialProduct.legType;
+    }
+    return 'wood';
+  });
+  
   // Update activeProduct and filters when initialProductId changes (e.g., navigating from dropdown)
   useEffect(() => {
     if (initialProduct) {
@@ -506,28 +530,6 @@ export const ProductComparisonScreen = ({ categoryId, initialProductId, onNaviga
       }
     }
   }, [initialProduct, isGuest]);
-  
-  const isGuest = categoryId==='guest';
-  const isCasegoods = categoryId==='casegoods';
-  const isConference = categoryId==='conference-tables';
-  const isLounge = categoryId==='lounge';
-  const isTraining = categoryId==='training-tables';
-
-  // Filter states
-  const [verticalFilter, setVerticalFilter] = useState(null);
-  const [gsaOnly, setGsaOnly] = useState(false);
-
-  // States for configurations
-  const [materialMode,setMaterialMode]=useState(isGuest?'wood':'laminate'); // wood/metal only used for guest filtering; laminate default for others
-  const [typicalLayout,setTypicalLayout]=useState('U-Shape');
-  const [conferenceSize,setConferenceSize]=useState('30x72');
-  const [loungeConfig,setLoungeConfig]=useState('Single Seater');
-  // Set initial leg type based on the initial product (for direct navigation to metal chairs like Cosgrove)
-  const [guestLegType,setGuestLegType]=useState(() => {
-    if (isGuest && initialProduct?.legType) {
-      return initialProduct.legType;
-    }
-    return 'wood';
   });
 
   const handleProductSelect = useCallback(p=>setActiveProduct(p),[]);

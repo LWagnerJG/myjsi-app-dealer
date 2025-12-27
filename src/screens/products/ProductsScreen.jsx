@@ -96,7 +96,7 @@ const CategoryCard = React.memo(({
     }, [category, onClick]);
 
     if (viewMode === 'grid') {
-        // Show 3 images - they float naturally on a clean background
+        // Show 3 images - zoomed in to focus on the products
         const images = category.images?.slice(0, 3) || [];
         
         return (
@@ -108,27 +108,36 @@ const CategoryCard = React.memo(({
                     boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
                 }}
             >
-                {/* Images float on white - no boxes, just products */}
+                {/* Product images - zoomed in to highlight the furniture */}
                 <div 
-                    className="flex items-end justify-evenly"
+                    className="flex items-center justify-evenly overflow-hidden"
                     style={{ 
-                        padding: isDesktop ? '40px 32px 28px' : '28px 16px 20px',
-                        minHeight: isDesktop ? '200px' : '160px'
+                        padding: isDesktop ? '20px 16px 16px' : '16px 12px 12px',
+                        height: isDesktop ? '180px' : '140px'
                     }}
                 >
                     {images.map((img, index) => (
-                        <img
+                        <div
                             key={index}
-                            src={img}
-                            alt={`${category.name} ${index + 1}`}
-                            className="object-contain"
-                            style={{ 
-                                maxHeight: isDesktop ? '160px' : '125px',
-                                maxWidth: isDesktop ? '32%' : '30%',
-                                flex: '0 1 auto'
+                            className="overflow-hidden flex items-center justify-center"
+                            style={{
+                                width: isDesktop ? '31%' : '30%',
+                                height: '100%'
                             }}
-                            loading="lazy"
-                        />
+                        >
+                            <img
+                                src={img}
+                                alt={`${category.name} ${index + 1}`}
+                                className="object-cover"
+                                style={{ 
+                                    width: '100%',
+                                    height: '100%',
+                                    transform: 'scale(1.6)',
+                                    objectPosition: 'center 60%'
+                                }}
+                                loading="lazy"
+                            />
+                        </div>
                     ))}
                 </div>
                 {/* Category name */}
