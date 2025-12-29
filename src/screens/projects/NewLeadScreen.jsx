@@ -227,27 +227,36 @@ export const NewLeadScreen = ({
     designFirms,
     setDesignFirms,
     customerDirectory,
+    customers, // MOCK_CUSTOMERS data from App
+    onAddCustomer, // Handler to add new customer
     newLeadData = {},
     onNewLeadChange,
     onNavigate,
 }) => {
-    // Get customer options from directory
+    // New customer form state
+    const [showNewCustomerForm, setShowNewCustomerForm] = useState(false);
+    const [newCustomerName, setNewCustomerName] = useState('');
+    const [newCustomerCity, setNewCustomerCity] = useState('');
+    const [newCustomerState, setNewCustomerState] = useState('');
+    const [newCustomerVertical, setNewCustomerVertical] = useState('Corporate');
+
+    // Get customer options from customers (MOCK_CUSTOMERS) data
     const customerOptions = useMemo(() => {
-        return (customerDirectory || CUSTOMER_DIRECTORY_DATA || []).map(c => c.name);
-    }, [customerDirectory]);
+        return (customers || []).map(c => ({ label: c.name, value: c.name, location: c.location, vertical: c.vertical }));
+    }, [customers]);
 
     // Get selected customer data to auto-populate vertical
     const selectedCustomerData = useMemo(() => {
         if (!newLeadData.customer) return null;
-        return (customerDirectory || CUSTOMER_DIRECTORY_DATA || []).find(c => c.name === newLeadData.customer);
-    }, [newLeadData.customer, customerDirectory]);
+        return (customers || []).find(c => c.name === newLeadData.customer);
+    }, [newLeadData.customer, customers]);
 
     const updateField = (field, value) => {
-        // Auto-populate vertical from customer type when customer is selected
+        // Auto-populate vertical from customer vertical when customer is selected
         if (field === 'customer' && value) {
-            const customer = (customerDirectory || CUSTOMER_DIRECTORY_DATA || []).find(c => c.name === value);
-            if (customer?.type && !newLeadData.vertical) {
-                onNewLeadChange({ customer: value, vertical: customer.type });
+            const customer = (customers || []).find(c => c.name === value);
+            if (customer?.vertical && !newLeadData.vertical) {
+                onNewLeadChange({ customer: value, vertical: customer.vertical });
                 return;
             }
         }
@@ -257,6 +266,41 @@ export const NewLeadScreen = ({
         } else {
             onNewLeadChange({ [field]: value });
         }
+    };
+
+    // Handle creating a new customer
+    const handleCreateCustomer = () => {
+        if (!newCustomerName.trim()) return;
+        
+        const newCustomer = {
+            id: `cust-${Date.now()}`,
+            name: newCustomerName.trim(),
+            location: { city: newCustomerCity.trim() || 'Unknown', state: newCustomerState.trim() || '' },
+            vertical: newCustomerVertical,
+            activeProjectIds: [],
+            image: 'https://webresources.jsifurniture.com/production/uploads/jsi_vision_install_0000010.jpg',
+            standardsPrograms: [],
+            approvedMaterials: { laminates: [], metals: [], upholstery: [], woods: [], paintPlastic: [] },
+            orders: { current: [], history: [] },
+            installs: [],
+            documents: [],
+            contacts: []
+        };
+
+        // Add to customers list
+        if (onAddCustomer) {
+            onAddCustomer(newCustomer);
+        }
+
+        // Select the new customer
+        updateField('customer', newCustomerName.trim());
+
+        // Reset form and close
+        setNewCustomerName('');
+        setNewCustomerCity('');
+        setNewCustomerState('');
+        setNewCustomerVertical('Corporate');
+        setShowNewCustomerForm(false);
     };
     
     const handleSubmit = async (e) => {
@@ -333,13 +377,13 @@ export const NewLeadScreen = ({
                                     required
                                     value={newLeadData.customer || ''}
                                     onChange={e => updateField('customer', e.target.value)}
-                                    options={customerOptions.map(c => ({ label: c, value: c }))}
+                                    options={customerOptions}
                                     placeholder="Select customer..."
                                     theme={theme}
                                 />
                                 <button
                                     type="button"
-                                    onClick={() => onNavigate('resources/customer-directory')}
+                                    onClick={() => setShowNewCustomerForm(true)}
                                     className="flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full self-start transition-colors hover:bg-black/5"
                                     style={{ color: theme.colors.accent }}
                                 >
@@ -349,12 +393,85 @@ export const NewLeadScreen = ({
                                 {selectedCustomerData && (
                                     <div className="p-2 rounded-lg text-xs animate-fade-in" style={{ backgroundColor: theme.colors.subtle }}>
                                         <div className="flex items-center gap-2">
-                                            {selectedCustomerData.type && (
+                                            {selectedCustomerData.vertical && (
                                                 <span className="px-2 py-0.5 rounded-full font-semibold text-[10px]" style={{ backgroundColor: `${theme.colors.accent}20`, color: theme.colors.accent }}>
-                                                    {selectedCustomerData.type}
+                                                    {selectedCustomerData.vertical}
                                                 </span>
                                             )}
-                                            <span style={{ color: theme.colors.textSecondary }}>{selectedCustomerData.address}</span>
+                                            <span style={{ color: theme.colors.textSecondary }}>{selectedCustomerData.location?.city}, {selectedCustomerData.location?.state}</span>
+                                        </div>
+                                    </div>
+                                )}
+                                {/* Inline New Customer Form */}
+                                {showNewCustomerForm && (
+                                    <div className="mt-3 p-4 rounded-xl border animate-fade-in" style={{ backgroundColor: theme.colors.surface, borderColor: theme.colors.border }}>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <span className="font-semibold text-sm" style={{ color: theme.colors.textPrimary }}>New Customer</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowNewCustomerForm(false)}
+                                                className="p-1 rounded-full hover:bg-black/5"
+                                            >
+                                                <X className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
+                                            </button>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <input
+                                                type="text"
+                                                value={newCustomerName}
+                                                onChange={e => setNewCustomerName(e.target.value)}
+                                                placeholder="Customer name *"
+                                                className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                                                style={{ backgroundColor: theme.colors.subtle, border: `1px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
+                                                autoFocus
+                                            />
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={newCustomerCity}
+                                                    onChange={e => setNewCustomerCity(e.target.value)}
+                                                    placeholder="City"
+                                                    className="flex-1 px-3 py-2 rounded-lg text-sm outline-none"
+                                                    style={{ backgroundColor: theme.colors.subtle, border: `1px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
+                                                />
+                                                <input
+                                                    type="text"
+                                                    value={newCustomerState}
+                                                    onChange={e => setNewCustomerState(e.target.value)}
+                                                    placeholder="State"
+                                                    className="w-20 px-3 py-2 rounded-lg text-sm outline-none"
+                                                    style={{ backgroundColor: theme.colors.subtle, border: `1px solid ${theme.colors.border}`, color: theme.colors.textPrimary }}
+                                                />
+                                            </div>
+                                            <div>
+                                                <span className="text-xs font-medium mb-1.5 block" style={{ color: theme.colors.textSecondary }}>Vertical</span>
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {['Corporate', 'Healthcare', 'HigherEd', 'Government', 'Hospitality', 'Other'].map(v => (
+                                                        <button
+                                                            key={v}
+                                                            type="button"
+                                                            onClick={() => setNewCustomerVertical(v)}
+                                                            className="px-2.5 py-1 rounded-full text-[11px] font-medium transition-all"
+                                                            style={{
+                                                                backgroundColor: newCustomerVertical === v ? theme.colors.accent : theme.colors.subtle,
+                                                                color: newCustomerVertical === v ? '#fff' : theme.colors.textSecondary,
+                                                            }}
+                                                        >
+                                                            {v}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={handleCreateCustomer}
+                                                disabled={!newCustomerName.trim()}
+                                                className="w-full py-2 rounded-lg text-sm font-semibold transition-all disabled:opacity-50"
+                                                style={{ backgroundColor: theme.colors.accent, color: '#fff' }}
+                                            >
+                                                <Check className="w-4 h-4 inline mr-1" />
+                                                Create & Select Customer
+                                            </button>
                                         </div>
                                     </div>
                                 )}

@@ -1078,7 +1078,7 @@ const NewActionModal = ({ isOpen, onClose, theme, onNavigate, customers, onAddCu
 };
 
 // Main ProjectsScreen
-export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, setOpportunities, myProjects, setMyProjects, projectsInitialTab, clearProjectsInitialTab, projectsInitialProjectId, clearProjectsInitialProjectId }, ref) => {
+export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, setOpportunities, myProjects, setMyProjects, projectsInitialTab, clearProjectsInitialTab, projectsInitialProjectId, clearProjectsInitialProjectId, customers, onAddCustomer }, ref) => {
   const initial = projectsInitialTab || 'pipeline';
   const [projectsTab, setProjectsTab] = useState(initial);
   const isDesktop = useIsDesktop();
@@ -1107,13 +1107,9 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
   const [customerFilter, setCustomerFilter] = useState('all');
   const [customerSearch, setCustomerSearch] = useState('');
   const [showNewModal, setShowNewModal] = useState(false);
-  const [localCustomers, setLocalCustomers] = useState(MOCK_CUSTOMERS);
+  // Use customers from props (centralized state from App.jsx), fallback to MOCK_CUSTOMERS
+  const customersList = customers || MOCK_CUSTOMERS;
   const [customDesignFirms, setCustomDesignFirms] = useState([]); // Track custom design firms added by user
-
-  // Handler to add new customer
-  const handleAddCustomer = useCallback((newCustomer) => {
-    setLocalCustomers(prev => [newCustomer, ...prev]);
-  }, []);
 
   // Handler to add new custom design firm to the suggestions list
   const handleAddCustomDesignFirm = useCallback((firmName) => {
@@ -1133,7 +1129,7 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
 
   // Filter customers
   const filteredCustomers = useMemo(() => {
-    let result = localCustomers;
+    let result = customersList;
 
     // Apply search
     if (customerSearch.trim()) {
@@ -1155,7 +1151,7 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
     }
 
     return result;
-  }, [customerSearch, customerFilter, localCustomers]);
+  }, [customerSearch, customerFilter, customersList]);
 
   // Desktop: center content, account for sidebar
   const contentMaxWidth = isDesktop ? 'max-w-4xl mx-auto w-full lg:pl-20' : '';
@@ -1318,8 +1314,8 @@ export const ProjectsScreen = forwardRef(({ onNavigate, theme, opportunities, se
         onClose={() => setShowNewModal(false)}
         theme={theme}
         onNavigate={onNavigate}
-        customers={localCustomers}
-        onAddCustomer={handleAddCustomer}
+        customers={customersList}
+        onAddCustomer={onAddCustomer}
       />
     </div>
   );

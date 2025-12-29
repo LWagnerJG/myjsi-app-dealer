@@ -7,6 +7,7 @@ import { INITIAL_POSTS, INITIAL_POLLS } from './screens/community/data.js';
 import { INITIAL_MEMBERS } from './screens/members/data.js';
 import { CUSTOMER_DIRECTORY_DATA } from './screens/resources/customer-directory/data.js';
 import { ORDER_DATA } from './screens/orders/data.js';
+import { MOCK_CUSTOMERS } from './data/mockCustomers.js';
 
 import { AppHeader, ProfileMenu, SCREEN_MAP, VoiceModal, SuccessToast } from './ui.jsx';
 import { OrderDetailScreen } from './screens/orders/index.js';
@@ -236,6 +237,7 @@ function App() {
 
     // Directories / leads
     const [customerDirectory] = useState(CUSTOMER_DIRECTORY_DATA);
+    const [customers, setCustomers] = useState(MOCK_CUSTOMERS);
     const [designFirms, setDesignFirms] = useState(INITIAL_DESIGN_FIRMS);
     const [newLeadData, setNewLeadData] = usePersistentState('draft.newLead', EMPTY_LEAD);
     const [customNavItems, setCustomNavItems] = usePersistentState('nav.customItems', ['home', 'projects', 'orders', 'sales', 'resources/dealer-directory']);
@@ -342,6 +344,10 @@ function App() {
         if (filtered.length === 8) setHomeApps(filtered);
     }, [setHomeApps]);
 
+    const handleAddCustomer = useCallback((newCustomer) => {
+        setCustomers(prev => [newCustomer, ...prev]);
+    }, []);
+
     const screenProps = {
         theme: currentTheme,
         onNavigate: handleNavigate,
@@ -373,6 +379,9 @@ function App() {
         setCart,
         onUpdateCart: handleUpdateCart,
         customerDirectory,
+        customers,
+        setCustomers,
+        onAddCustomer: handleAddCustomer,
         designFirms,
         setDesignFirms,
         newLeadData,
