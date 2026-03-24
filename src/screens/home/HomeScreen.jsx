@@ -5,7 +5,7 @@ import { allApps, QUICK_ACCESS_APPS, DEFAULT_QUICK_ACCESS_IDS, DEALER_QUICK_ACCE
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 import { HomeSearchInput } from '../../components/common/SearchInput.jsx';
 import { DropdownPortal } from '../../DropdownPortal.jsx';
-import { Briefcase, Package, ArrowRight, SlidersHorizontal, X, Check, TrendingUp, TrendingDown, ShoppingCart } from 'lucide-react';
+import { Briefcase, Package, ArrowRight, SlidersHorizontal, X, Check, TrendingUp, TrendingDown, ShoppingCart, MessageSquare } from 'lucide-react';
 import { useIsDesktop } from '../../hooks/useResponsive.js';
 import { DESIGN_TOKENS, JSI_TYPOGRAPHY } from '../../design-system/tokens.js';
 import { useModalState } from '../../hooks/useModalState.js';
@@ -767,6 +767,21 @@ export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opport
             />
 
             <RecentActivityFeed theme={theme} opportunities={opportunities} orders={orders} onNavigate={onNavigate} setProjectsInitialProjectId={setProjectsInitialProjectId} />
+
+            <button
+                onClick={() => onNavigate('feedback')}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-[0.98] hover:opacity-80 mb-6"
+                style={{
+                    backgroundColor: theme.colors.surface,
+                    border: `1px solid ${theme.colors.border}`,
+                    color: theme.colors.textSecondary,
+                    boxShadow: DESIGN_TOKENS.shadows.sm,
+                    fontFamily: DESIGN_TOKENS.typography.fontFamily,
+                }}
+            >
+                <MessageSquare className="w-4 h-4" />
+                <span className="text-sm font-medium">Share Feedback</span>
+            </button>
 
             <CustomizeHomeModal theme={theme} isOpen={isCustomizeOpen} onClose={() => setIsCustomizeOpen(false)} activeAppIds={activeAppIds} onSave={setActiveAppIds} />
         </ScreenLayout>
