@@ -770,11 +770,11 @@ export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opport
 
             <button
                 onClick={() => onNavigate('feedback')}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-[0.98] hover:opacity-80 mb-6"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-[0.98] hover:opacity-90 mb-6"
                 style={{
-                    backgroundColor: theme.colors.surface,
-                    border: `1px solid ${theme.colors.border}`,
-                    color: theme.colors.textSecondary,
+                    backgroundColor: '#F97316',
+                    border: '1px solid #EA580C',
+                    color: '#FFFFFF',
                     boxShadow: DESIGN_TOKENS.shadows.sm,
                     fontFamily: DESIGN_TOKENS.typography.fontFamily,
                 }}
