@@ -122,7 +122,7 @@ export const SampleDiscountsScreen = ({ theme, setSuccessMessage }) => {
                                         </span>
                                     </div>
 
-                                    {/* Title + optional "Best" badge + notes */}
+                                    {/* Title + notes */}
                                     <div className="flex-1 min-w-0 pt-1">
                                         <div className="flex items-start gap-2 min-w-0">
                                             <p
@@ -131,17 +131,6 @@ export const SampleDiscountsScreen = ({ theme, setSuccessMessage }) => {
                                             >
                                                 {policy.title}
                                             </p>
-                                            {isPremium && (
-                                                <span
-                                                    className="shrink-0 text-[0.5625rem] font-black uppercase tracking-[0.08em] px-1.5 py-[3px] rounded-md"
-                                                    style={{
-                                                        backgroundColor: `${INFO}${isDark ? '28' : '14'}`,
-                                                        color: INFO,
-                                                    }}
-                                                >
-                                                    Best
-                                                </span>
-                                            )}
                                         </div>
 
                                         {policy.subtitle && (
