@@ -91,7 +91,6 @@ export const InstallInstructionsScreen = ({ theme }) => {
   const divider = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.06)';
   const cardBg = isDark ? 'rgba(255,255,255,0.08)' : '#fff';
   const subtleBg = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.03)';
-  const typeCount = useMemo(() => new Set(instructions.map(i => i.type)).size, [instructions]);
 
   useEffect(() => {
     if (!activeVideo) return undefined;
@@ -133,22 +132,10 @@ export const InstallInstructionsScreen = ({ theme }) => {
       <div className="px-4 sm:px-5 pt-3 pb-1">
         <PageTitle
           title="Install Instructions"
-          subtitle={`${instructions.length} guides organized by product type.`}
           theme={theme}
           className="px-0 pt-0 pb-0"
           titleClassName="text-[1.375rem] font-black"
-          subtitleClassName="text-sm mt-0.5"
-        >
-          <div className="flex items-center gap-2">
-            <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5" style={{ backgroundColor: subtleBg }}>
-              <FileText className="w-3.5 h-3.5" style={{ color: c.textSecondary }} />
-              <span className="text-[0.6875rem] leading-none font-semibold" style={{ color: c.textSecondary }}>{instructions.length} Docs</span>
-            </div>
-            <div className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5" style={{ backgroundColor: subtleBg }}>
-              <span className="text-[0.6875rem] leading-none font-semibold" style={{ color: c.textSecondary }}>{typeCount} Types</span>
-            </div>
-          </div>
-        </PageTitle>
+        />
       </div>
 
       <div className="px-4 sm:px-5 pb-2">
