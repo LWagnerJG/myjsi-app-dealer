@@ -1,5 +1,0 @@
-// Export main screen component and data for dealer directory feature
-export { DealerDirectoryScreen } from './DealerDirectoryScreen.jsx';
-export { DealerDetailScreen } from './DealerDetailScreen.jsx';
-export { DealerDirectoryScreen as default } from './DealerDirectoryScreen.jsx';
-export * from './data.js';

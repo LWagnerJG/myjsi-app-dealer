@@ -34,7 +34,6 @@ const NAV = {
     contracts:    'View Contracts',
     presentations:'Browse Presentations',
     fabrics:      'Search Fabrics',
-    loanerPool:   'View Loaner Pool',
     tradeshows:   'See Tradeshows',
     comYardage:   'COM Yardage Info',
     sampleDisc:   'Sample Discounts',
@@ -57,7 +56,6 @@ const NAV_ROUTES = {
     contracts:     'resources/contracts',
     presentations: 'presentations',
     fabrics:       'resources/search-fabrics',
-    loanerPool:    'resources/loaner-pool',
     tradeshows:    'resources/tradeshows',
     comYardage:    'resources/request-com-yardage',
     sampleDisc:    'resources/sample-discounts',
@@ -93,7 +91,6 @@ const INTENT_PATTERNS = [
     { intent: 'community',     test: t => /\b(communit|post|board|channel|social)\b/.test(t) },
     { intent: 'presentation',  test: t => /\b(present|deck|slide|promo material)\b/.test(t) },
     { intent: 'tradeshow',     test: t => /\b(trade ?show|neocon|event|exhibit)\b/.test(t) },
-    { intent: 'loanerPool',    test: t => /\b(loaner|pool|borrow|transfer)\b/.test(t) },
     { intent: 'navigation',    test: t => /\b(where|how do i|navigate|find|go to|open|get to)\b/.test(t) },
     { intent: 'help',          test: t => /\b(help|support|contact|feedback|issue)\b/.test(t) },
 ];
@@ -177,7 +174,7 @@ function generateReply(text) {
         if (key && CONTRACTS_DATA[key]) {
             const c = CONTRACTS_DATA[key];
             const discLines = c.discounts.slice(0, 4).map(d =>
-                `• ${d.label}: Discount **${d.discount}** · Rep **${d.repCommission}**`
+                `• ${d.label}: Discount **${d.discount}** · Dealer **${d.dealerCommission}**`
             ).join('\n');
             return `**${c.name}**\n\n${discLines}\n${c.discounts.length > 4 ? `\n…and ${c.discounts.length - 4} more tiers.` : ''}\n\nView full documents at **${NAV.contracts}**.`;
         }
@@ -243,9 +240,6 @@ function generateReply(text) {
     case 'tradeshow':
         return `View upcoming tradeshows and events at **${NAV.tradeshows}**. You'll see dates, locations, booth info, and can RSVP or add events to your calendar.`;
 
-    case 'loanerPool':
-        return `The **${NAV.loanerPool}** tracks shared demo furniture. You can browse available pieces, request loaners, and manage incoming transfer requests from other reps.`;
-
     case 'navigation': {
         const lower = text.toLowerCase();
         const screenHints = [
@@ -261,7 +255,6 @@ function generateReply(text) {
             [/contract/,     NAV.contracts],
             [/present|deck/, NAV.presentations],
             [/fabric/,       NAV.fabrics],
-            [/loaner|pool/,  NAV.loanerPool],
             [/trade ?show/,  NAV.tradeshows],
             [/com |yardage/,  NAV.comYardage],
             [/sample.*disc/,  NAV.sampleDisc],
@@ -299,7 +292,6 @@ function generateNavigationActions(text) {
         [/contract/, 'contracts'],
         [/present|deck/, 'presentations'],
         [/fabric/, 'fabrics'],
-        [/loaner|pool/, 'loanerPool'],
         [/trade ?show/, 'tradeshows'],
         [/com |yardage/, 'comYardage'],
         [/sample.*disc/, 'sampleDisc'],
@@ -337,7 +329,6 @@ function generateActions(text) {
         community:       [act('community')],
         presentation:    [act('presentations')],
         tradeshow:       [act('tradeshows')],
-        loanerPool:      [act('loanerPool')],
         help:            [act('help'), act('feedback')],
     };
     if (intent === 'navigation') return generateNavigationActions(text);

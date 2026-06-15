@@ -110,230 +110,129 @@ export const SALES_VERTICALS_DATA = [
     { label: 'Other',       value:  500000, color: VERTICAL_COLORS.Other       },
 ];
 
-export const CUSTOMER_RANK_DATA = [
+// Dealership's largest end-user customers. Unlike the rep view (which ranks
+// dealer partners), this ranks the dealer's own end-user accounts and ties the
+// multiple projects from each account together into one customer total.
+export const END_USER_RANK_DATA = [
     {
-        id: 1,
-        name: 'Business Furniture LLC',
-        bookings: 450000,
-        sales: 435000,
-        orders: [
-            { projectName: 'Lawrence Township LECC', amount: 43034 },
-            { projectName: 'Monreau Seminary', amount: 137262 }
-        ]
+        id: 'eu-1',
+        name: 'State University',
+        vertical: 'Education',
+        bookings: 430000,
+        sales: 405000,
+        projects: [
+            { projectName: 'University Commons Refresh', amount: 120000 },
+            { projectName: 'STEM Wing Expansion', amount: 190000 },
+            { projectName: 'Library Learning Commons', amount: 95000 },
+        ],
     },
     {
-        id: 2,
-        name: 'Corporate Design Inc',
-        bookings: 380000,
-        sales: 395000,
-        orders: [
-            { projectName: 'OneMain Financial HQ', amount: 1250 },
-            { projectName: 'OneMain Financial Branch', amount: 643 }
-        ]
+        id: 'eu-2',
+        name: 'Midwest Health',
+        vertical: 'Healthcare',
+        bookings: 470000,
+        sales: 505000,
+        projects: [
+            { projectName: 'Parkview Clinic Network', amount: 410000 },
+            { projectName: 'Medical Wing Remodel', amount: 95000 },
+        ],
     },
     {
-        id: 3,
-        name: 'OfficeWorks',
-        bookings: 490000,
-        sales: 510000,
-        orders: [{ projectName: 'Main Office Remodel', amount: 510000 }]
+        id: 'eu-3',
+        name: 'OneMain Financial',
+        vertical: 'Corporate',
+        bookings: 388000,
+        sales: 360296,
+        projects: [
+            { projectName: 'HQ Standards Rollout', amount: 137262 },
+            { projectName: 'Operations Center Ph.2', amount: 180000 },
+            { projectName: 'Downtown Branch', amount: 43034 },
+        ],
     },
     {
-        id: 4,
-        name: 'LOTH Inc.',
+        id: 'eu-4',
+        name: 'Metro Hospitality',
+        vertical: 'Hospitality',
+        bookings: 360000,
+        sales: 335000,
+        projects: [
+            { projectName: 'Embassy Suites Lobby', amount: 265000 },
+            { projectName: 'Hotel Lobby Seating', amount: 70000 },
+        ],
+    },
+    {
+        id: 'eu-5',
+        name: 'ABC Corporation',
+        vertical: 'Corporate',
+        bookings: 300000,
+        sales: 345000,
+        projects: [
+            { projectName: 'HQ Expansion Ph.2', amount: 295000 },
+            { projectName: 'New Office Furnishings', amount: 50000 },
+        ],
+    },
+    {
+        id: 'eu-6',
+        name: 'City of Lawrence',
+        vertical: 'Government',
+        bookings: 295000,
+        sales: 318034,
+        projects: [
+            { projectName: 'State Archives Renovation', amount: 275000 },
+            { projectName: 'Township LECC', amount: 43034 },
+        ],
+    },
+    {
+        id: 'eu-7',
+        name: 'GlobalTech',
+        vertical: 'Corporate',
         bookings: 310000,
-        sales: 320000,
-        orders: [{ projectName: 'Regional Office Refresh', amount: 320000 }]
+        sales: 276000,
+        projects: [
+            { projectName: 'Corporate Expansion Towers', amount: 180000 },
+            { projectName: 'Innovation Wing', amount: 96000 },
+        ],
     },
     {
-        id: 5,
-        name: 'One Eleven Design',
-        bookings: 280000,
-        sales: 275000,
-        orders: [{ projectName: 'Centlivre, LLC', amount: 3415 }]
-    },
-    {
-        id: 6,
-        name: 'RJE Business Interiors',
-        bookings: 650000,
-        sales: 470000,
-        orders: [{ projectName: 'Downtown Campus Buildout', amount: 470000 }]
-    },
-    {
-        id: 7,
-        name: 'Sharp School Services',
-        bookings: 185000,
-        sales: 190000,
-        orders: [{ projectName: 'STEM Wing Expansion', amount: 190000 }]
-    },
-    {
-        id: 8,
-        name: 'Braden Business Systems',
-        bookings: 205000,
-        sales: 210000,
-        orders: [{ projectName: 'Executive Suite Upgrade', amount: 210000 }]
-    },
-    {
-        id: 9,
-        name: "Schroeder's",
+        id: 'eu-8',
+        name: 'Innovate Labs',
+        vertical: 'Corporate',
         bookings: 150000,
-        sales: 140000,
-        orders: [{ projectName: 'Clinic Lobby Refresh', amount: 140000 }]
+        sales: 130000,
+        projects: [
+            { projectName: 'Lab Phase 2', amount: 88000 },
+            { projectName: 'Startup Collaboration Space', amount: 42000 },
+        ],
     },
-    {
-        id: 10,
-        name: 'CVC',
-        bookings: 230000,
-        sales: 220000,
-        orders: [{ projectName: 'Operations Center', amount: 220000 }]
-    }
 ];
 
-export const INCENTIVE_REWARDS_DATA = {
-    // 2025 quarters
-    '2025-Q3': {
-        sales: [
-            { name: 'Luke Wagner', amount: 8500.00 },
-            { name: 'Sarah Johnson', amount: 6750.50 },
-            { name: 'Mike Davis', amount: 5200.25 },
-            { name: 'Emily Chen', amount: 4100.75 }
-        ],
-        designers: [
-            { name: 'Jessica Martinez', amount: 3200.00 },
-            { name: 'David Wilson', amount: 2800.50 },
-            { name: 'Lisa Garcia', amount: 2400.25 }
-        ]
-    },
-    '2025-Q2': {
-        sales: [
-            { name: 'Luke Wagner', amount: 7200.00 },
-            { name: 'Sarah Johnson', amount: 5850.25 },
-            { name: 'Mike Davis', amount: 4650.75 },
-            { name: 'Emily Chen', amount: 3800.50 }
-        ],
-        designers: [
-            { name: 'Jessica Martinez', amount: 2900.00 },
-            { name: 'David Wilson', amount: 2500.75 },
-            { name: 'Lisa Garcia', amount: 2100.50 }
-        ]
-    },
-    '2025-Q1': {
-        sales: [
-            { name: 'Luke Wagner', amount: 6800.00 },
-            { name: 'Sarah Johnson', amount: 5400.75 },
-            { name: 'Mike Davis', amount: 4200.50 },
-            { name: 'Emily Chen', amount: 3600.25 }
-        ],
-        designers: [
-            { name: 'Jessica Martinez', amount: 2700.00 },
-            { name: 'David Wilson', amount: 2300.50 },
-            { name: 'Lisa Garcia', amount: 1950.75 }
-        ]
-    },
-    // 2024 quarters
-    '2024-Q4': {
-        sales: [
-            { name: 'Luke Wagner', amount: 9200.00 },
-            { name: 'Sarah Johnson', amount: 7150.50 },
-            { name: 'Mike Davis', amount: 5900.25 },
-            { name: 'Emily Chen', amount: 4750.75 }
-        ],
-        designers: [
-            { name: 'Jessica Martinez', amount: 3500.00 },
-            { name: 'David Wilson', amount: 3100.25 },
-            { name: 'Lisa Garcia', amount: 2650.50 }
-        ]
-    },
-    '2024-Q3': {
-        sales: [
-            { name: 'Luke Wagner', amount: 8800.00 },
-            { name: 'Sarah Johnson', amount: 6900.75 },
-            { name: 'Mike Davis', amount: 5500.50 },
-            { name: 'Emily Chen', amount: 4400.25 }
-        ],
-        designers: [
-            { name: 'Jessica Martinez', amount: 3300.00 },
-            { name: 'David Wilson', amount: 2950.50 },
-            { name: 'Lisa Garcia', amount: 2500.75 }
-        ]
-    },
-    '2024-Q2': {
-        sales: [
-            { name: 'Luke Wagner', amount: 7500.00 },
-            { name: 'Sarah Johnson', amount: 6200.25 },
-            { name: 'Mike Davis', amount: 4800.75 },
-            { name: 'Emily Chen', amount: 3900.50 }
-        ],
-        designers: [
-            { name: 'Jessica Martinez', amount: 3000.00 },
-            { name: 'David Wilson', amount: 2600.75 },
-            { name: 'Lisa Garcia', amount: 2200.50 }
-        ]
-    },
-    '2024-Q1': {
-        sales: [
-            { name: 'Luke Wagner', amount: 6500.00 },
-            { name: 'Sarah Johnson', amount: 5100.50 },
-            { name: 'Mike Davis', amount: 4000.25 },
-            { name: 'Emily Chen', amount: 3200.75 }
-        ],
-        designers: [
-            { name: 'Jessica Martinez', amount: 2500.00 },
-            { name: 'David Wilson', amount: 2200.25 },
-            { name: 'Lisa Garcia', amount: 1850.50 }
-        ]
-    },
-    // 2023 quarters
-    '2023-Q4': {
-        sales: [
-            { name: 'Luke Wagner', amount: 8900.00 },
-            { name: 'Sarah Johnson', amount: 6800.75 },
-            { name: 'Mike Davis', amount: 5400.50 },
-            { name: 'Emily Chen', amount: 4300.25 }
-        ],
-        designers: [
-            { name: 'Jessica Martinez', amount: 3400.00 },
-            { name: 'David Wilson', amount: 2900.50 },
-            { name: 'Lisa Garcia', amount: 2450.75 }
-        ]
-    },
-    '2023-Q3': {
-        sales: [
-            { name: 'Luke Wagner', amount: 7800.00 },
-            { name: 'Sarah Johnson', amount: 6200.25 },
-            { name: 'Mike Davis', amount: 4900.75 },
-            { name: 'Emily Chen', amount: 3800.50 }
-        ],
-        designers: [
-            { name: 'Jessica Martinez', amount: 3100.00 },
-            { name: 'David Wilson', amount: 2700.75 },
-            { name: 'Lisa Garcia', amount: 2300.50 }
-        ]
-    },
-    '2023-Q2': {
-        sales: [
-            { name: 'Luke Wagner', amount: 6900.00 },
-            { name: 'Sarah Johnson', amount: 5500.50 },
-            { name: 'Mike Davis', amount: 4300.25 },
-            { name: 'Emily Chen', amount: 3400.75 }
-        ],
-        designers: [
-            { name: 'Jessica Martinez', amount: 2800.00 },
-            { name: 'David Wilson', amount: 2400.25 },
-            { name: 'Lisa Garcia', amount: 2000.50 }
-        ]
-    },
-    '2023-Q1': {
-        sales: [
-            { name: 'Luke Wagner', amount: 5800.00 },
-            { name: 'Sarah Johnson', amount: 4600.75 },
-            { name: 'Mike Davis', amount: 3600.50 },
-            { name: 'Emily Chen', amount: 2800.25 }
-        ],
-        designers: [
-            { name: 'Jessica Martinez', amount: 2300.00 },
-            { name: 'David Wilson', amount: 2000.50 },
-            { name: 'Lisa Garcia', amount: 1700.75 }
-        ]
-    }
+// The signed-in dealer user's OWN reward earnings (not a leaderboard).
+// Dealer salespeople earn 3% and dealer designers earn 1% of an order's net on
+// claimed orders. Each entry's `amount` is the reward already earned on that
+// order. Keyed by quarter.
+export const MY_REWARDS_DATA = {
+    '2026-Q1': [
+        { project: 'OneMain Financial HQ Standards', orderNumber: 'SO-104588', net: 137262, amount: 4117.86 },
+        { project: 'Lawrence Township LECC', orderNumber: 'SO-104592', net: 43034, amount: 1291.02 },
+        { project: 'Startup Collaboration Space', orderNumber: 'SO-104610', net: 42000, amount: 1260.00 },
+    ],
+    '2025-Q4': [
+        { project: 'Embassy Suites Lobby', orderNumber: 'SO-103981', net: 265000, amount: 7950.00 },
+        { project: 'STEM Wing Expansion', orderNumber: 'SO-103877', net: 190000, amount: 5700.00 },
+    ],
+    '2025-Q3': [
+        { project: 'Operations Center Ph.2', orderNumber: 'SO-103640', net: 180000, amount: 5400.00 },
+        { project: 'Hotel Lobby Seating', orderNumber: 'SO-103702', net: 70000, amount: 2100.00 },
+    ],
+    '2025-Q2': [
+        { project: 'University Commons Refresh', orderNumber: 'SO-103410', net: 120000, amount: 3600.00 },
+        { project: 'Medical Wing Remodel', orderNumber: 'SO-103388', net: 95000, amount: 2850.00 },
+    ],
+    '2025-Q1': [
+        { project: 'HQ Expansion Ph.2', orderNumber: 'SO-103120', net: 295000, amount: 8850.00 },
+    ],
+    '2024-Q4': [
+        { project: 'State Archives Renovation', orderNumber: 'SO-102991', net: 275000, amount: 8250.00 },
+        { project: 'New Office Furnishings', orderNumber: 'SO-102877', net: 50000, amount: 1500.00 },
+    ],
 };

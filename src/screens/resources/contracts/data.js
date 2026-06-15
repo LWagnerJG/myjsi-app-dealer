@@ -1,4 +1,4 @@
-// Contracts: service-based discounts + accurate dealer/rep commissions per screenshot
+// Contracts: service-based discounts + dealer commissions per screenshot
 // Keep it high-level for the UI.
 
 export const CONTRACTS_DATA = {
@@ -12,12 +12,6 @@ export const CONTRACTS_DATA = {
         discountLayout: 'tier-chart',
 
         documentEntries: [
-            {
-                key: 'documentUrl',
-                label: 'Rep Version',
-                short: 'Rep',
-                url: 'https://webresources.jsifurniture.com/production/uploads/jsi_contracts_tcpn.pdf',
-            },
             {
                 key: 'dealerDocumentUrl',
                 label: 'Dealer Version',
@@ -46,14 +40,12 @@ export const CONTRACTS_DATA = {
                         label: 'Dock Delivery',
                         discount: '54%',
                         dealerCommission: '17.4%',
-                        repCommission: '4.30%',
                         dealerDiscount: '62%',
                     },
                     {
                         label: 'Inside Delivery',
                         discount: '53%',
                         dealerCommission: '19.15%',
-                        repCommission: '4.21%',
                         dealerDiscount: '62%',
                     },
                     {
@@ -61,7 +53,6 @@ export const CONTRACTS_DATA = {
                         shortLabel: 'Deliver & Install',
                         discount: '52%',
                         dealerCommission: '20.83%',
-                        repCommission: '4.12%',
                         dealerDiscount: '62%',
                     },
                 ],
@@ -74,14 +65,12 @@ export const CONTRACTS_DATA = {
                         label: 'Dock Delivery',
                         discount: '56%',
                         dealerCommission: '17.3%',
-                        repCommission: '4.09%',
                         dealerDiscount: '63.6%',
                     },
                     {
                         label: 'Inside Delivery',
                         discount: '53%',
                         dealerCommission: '19.15%',
-                        repCommission: '4.09%',
                         dealerDiscount: '62%',
                     },
                     {
@@ -89,7 +78,6 @@ export const CONTRACTS_DATA = {
                         shortLabel: 'Deliver & Install',
                         discount: '52%',
                         dealerCommission: '20.83%',
-                        repCommission: '4.09%',
                         dealerDiscount: '62%',
                     },
                 ],
@@ -109,16 +97,13 @@ export const CONTRACTS_DATA = {
                 label: 'Delivery & Installed',
                 discount: '51%',
                 dealerCommission: '24%',
-                repCommission: '3.67%',
             },
             {
                 label: 'Dock Delivery',
                 discount: '53%',
                 dealerCommission: '20%',
-                repCommission: '3.83%',
             },
         ],
-        disclaimer: 'Spiff is not allowed.',
     },
 
     premier: {
@@ -133,19 +118,16 @@ export const CONTRACTS_DATA = {
                 label: 'Up to $500k list',
                 discount: '56%',
                 dealerCommission: '15%',
-                repCommission: '4.09%',
             },
             {
                 label: '$500k - $750k list',
                 discount: '57%',
                 dealerCommission: '14%',
-                repCommission: '4.19%',
             },
             {
                 label: '$750k+ list',
                 discount: '58%',
                 dealerCommission: '13%',
-                repCommission: '4.29%',
             },
         ],
     },
@@ -162,31 +144,26 @@ export const CONTRACTS_DATA = {
                 label: 'Baseline tier',
                 discount: '61.71%',
                 dealerCommission: '10%',
-                repCommission: '5%',
             },
             {
                 label: '$300,000 - $350,000 net',
                 discount: '61.75%',
                 dealerCommission: '10%',
-                repCommission: '5%',
             },
             {
                 label: '$350,001 - $400,000 net',
                 discount: '62.71%',
                 dealerCommission: '10%',
-                repCommission: '5%',
             },
             {
                 label: '$400,001 - $450,000 net',
                 discount: '63.21%',
                 dealerCommission: '10%',
-                repCommission: '5%',
             },
             {
                 label: 'Wellington & Walden tier',
                 discount: '61.6%',
                 dealerCommission: '10%',
-                repCommission: '5%',
             },
         ],
         disclaimer: 'Confirm current GSA eligibility and net-volume tier before quoting.',

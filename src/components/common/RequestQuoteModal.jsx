@@ -117,9 +117,7 @@ export const RequestQuoteModal = ({ show, onClose, theme, onSubmit, members = IN
     const teamMembers = useMemo(() => {
         const source = Array.isArray(members) && members.length > 0 ? members : INITIAL_MEMBERS;
         const active = source.filter(m => m?.status !== 'inactive' && m?.status !== 'disabled');
-        const repOnly = active.filter(m => String(m?.role || '').startsWith('rep-'));
-        const pool = repOnly.length > 0 ? repOnly : active;
-        return pool.filter(m => m?.id !== currentUserId);
+        return active.filter(m => m?.id !== currentUserId);
     }, [members, currentUserId]);
 
     const updateField = useCallback((field, value) => {

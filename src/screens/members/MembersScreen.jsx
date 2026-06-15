@@ -1,29 +1,22 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
-    Search,
     Users,
-    Building2,
     UserPlus,
-    X,
 } from 'lucide-react';
 
 import {
     INITIAL_MEMBERS,
-    INITIAL_DEALER_COMPANIES,
-    REP_ROLES,
+    DEALER_ROLES,
     isAdminRole,
     PERMISSION_LABELS,
 } from './data.js';
-import { SegmentedToggle } from '../../components/common/GroupedToggle.jsx';
 import { TabContent } from '../../components/common/TabContent.jsx';
-import StandardSearchBar from '../../components/common/StandardSearchBar.jsx';
 import { PageTitle } from '../../components/common/PageTitle.jsx';
 
 import { MembersErrorBoundary } from './components/members/MembersErrorBoundary.jsx';
 import { ConfirmModal } from './components/members/SharedComponents.jsx';
 import { InviteModal } from './components/members/InviteModal.jsx';
 import { MemberCard } from './components/members/MemberCard.jsx';
-import { DealerCompanyCard } from './components/members/DealerCompanyCard.jsx';
 
 const useMediaQuery = (query) => {
     const [matches, setMatches] = useState(() =>
@@ -39,11 +32,9 @@ const useMediaQuery = (query) => {
 };
 
 const MembersScreenContent = ({ theme }) => {
-    const [tab, setTab] = useState('team');
     const [original, setOriginal] = useState(INITIAL_MEMBERS);
     const [members, setMembers] = useState(INITIAL_MEMBERS);
     const [expandedId, setExpandedId] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
     const [confirmDelete, setConfirmDelete] = useState(null);
     const [showInvite, setShowInvite] = useState(false);
     const isDesktop = useMediaQuery('(min-width: 1024px)');
@@ -115,28 +106,6 @@ const MembersScreenContent = ({ theme }) => {
         setOriginal(prev => [...prev, { ...newUser }]);
     }, []);
 
-    const switchTab = useCallback((t) => {
-        setTab(t);
-        setExpandedId(null);
-        setSearchQuery('');
-    }, []);
-
-    // Search only applies to dealers tab
-    const filteredDealers = useMemo(() => {
-        if (!searchQuery.trim()) return INITIAL_DEALER_COMPANIES;
-        const q = searchQuery.toLowerCase();
-        return INITIAL_DEALER_COMPANIES.filter(d =>
-            d.name.toLowerCase().includes(q) ||
-            d.city?.toLowerCase().includes(q) ||
-            d.users.some(u => `${u.firstName} ${u.lastName} ${u.email}`.toLowerCase().includes(q))
-        );
-    }, [searchQuery]);
-
-    const tabOptions = useMemo(() => [
-        { value: 'team', label: 'My Team', badge: members.length },
-        { value: 'dealers', label: 'Dealers', badge: INITIAL_DEALER_COMPANIES.length },
-    ], [members.length]);
-
     return (
         <div className="flex flex-col h-full app-header-offset" style={{ backgroundColor: theme.colors.background, color: theme.colors.textPrimary }}>
             <div className="flex-1 overflow-y-auto scrollbar-hide">
@@ -144,53 +113,26 @@ const MembersScreenContent = ({ theme }) => {
 
                     {/* Header */}
                     <PageTitle
-                        title={tab === 'dealers' ? 'Dealers' : 'Members'}
-                        subtitle={tab === 'team' ? `${members.length} team members` : `${INITIAL_DEALER_COMPANIES.length} accounts`}
+                        title="Members"
+                        subtitle={`${members.length} team members`}
                         theme={theme}
                         className="px-0 pt-4 pb-3"
                         titleClassName="text-[1.375rem]"
                         subtitleClassName="mt-0.5"
                     >
-                        {tab === 'team' && (
-                            <button
-                                onClick={() => setShowInvite(true)}
-                                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.8125rem] font-semibold transition-all active:scale-95 shrink-0 mt-0.5"
-                                style={{ backgroundColor: theme.colors.accent, color: theme.colors.accentText }}
-                            >
-                                <UserPlus className="w-3.5 h-3.5" />
-                                Invite
-                            </button>
-                        )}
+                        <button
+                            onClick={() => setShowInvite(true)}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.8125rem] font-semibold transition-all active:scale-95 shrink-0 mt-0.5"
+                            style={{ backgroundColor: theme.colors.accent, color: theme.colors.accentText }}
+                        >
+                            <UserPlus className="w-3.5 h-3.5" />
+                            Invite
+                        </button>
                     </PageTitle>
 
-                    {/* Pill tabs */}
-                    <div className="mb-4">
-                        <SegmentedToggle
-                            value={tab}
-                            onChange={switchTab}
-                            options={tabOptions}
-                            size="sm"
-                            theme={theme}
-                            fullWidth
-                        />
-                    </div>
-
-                    {/* Search — dealers tab only */}
-                    {tab === 'dealers' && (
-                        <div className="mb-4">
-                            <StandardSearchBar
-                                value={searchQuery}
-                                onChange={setSearchQuery}
-                                placeholder="Search dealers or contacts…"
-                                theme={theme}
-                            />
-                        </div>
-                    )}
-
-                    {/* Tab content */}
-                    <TabContent activeKey={tab} tabIndex={tabOptions.findIndex(o => o.value === tab)}>
-                    {tab === 'team' ? (
-                        members.length > 0 ? (
+                    {/* Team list */}
+                    <TabContent activeKey="team" tabIndex={0}>
+                        {members.length > 0 ? (
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
                                 {members.map(u => (
                                     <MemberCard
@@ -213,27 +155,7 @@ const MembersScreenContent = ({ theme }) => {
                                 <Users className="w-10 h-10 mx-auto mb-3 opacity-20" />
                                 <p className="text-sm">No team members yet</p>
                             </div>
-                        )
-                    ) : (
-                        filteredDealers.length > 0 ? (
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
-                                {filteredDealers.map(d => (
-                                    <DealerCompanyCard
-                                        key={d.id}
-                                        company={d}
-                                        expanded={expandedId === d.id}
-                                        onToggle={() => toggle(d.id)}
-                                        theme={theme}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="py-20 text-center" style={{ color: theme.colors.textSecondary }}>
-                                <Building2 className="w-10 h-10 mx-auto mb-3 opacity-20" />
-                                <p className="text-sm">{searchQuery ? 'No dealers match your search' : 'No dealers signed up yet'}</p>
-                            </div>
-                        )
-                    )}
+                        )}
                     </TabContent>
 
                 </div>
@@ -254,7 +176,7 @@ const MembersScreenContent = ({ theme }) => {
                 onClose={() => setShowInvite(false)}
                 onInvite={handleInvite}
                 theme={theme}
-                roles={REP_ROLES}
+                roles={DEALER_ROLES}
             />
         </div>
     );

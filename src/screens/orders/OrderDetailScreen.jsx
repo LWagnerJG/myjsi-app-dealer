@@ -80,6 +80,7 @@ export const OrderDetailScreen = ({ theme, onNavigate, currentScreen }) => {
 
   /* ship-to for shipping stage */
   const shipToAddr = order.shipTo ? tc(order.shipTo).split('\n') : null;
+  const shipToCity = shipToAddr?.[shipToAddr.length - 1] || null;
 
   /* top-level action buttons */
   const actions = [
@@ -109,7 +110,7 @@ export const OrderDetailScreen = ({ theme, onNavigate, currentScreen }) => {
                   </div>
                 </div>
                 <p className="text-[0.8125rem] mt-1" style={{ color: c.textSecondary }}>
-                  {tc(order.company)} <span style={{ opacity: 0.4 }}>·</span> SO {order.orderNumber}
+                  {shipToCity ? <>{shipToCity} <span style={{ opacity: 0.4 }}>·</span> </> : null}SO {order.orderNumber}
                 </p>
               </div>
 
@@ -154,8 +155,8 @@ export const OrderDetailScreen = ({ theme, onNavigate, currentScreen }) => {
                   <p className="text-[0.9375rem] font-semibold mt-px" style={{ color: c.textPrimary }}>{fs(order.shipDate) || '—'}</p>
                 </div>
                 <div>
-                  <p className="text-[0.6875rem] font-medium uppercase tracking-wide" style={{ color: c.textSecondary, opacity: 0.5 }}>Dealer</p>
-                  <p className="text-sm font-semibold mt-px" style={{ color: c.textPrimary }}>{tc(order.company)}</p>
+                  <p className="text-[0.6875rem] font-medium uppercase tracking-wide" style={{ color: c.textSecondary, opacity: 0.5 }}>Ship To</p>
+                  <p className="text-sm font-semibold mt-px" style={{ color: c.textPrimary }}>{shipToCity || '—'}</p>
                 </div>
                 <div>
                   <p className="text-[0.6875rem] font-medium uppercase tracking-wide" style={{ color: c.textSecondary, opacity: 0.5 }}>Discount</p>

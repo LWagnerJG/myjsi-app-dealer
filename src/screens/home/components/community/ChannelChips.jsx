@@ -5,10 +5,6 @@ const COMPACT_CHANNEL_LABELS = {
   'dealer-designers': 'Designers',
   'dealer-principals': 'Principals',
   'dealer-sales': 'Sales',
-  'rep-principals': 'Rep Principals',
-  reps: 'Reps',
-  'new-reps': 'New Reps',
-  jsiers: 'JSI',
   'cet-designers': 'CET',
   'install-tips': 'Install',
 };

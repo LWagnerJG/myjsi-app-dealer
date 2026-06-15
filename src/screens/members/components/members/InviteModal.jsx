@@ -9,13 +9,13 @@ export const InviteModal = ({ open, onClose, onInvite, theme, roles }) => {
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [phone, setPhone] = useState('');
-    const [role, setRole] = useState(roles[roles.length - 1]?.value || 'rep_user');
+    const [role, setRole] = useState(roles[roles.length - 1]?.value || 'dealer-salesperson');
     const [sent, setSent] = useState(false);
     const emailRef = useRef(null);
 
     useEffect(() => {
         if (open) {
-            setEmail(''); setFirstName(''); setLastName(''); setPhone(''); setRole(roles[roles.length - 1]?.value || 'rep_user'); setSent(false);
+            setEmail(''); setFirstName(''); setLastName(''); setPhone(''); setRole(roles[roles.length - 1]?.value || 'dealer-salesperson'); setSent(false);
             setTimeout(() => emailRef.current?.focus(), 100);
         }
     }, [open, roles]);

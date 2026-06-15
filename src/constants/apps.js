@@ -1,8 +1,8 @@
 import {
     MousePointer, Users, PieChart, Armchair,
     Database, Briefcase, MessageSquare, Package, RotateCw, Search, Paperclip,
-    UserPlus, MapPin, Percent, FileText, Calendar, Palette,
-    Wrench, MonitorPlay, Share2, Hourglass, Settings, HelpCircle, Send, Gift, FilePlus,
+    Percent, FileText, Calendar, Palette,
+    Wrench, MonitorPlay, Share2, Hourglass, Settings, HelpCircle, Send, FilePlus,
     BrainCircuit,
 } from 'lucide-react';
 
@@ -10,7 +10,7 @@ import {
 export const allApps = [
     { name: 'Samples', route: 'samples', icon: Package, desc: 'Order finish and fabric samples' },
     { name: 'Replacements', route: 'replacements', icon: RotateCw, desc: 'Request replacement parts' },
-    { name: 'Community', route: 'community', icon: MessageSquare, desc: 'Connect with reps and designers' },
+    { name: 'Community', route: 'community', icon: MessageSquare, desc: 'Connect with your team and designers' },
     { name: 'Lead Times', route: 'resources/lead-times', icon: Hourglass, desc: 'Current production lead times' },
     { name: 'Products', route: 'products', icon: Armchair, desc: 'Browse the full JSI catalog' },
     { name: 'Orders', route: 'orders', icon: MousePointer, desc: 'Track and manage your orders' },
@@ -19,7 +19,6 @@ export const allApps = [
     { name: 'Add New Project', route: 'new-lead', icon: FilePlus, desc: 'Start a new project or lead' },
     { name: 'Resources', route: 'resources', icon: Database, desc: 'Tools, docs, and references' },
     { name: 'Contracts', route: 'resources/contracts', icon: FileText, desc: 'Access dealer contracts' },
-    { name: 'Loaner Pool', route: 'resources/loaner-pool', icon: Package, desc: 'Reserve loaner furniture' },
     { name: 'Discontinued Finishes', route: 'resources/discontinued-finishes', icon: Palette, desc: 'Check discontinued finish status' },
     { name: 'Sample Discounts', route: 'resources/sample-discounts', icon: Percent, desc: 'Current sample discount programs' },
     { name: 'Social Media', route: 'resources/social-media', icon: Share2, desc: 'JSI social media assets' },
@@ -32,8 +31,6 @@ export const allApps = [
     { name: 'Request COM Yardage', route: 'resources/request-com-yardage', icon: Paperclip, desc: 'Submit COM yardage requests' },
     { name: 'Install Instructions', route: 'resources/install-instructions', icon: Wrench, desc: 'Product install guides' },
     { name: 'Presentations', route: 'resources/presentations', icon: MonitorPlay, desc: 'Build and share presentations' },
-    { name: 'Request Field Visit', route: 'resources/request-field-visit', icon: MapPin, desc: 'Schedule a JSI field visit' },
-    { name: 'New Dealer Sign-Up', route: 'resources/new-dealer-signup', icon: UserPlus, homeEligible: false, desc: 'Register a new dealer' },
     { name: 'RFP Responder', route: 'rfp-responder', icon: BrainCircuit, desc: 'Analyze an RFP and build a response' },
 ];
 

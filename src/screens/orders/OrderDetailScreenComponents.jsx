@@ -4,10 +4,11 @@ import { Share2, X, Play, Download, MapPin, Gift, Check, BadgeCheck } from 'luci
 import { getUnifiedBackdropStyle, UNIFIED_MODAL_Z, ModalSafeAreaCover } from '../../components/common/modalUtils.js';
 import { JSIWebButton } from '../../components/common/JSIButtons.jsx';
 import { formatCurrencyDecimal, formatCurrency, formatLongDate, formatShortDate } from '../../utils/format.js';
+import { CURRENT_USER } from '../../constants/currentUser.js';
 
-/* current dealer rep — assigned to a reward when claimed */
+/* current dealer user — assigned to a reward when claimed */
 // eslint-disable-next-line react-refresh/only-export-components
-export const CURRENT_REP = { name: 'Luke Wagner', dealerNumber: 'DLR-4827' };
+export const CURRENT_REP = CURRENT_USER;
 
 /* ── helpers ────────────────────────────────────────────────── */
 const ABBR = /\b(llc|inc|msd|lecc)\b/gi;
@@ -377,12 +378,16 @@ export const ClaimRewardModal = ({ order, claim, onClaim, onClose, dark, c }) =>
 
             <div className="rounded-[16px] p-4 space-y-3" style={{ backgroundColor: dark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)' }}>
               <div className="flex items-center justify-between">
-                <p style={fieldLabel(c)}>Rep Name</p>
-                <p className="text-sm font-semibold" style={{ color: c.textPrimary }}>{CURRENT_REP.name}</p>
+                <p style={fieldLabel(c)}>Your Name</p>
+                <p className="text-sm font-semibold" style={{ color: c.textPrimary }}>{CURRENT_USER.name}</p>
               </div>
               <div className="flex items-center justify-between" style={{ borderTop: `1px solid ${divider}`, paddingTop: 12 }}>
                 <p style={fieldLabel(c)}>Dealer Number</p>
-                <p className="text-sm font-semibold tabular-nums" style={{ color: c.textPrimary }}>{CURRENT_REP.dealerNumber}</p>
+                <p className="text-sm font-semibold tabular-nums" style={{ color: c.textPrimary }}>{CURRENT_USER.dealerNumber}</p>
+              </div>
+              <div className="flex items-center justify-between" style={{ borderTop: `1px solid ${divider}`, paddingTop: 12 }}>
+                <p style={fieldLabel(c)}>Reward ({(CURRENT_USER.rewardRate * 100).toFixed(0)}% of net)</p>
+                <p className="text-sm font-bold tabular-nums" style={{ color: c.accent }}>{formatCurrency((order.net || 0) * CURRENT_USER.rewardRate)}</p>
               </div>
               {claimed && (
                 <div className="flex items-center justify-between" style={{ borderTop: `1px solid ${divider}`, paddingTop: 12 }}>

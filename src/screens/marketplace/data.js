@@ -71,7 +71,7 @@ export const MARKETPLACE_PRODUCTS = [
   {
     id: 'shirt-003',
     name: 'LWYD Performance Tee',
-    description: 'Moisture-wicking athletic blend with reflective LWYD badge. Ideal for the active rep.',
+    description: 'Moisture-wicking athletic blend with reflective LWYD badge. Built for all-day wear.',
     price: 275,
     category: 'shirts',
     image: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=400&h=400&fit=crop',
@@ -143,13 +143,10 @@ export const MARKETPLACE_PRODUCTS = [
 export const INITIAL_BALANCE = 2500;
 
 export const BALANCE_HISTORY = [
-  { id: 'txn-001', type: 'credit', amount: 500, description: 'Q4 Sales Bonus', date: '2026-02-15', icon: 'award' },
   { id: 'txn-002', type: 'credit', amount: 250, description: 'Community Engagement Reward', date: '2026-02-10', icon: 'star' },
   { id: 'txn-003', type: 'debit',  amount: -120, description: 'LWYD Ceramic Mug', date: '2026-02-08', icon: 'shopping-bag' },
   { id: 'txn-004', type: 'credit', amount: 1000, description: 'Annual LWYD Award', date: '2026-01-28', icon: 'trophy' },
-  { id: 'txn-005', type: 'credit', amount: 300, description: 'Project Milestone Bonus', date: '2026-01-20', icon: 'target' },
   { id: 'txn-006', type: 'debit',  amount: -250, description: 'LWYD Classic Tee (L)', date: '2026-01-15', icon: 'shopping-bag' },
-  { id: 'txn-007', type: 'credit', amount: 750, description: 'New Dealer Sign-Up Bonus', date: '2026-01-05', icon: 'user-plus' },
   { id: 'txn-008', type: 'credit', amount: 100, description: 'Feedback Survey Completed', date: '2025-12-28', icon: 'check-circle' },
 ];
 

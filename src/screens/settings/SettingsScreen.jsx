@@ -141,13 +141,13 @@ export const SettingsScreen = ({ theme, isDarkMode, onToggleTheme, userSettings,
   const [addressLoading, setAddressLoading] = useState(false);
   const addressRequestRef = useRef(null);
   const addressCacheRef = useRef(new Map());
-  const [notif, setNotif] = useState({ newOrder: true, samplesShipped: true, leadTimeChange: true, communityPost: false, replacementApproved: true, commissionPosted: true, orderUpdate: true });
+  const [notif, setNotif] = useState({ newOrder: true, samplesShipped: true, leadTimeChange: true, communityPost: false, replacementApproved: true, orderUpdate: true });
   const notifGroups = [
     { label: 'Orders and shipping', keys: ['newOrder', 'orderUpdate', 'samplesShipped'] },
-    { label: 'Projects and revenue', keys: ['replacementApproved', 'commissionPosted'] },
+    { label: 'Projects and revenue', keys: ['replacementApproved'] },
     { label: 'Products and community', keys: ['leadTimeChange', 'communityPost'] },
   ];
-  const notifLabels = { newOrder:'New order placed', orderUpdate:'Order status update', samplesShipped:'Samples shipped', leadTimeChange:'Lead time change', replacementApproved:'Replacement approved', commissionPosted:'Commission posted', communityPost:'New JSI community post' };
+  const notifLabels = { newOrder:'New order placed', orderUpdate:'Order status update', samplesShipped:'Samples shipped', leadTimeChange:'Lead time change', replacementApproved:'Replacement approved', communityPost:'New JSI community post' };
   const [leadTimeFavorites, setLeadTimeFavorites] = useState(() => {
     try { const raw = localStorage.getItem('leadTimeFavorites'); const parsed = raw ? JSON.parse(raw) : []; return Array.isArray(parsed) ? parsed : []; } catch { return []; }
   });

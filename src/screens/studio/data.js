@@ -43,7 +43,7 @@ export const ONE_PAGERS = [
     id: 'walden-vs-allsteel',
     title: 'Walden vs. Allsteel Acuity',
     summary: 'Spec parity walk-through, lead-time math, and a clean talking-point sheet for the discovery call.',
-    author: { name: 'Sam Patel', role: 'Rep · Continuum' },
+    author: { name: 'Sam Patel', role: 'Designer · Continuum' },
     scope: 'company',
     template: 'vs-competitor',
     series: 'Walden',
@@ -144,7 +144,7 @@ export const PROJECT_STORIES = [
   {
     id: 'story-2',
     quote: 'Walden cleared a Steelcase incumbent on a 22-office refresh \u2014 the GSA tier and finish library closed it.',
-    author: 'Rep \u00b7 OfficeWorks',
+    author: 'Dealer \u00b7 OfficeWorks',
     detail: 'Side-by-side spec deck and a same-day sample drop.',
   },
 ];

@@ -1,13 +1,10 @@
 // Resources feature data
 export const RESOURCES_DATA = [
     {
-        category: "Sales & Rep Tools",
+        category: "Sales Tools",
         items: [
-            { label: "Dealer Directory", nav: "resources/dealer-directory" },
-            { label: "Commission Rates", nav: "resources/commission-rates" },
             { label: "Sample Discounts", nav: "resources/sample-discounts" },
             { label: "Contracts", nav: "resources/contracts" },
-            { label: "Tour Visit", nav: "resources/tour-visit" },
         ].sort((a, b) => a.label.localeCompare(b.label))
     },
     {
@@ -21,11 +18,8 @@ export const RESOURCES_DATA = [
         ].sort((a, b) => a.label.localeCompare(b.label))
     },
     {
-        category: "Dealer & Field Support",
+        category: "Field Support",
         items: [
-            { label: "Loaner Pool", nav: "resources/loaner-pool" },
-            { label: "New Dealer Sign-Up", nav: "resources/new-dealer-signup" },
-            { label: "Request Field Visit", nav: "resources/request-field-visit" },
             { label: "Install Instructions", nav: "resources/install-instructions" },
         ].sort((a, b) => a.label.localeCompare(b.label))
     },

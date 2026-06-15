@@ -6,7 +6,7 @@ import { TEMPLATES, SCOPES } from './data.js';
 
 const SCOPE_OPTIONS = [
   { value: 'private', label: 'Private', desc: 'Only you can see this.', icon: Lock },
-  { value: 'company', label: 'Company', desc: 'Anyone at your dealer or rep group.', icon: Building2 },
+  { value: 'company', label: 'Company', desc: 'Anyone at your dealership.', icon: Building2 },
   { value: 'public', label: 'Public', desc: 'Visible to the entire studio network.', icon: Globe },
 ];
 

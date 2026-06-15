@@ -8,6 +8,7 @@ import { AddNewInstallScreen } from '../screens/projects/AddNewInstallScreen.jsx
 
 const SalesScreen = React.lazy(() => import('../screens/sales/index.js').then(m => ({ default: m.SalesScreen })));
 const IncentiveRewardsScreen = React.lazy(() => import('../screens/sales/index.js').then(m => ({ default: m.IncentiveRewardsScreen })));
+const CustomerRankingScreen = React.lazy(() => import('../screens/sales/index.js').then(m => ({ default: m.CustomerRankingScreen })));
 const OrdersScreen = React.lazy(() => import('../screens/orders/index.js').then(m => ({ default: m.OrdersScreen })));
 const ProductsScreen = React.lazy(() => import('../screens/products/index.js').then(m => ({ default: m.ProductsScreen })));
 const ProductComparisonScreen = React.lazy(() => import('../screens/products/index.js').then(m => ({ default: m.ProductComparisonScreen })));
@@ -25,7 +26,7 @@ const PresentationsScreen = React.lazy(() => import('../screens/resources/presen
 const GoodBetterBestScreen = React.lazy(() => import('../screens/resources/presentations/GoodBetterBestScreen.jsx').then(m => ({ default: m.GoodBetterBestScreen })));
 const RfpResponderScreen = React.lazy(() => import('../screens/rfp/RfpResponderScreen.jsx').then(m => ({ default: m.default })));
 
-// Resource feature routes (lead-times, commission-rates, etc.) are handled lazily in App.jsx
+// Resource feature routes (lead-times, contracts, etc.) are handled lazily in App.jsx
 // and intentionally omitted here — including them here would pull them into the main bundle.
 
 export const SCREEN_MAP = {
@@ -37,6 +38,7 @@ export const SCREEN_MAP = {
   'community': CommunityLibraryLayout,
   'replacements': ReplacementsScreen,
   'incentive-rewards': IncentiveRewardsScreen,
+  'customer-ranking': CustomerRankingScreen,
   'settings': SettingsScreen,
   'members': MembersScreen,
   'help': HelpScreen,
@@ -50,7 +52,6 @@ export const SCREEN_MAP = {
   'presentations': PresentationsScreen,
   'good-better-best': GoodBetterBestScreen,
   'rfp-responder': RfpResponderScreen,
-  // 'new-dealer-signup' is lazy-loaded in App.jsx
 };
 
 export {

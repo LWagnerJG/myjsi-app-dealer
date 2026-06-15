@@ -2,7 +2,7 @@ import React from 'react';
 import { Mail, Phone, ChevronDown, Trash2, Shield, Check } from 'lucide-react';
 import { GlassCard } from '../../../../components/common/GlassCard.jsx';
 import { Avatar, RoleDropdown, PermToggle } from './SharedComponents.jsx';
-import { PERMISSION_LABELS, REP_ROLES, getRoleLabel, isAdminRole } from '../../data.js';
+import { PERMISSION_LABELS, DEALER_ROLES, getRoleLabel, isAdminRole } from '../../data.js';
 import { isDarkTheme } from '../../../../design-system/tokens.js';
 
 export const MemberCard = ({ theme, user, expanded, onToggle, onChangeRole, onTogglePerm, onRequestDelete, isDesktop, isDirty, onSave }) => {
@@ -89,7 +89,7 @@ export const MemberCard = ({ theme, user, expanded, onToggle, onChangeRole, onTo
                         {/* Role */}
                         <div className="space-y-2">
                             <p className="text-[0.6875rem] font-bold uppercase tracking-wider" style={{ color: theme.colors.textSecondary, opacity: 0.55 }}>Role</p>
-                            <RoleDropdown value={user.role} roles={REP_ROLES} onChange={onChangeRole} theme={theme} />
+                            <RoleDropdown value={user.role} roles={DEALER_ROLES} onChange={onChangeRole} theme={theme} />
                         </div>
 
                         {/* Permissions */}

@@ -2,10 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { SegmentedToggle } from '../../components/common/GroupedToggle';
 import { CountUp } from '../../components/common/CountUp';
 import StandardSearchBar from '../../components/common/StandardSearchBar.jsx';
-import { CUSTOMER_RANK_DATA } from './data.js';
+import { END_USER_RANK_DATA } from './data.js';
 import { isDarkTheme } from '../../design-system/tokens.js';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, TrendingDown, ChevronRight, Search, X } from 'lucide-react';
+import { TrendingUp, TrendingDown, ChevronDown, Search, X } from 'lucide-react';
 import { formatCurrency, formatCurrencyCompact } from '../../utils/format.js';
 import { ScreenTopChrome } from '../../components/common/ScreenTopChrome.jsx';
 
@@ -21,15 +21,16 @@ const RANK_CONFIG = {
     3: { emoji: '🥉', gradient: 'linear-gradient(135deg, rgba(217,160,121,0.18), rgba(244,209,190,0.08))', border: '#D9A079', glow: 'rgba(217,160,121,0.12)' },
 };
 
-export const CustomerRankingScreen = ({ theme, onNavigate }) => {
+export const CustomerRankingScreen = ({ theme }) => {
     const [tab, setTab] = useState('sales');
     const [search, setSearch] = useState('');
     const [showSearch, setShowSearch] = useState(false);
+    const [expandedId, setExpandedId] = useState(null);
     const isDark = isDarkTheme(theme);
     const bdr = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
 
     const allRows = useMemo(() => {
-        const list = [...CUSTOMER_RANK_DATA].sort((a, b) => (b[tab] || 0) - (a[tab] || 0));
+        const list = [...END_USER_RANK_DATA].sort((a, b) => (b[tab] || 0) - (a[tab] || 0));
         return list.map((c, i) => ({ ...c, rank: i + 1 }));
     }, [tab]);
 
@@ -42,7 +43,7 @@ export const CustomerRankingScreen = ({ theme, onNavigate }) => {
     const maxVal = useMemo(() => Math.max(...allRows.map(r => r[tab] || 0), 1), [allRows, tab]);
     const totalValue = useMemo(() => allRows.reduce((s, r) => s + (r[tab] || 0), 0), [allRows, tab]);
 
-    const goToDealer = (c) => onNavigate?.(`resources/dealer-directory/${c.id}`);
+    const toggleExpand = (c) => setExpandedId(prev => (prev === c.id ? null : c.id));
 
     // Comparison metric: difference between sales and bookings
     const getDelta = (c) => {
@@ -74,15 +75,17 @@ export const CustomerRankingScreen = ({ theme, onNavigate }) => {
         const delta = getDelta(c);
         const otherTab = tab === 'sales' ? 'bookings' : 'sales';
         const otherVal = c[otherTab] || 0;
+        const projects = c.projects || [];
+        const isExpanded = expandedId === c.id;
 
         return (
+            <div style={{ borderTop: i === 0 ? 'none' : `1px solid ${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)'}` }}>
             <button
-                onClick={() => goToDealer(c)}
+                onClick={() => toggleExpand(c)}
                 className="w-full text-left group"
             >
                 <div
                     className="flex items-center gap-3 px-4 py-4 transition-colors"
-                    style={{ borderTop: i === 0 ? 'none' : `1px solid ${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)'}` }}
                     onMouseEnter={e => e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.055)' : 'rgba(0,0,0,0.015)'}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
                 >
@@ -123,9 +126,40 @@ export const CustomerRankingScreen = ({ theme, onNavigate }) => {
                         </div>
                     </div>
 
-                    <ChevronRight className="w-4 h-4 shrink-0 opacity-0 group-hover:opacity-40 transition-opacity" />
+                    <ChevronDown
+                        className="w-4 h-4 shrink-0 transition-transform"
+                        style={{ color: theme.colors.textSecondary, opacity: 0.4, transform: isExpanded ? 'rotate(180deg)' : 'none' }}
+                    />
                 </div>
             </button>
+
+            {/* Expandable project breakdown */}
+            <AnimatePresence initial={false}>
+                {isExpanded && projects.length > 0 && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                        className="overflow-hidden"
+                    >
+                        <div className="pl-[3.25rem] pr-4 pb-3 space-y-1.5">
+                            <p className="text-[0.625rem] font-bold uppercase tracking-[0.07em] pt-1" style={{ color: theme.colors.textSecondary, opacity: 0.55 }}>
+                                Projects
+                            </p>
+                            {projects.map((p) => (
+                                <div key={p.projectName} className="flex items-center justify-between gap-3">
+                                    <span className="text-[0.8125rem] truncate" style={{ color: theme.colors.textPrimary }}>{p.projectName}</span>
+                                    <span className="text-[0.8125rem] font-semibold tabular-nums shrink-0" style={{ color: theme.colors.textSecondary }}>
+                                        {formatCurrency(p.amount)}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+            </div>
         );
     };
 
@@ -138,7 +172,7 @@ export const CustomerRankingScreen = ({ theme, onNavigate }) => {
                     <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
                             <p className="text-[0.6875rem] font-bold uppercase tracking-[0.07em]" style={{ color: theme.colors.textSecondary }}>
-                                Total {tab === 'sales' ? 'Sales' : 'Bookings'} — {allRows.length} Dealers
+                                Total {tab === 'sales' ? 'Sales' : 'Bookings'} — {allRows.length} Customers
                             </p>
                             <div className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color: theme.colors.textPrimary }}>
                                 <CountUp value={totalValue} prefix="$" duration={0.7} format={(v) => `$${Math.round(v).toLocaleString()}`} />
@@ -169,7 +203,7 @@ export const CustomerRankingScreen = ({ theme, onNavigate }) => {
                                     <StandardSearchBar
                                         value={search}
                                         onChange={setSearch}
-                                        placeholder="Search dealers..."
+                                        placeholder="Search customers..."
                                         theme={theme}
                                         autoFocus
                                     />
@@ -194,7 +228,7 @@ export const CustomerRankingScreen = ({ theme, onNavigate }) => {
                 <div className="px-4 sm:px-6 lg:px-8 pt-3 pb-4 max-w-content mx-auto w-full">
                     {rows.length === 0 ? (
                         <div className="text-center py-16">
-                            <p className="text-sm font-medium" style={{ color: theme.colors.textSecondary }}>No dealers match "{search}"</p>
+                            <p className="text-sm font-medium" style={{ color: theme.colors.textSecondary }}>No customers match "{search}"</p>
                         </div>
                     ) : (
                         <div className="rounded-[22px] overflow-hidden" style={{ backgroundColor: theme.colors.surface, border: `1px solid ${bdr}` }}>

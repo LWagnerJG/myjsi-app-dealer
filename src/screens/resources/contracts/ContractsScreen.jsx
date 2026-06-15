@@ -19,7 +19,6 @@ const TABS = [
 ];
 
 const DOC_VERSIONS = [
-    { key: 'documentUrl',       label: 'Rep Version',    short: 'Rep'    },
     { key: 'dealerDocumentUrl', label: 'Dealer Version', short: 'Dealer' },
     { key: 'publicDocumentUrl', label: 'Public Version', short: 'Public' },
 ];
@@ -188,11 +187,11 @@ export const ContractsScreen = ({ theme, setSuccessMessage }) => {
     const tierChartRows = usesTierChartLayout ? (contract.tierRows || []) : [];
     const tierChartHasDealerDiscount = tierChartRows.some((row) => (row.rows || []).some((item) => item.dealerDiscount));
     const tierMetricGridClass = tierChartHasDealerDiscount
-        ? 'grid grid-cols-[52px_52px_58px] md:grid-cols-[118px_118px_120px] items-center gap-2 shrink-0'
-        : 'grid grid-cols-[52px_52px] md:grid-cols-[118px_118px] items-center gap-2 shrink-0';
+        ? 'grid grid-cols-[52px_58px] md:grid-cols-[118px_120px] items-center gap-2 shrink-0'
+        : 'grid grid-cols-[52px] md:grid-cols-[118px] items-center gap-2 shrink-0';
     const standardMetricGridClass = hasMargins
-        ? 'grid grid-cols-[52px_52px_56px] md:grid-cols-[118px_118px_108px] items-center gap-2 shrink-0'
-        : 'grid grid-cols-[52px_52px] md:grid-cols-[118px_118px] items-center gap-2 shrink-0';
+        ? 'grid grid-cols-[52px_56px] md:grid-cols-[118px_108px] items-center gap-2 shrink-0'
+        : 'grid grid-cols-[52px] md:grid-cols-[118px] items-center gap-2 shrink-0';
 
     const updateStateTabAnchor = useCallback(() => {
         const rootEl = tabBarRef.current;
@@ -391,7 +390,6 @@ export const ContractsScreen = ({ theme, setSuccessMessage }) => {
                                                     longLabel={tierChartHasDealerDiscount ? 'Dealer|Margin' : 'Dealer|Commission'}
                                                     theme={theme}
                                                 />
-                                                <MetricHeaderLabel shortLabel="Rep|Comm" longLabel="Rep|Commission" theme={theme} />
                                                 {tierChartHasDealerDiscount && (
                                                     <MetricHeaderLabel shortLabel="Dealer|Disc" longLabel="Dealer|Discount" theme={theme} />
                                                 )}
@@ -399,7 +397,6 @@ export const ContractsScreen = ({ theme, setSuccessMessage }) => {
                                         ) : (
                                             <div className={standardMetricGridClass}>
                                                 <MetricHeaderLabel shortLabel="Dealer|Comm" longLabel="Dealer|Commission" theme={theme} />
-                                                <MetricHeaderLabel shortLabel="Rep|Comm" longLabel="Rep|Commission" theme={theme} />
                                                 {hasMargins && (
                                                     <MetricHeaderLabel shortLabel="Gross|Mgn" longLabel="Gross|Margin" theme={theme} />
                                                 )}
@@ -440,9 +437,6 @@ export const ContractsScreen = ({ theme, setSuccessMessage }) => {
                                                                 <span className="text-sm font-semibold tabular-nums text-center" style={{ color: theme.colors.textPrimary }}>
                                                                     {item.dealerCommission}
                                                                 </span>
-                                                                <span className="text-sm tabular-nums text-center" style={{ color: theme.colors.textSecondary }}>
-                                                                    {item.repCommission}
-                                                                </span>
                                                                 {tierChartHasDealerDiscount && (
                                                                     <span className="text-sm tabular-nums text-center" style={{ color: theme.colors.textSecondary }}>
                                                                         {item.dealerDiscount || '—'}
@@ -479,9 +473,6 @@ export const ContractsScreen = ({ theme, setSuccessMessage }) => {
                                                 <div className={standardMetricGridClass}>
                                                     <span className="text-sm font-semibold tabular-nums text-center" style={{ color: theme.colors.textPrimary }}>
                                                         {row.dealerCommission}
-                                                    </span>
-                                                    <span className="text-sm tabular-nums text-center" style={{ color: theme.colors.textSecondary }}>
-                                                        {row.repCommission}
                                                     </span>
                                                     {hasMargins && (
                                                         <span className="text-[0.8125rem] tabular-nums text-center font-medium"

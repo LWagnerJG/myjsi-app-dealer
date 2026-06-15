@@ -5,9 +5,11 @@ import {
   MONTHLY_SALES_DATA_BY_YEAR,
   ANNUAL_GOALS_BY_YEAR,
   SALES_VERTICALS_DATA,
-  INCENTIVE_REWARDS_DATA,
+  MY_REWARDS_DATA,
+  END_USER_RANK_DATA,
   BACKLOG_DATA,
 } from './data.js';
+import { CURRENT_USER, IS_CHOICE_DEALER } from '../../constants/currentUser.js';
 import { ORDER_DATA, STATUS_COLORS } from '../orders/data.js';
 import { SalesByVerticalBreakdown } from './components/SalesByVerticalBreakdown.jsx';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
@@ -58,6 +60,7 @@ export const SalesScreen = ({ theme, onNavigate }) => {
     [selectedYear],
   );
   const activeGoal = ANNUAL_GOALS_BY_YEAR[selectedYear] || 7_000_000;
+  const choiceDealer = IS_CHOICE_DEALER;
 
   const { totalBookings, totalSales } = useMemo(() => ({
     totalBookings: activeMonthlyData.reduce((a, m) => a + m.bookings, 0),
@@ -66,9 +69,29 @@ export const SalesScreen = ({ theme, onNavigate }) => {
 
   const activeTotal = chartDataType === 'bookings' ? totalBookings : totalSales;
 
+  // Prior-year comparison — used to show how a non-choice dealer is tracking
+  // (no goal targets) and as the progress baseline when there is no goal.
+  const priorYearData = useMemo(
+    () => MONTHLY_SALES_DATA_BY_YEAR[selectedYear - 1] || [],
+    [selectedYear],
+  );
+  const priorYearTotal = useMemo(
+    () => priorYearData.reduce((a, m) => a + (chartDataType === 'bookings' ? m.bookings : m.sales), 0),
+    [priorYearData, chartDataType],
+  );
+  const priorYTD = useMemo(
+    () => priorYearData.slice(0, activeMonthlyData.length)
+      .reduce((a, m) => a + (chartDataType === 'bookings' ? m.bookings : m.sales), 0),
+    [priorYearData, activeMonthlyData.length, chartDataType],
+  );
+  const yoyDelta = priorYTD > 0 ? ((activeTotal - priorYTD) / priorYTD) * 100 : null;
+
+  // Choice dealers track against a goal; everyone else tracks against last year.
+  const progressBaseline = choiceDealer ? activeGoal : (priorYearTotal || activeGoal);
+
   const progressPct = useMemo(
-    () => Math.min(100, (activeTotal / activeGoal) * 100),
-    [activeTotal, activeGoal],
+    () => Math.min(100, (activeTotal / progressBaseline) * 100),
+    [activeTotal, progressBaseline],
   );
 
   // YTD calendar progress — only meaningful for the current year.
@@ -94,8 +117,8 @@ export const SalesScreen = ({ theme, onNavigate }) => {
     return SALES_VERTICALS_DATA.find(v => v.label === selectedVertical)?.color || null;
   }, [selectedVertical]);
 
-  const topProjects = useMemo(
-    () => [...(BACKLOG_DATA.items || [])].sort((a, b) => (b.value || 0) - (a.value || 0)).slice(0, 3),
+  const topCustomers = useMemo(
+    () => [...(END_USER_RANK_DATA || [])].sort((a, b) => (b.sales || 0) - (a.sales || 0)).slice(0, 3),
     [],
   );
   const chartMax = useMemo(
@@ -103,19 +126,17 @@ export const SalesScreen = ({ theme, onNavigate }) => {
     [activeMonthlyData, chartDataType],
   );
 
-  const rewardsSnapshot = useMemo(() => {
-    const entries = Object.entries(INCENTIVE_REWARDS_DATA || {});
+  // The signed-in dealer user's OWN reward earnings (3% sales / 1% designer).
+  const myRewardsSnapshot = useMemo(() => {
+    const entries = Object.entries(MY_REWARDS_DATA || {});
     if (!entries.length) return null;
     const sorted = sortQuarterEntries(entries);
-    const [key, data] = sorted[sorted.length - 1];
-    const sales = data?.sales || [];
-    const designers = data?.designers || [];
-    const topSales = [...sales].sort((a, b) => (b.amount || 0) - (a.amount || 0)).slice(0, 2);
-    const topDesigners = [...designers].sort((a, b) => (b.amount || 0) - (a.amount || 0)).slice(0, 2);
-    const totalSalesR = sales.reduce((s, r) => s + (r.amount || 0), 0);
-    const totalDesignR = designers.reduce((s, r) => s + (r.amount || 0), 0);
-    return { key, topSales, topDesigners, totalSalesR, totalDesignR, totalAll: totalSalesR + totalDesignR };
+    const [key, list] = sorted[sorted.length - 1];
+    const periodTotal = list.reduce((s, r) => s + (r.amount || 0), 0);
+    const lifetimeTotal = entries.reduce((s, [, l]) => s + l.reduce((a, r) => a + (r.amount || 0), 0), 0);
+    return { key, periodTotal, count: list.length, lifetimeTotal };
   }, []);
+  const rewardRateLabel = `${(CURRENT_USER.rewardRate * 100).toFixed(0)}% of net`;
 
   const monthlyRows = useMemo(() => (
     activeMonthlyData.map(entry => ({
@@ -131,9 +152,6 @@ export const SalesScreen = ({ theme, onNavigate }) => {
       monthlyRows.slice(i * itemsPerColumn, (i + 1) * itemsPerColumn)
     ).filter(col => col.length > 0);
   }, [monthlyRows]);
-
-  const topSalesLeader  = rewardsSnapshot?.topSales?.[0]     || null;
-  const topDesignLeader = rewardsSnapshot?.topDesigners?.[0] || null;
 
   const [ready, setReady] = useState(false);
   useEffect(() => { const t = setTimeout(() => setReady(true), 300); return () => clearTimeout(t); }, []);
@@ -192,7 +210,7 @@ export const SalesScreen = ({ theme, onNavigate }) => {
                   </motion.div>
                 </AnimatePresence>
 
-                {/* Discrete Backlog inline caption */}
+                {/* Discrete Backlog inline caption + YoY tracking */}
                 <div className="flex items-center gap-1.5 text-[0.6875rem] font-semibold leading-none">
                   <span
                     className="uppercase tracking-[0.08em]"
@@ -206,6 +224,14 @@ export const SalesScreen = ({ theme, onNavigate }) => {
                   >
                     {formatCurrencyCompact(BACKLOG_DATA.total)}
                   </span>
+                  {yoyDelta != null && (
+                    <span
+                      className="tabular-nums pl-1"
+                      style={{ color: yoyDelta >= 0 ? '#4A7C59' : '#B85C5C', opacity: 0.9 }}
+                    >
+                      {yoyDelta >= 0 ? '\u25B2' : '\u25BC'} {Math.abs(yoyDelta).toFixed(0)}% vs {selectedYear - 1}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -293,7 +319,9 @@ export const SalesScreen = ({ theme, onNavigate }) => {
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[0.5625rem] font-bold tabular-nums pointer-events-none select-none"
                     style={{ color: colors.textSecondary, opacity: 0.32, zIndex: 0 }}
                   >
-                    {formatCurrencyCompact(activeGoal)} goal
+                    {choiceDealer
+                      ? `${formatCurrencyCompact(activeGoal)} goal`
+                      : `${formatCurrencyCompact(priorYearTotal)} last yr`}
                   </span>
                   <motion.div
                     className="absolute inset-y-0 left-0 rounded-full flex items-center justify-end pr-3"
@@ -480,16 +508,16 @@ export const SalesScreen = ({ theme, onNavigate }) => {
           </div>
         </GlassCard>
 
-        {/* ── Top Projects + Rewards (2-col) ── */}
+        {/* ── Top Customers + My Rewards (2-col) ── */}
         <div className="grid grid-cols-2 gap-4">
-          <button type="button" onClick={() => onNavigate('orders')} className="w-full h-full text-left">
+          <button type="button" onClick={() => onNavigate('customer-ranking')} className="w-full h-full text-left">
             <GlassCard theme={theme} className="p-4 h-full flex flex-col" variant="elevated">
-              <TileHeader title="Top Projects" action />
+              <TileHeader title="Top Customers" action />
               <div className="flex-1 divide-y" style={dividerStyle}>
-                {topProjects.map(p => (
-                  <div key={p.project} className={flatRowCls}>
-                    <span className="text-xs font-semibold truncate">{p.project}</span>
-                    <span className="text-xs font-bold tabular-nums shrink-0 ml-1">{formatCurrencyCompact(p.value)}</span>
+                {topCustomers.map(cst => (
+                  <div key={cst.id} className={flatRowCls}>
+                    <span className="text-xs font-semibold truncate">{cst.name}</span>
+                    <span className="text-xs font-bold tabular-nums shrink-0 ml-1">{formatCurrencyCompact(cst.sales)}</span>
                   </div>
                 ))}
               </div>
@@ -498,28 +526,18 @@ export const SalesScreen = ({ theme, onNavigate }) => {
 
           <button type="button" onClick={() => onNavigate('incentive-rewards')} className="w-full h-full text-left">
             <GlassCard theme={theme} className="p-4 h-full flex flex-col" variant="elevated">
-              <TileHeader title="Rewards" action />
-              {rewardsSnapshot ? (
-                <div className="flex-1 divide-y" style={dividerStyle}>
-                  {topSalesLeader && (
-                    <div className={flatRowCls}>
-                      <span className="text-xs font-semibold truncate">{topSalesLeader.name.split(' ')[0]}</span>
-                      <span className="text-xs font-bold tabular-nums ml-1">{formatCurrencyCompact(topSalesLeader.amount)}</span>
-                    </div>
-                  )}
-                  {topDesignLeader && (
-                    <div className={flatRowCls}>
-                      <span className="text-xs font-semibold truncate">{topDesignLeader.name.split(' ')[0]}</span>
-                      <span className="text-xs font-bold tabular-nums ml-1">{formatCurrencyCompact(topDesignLeader.amount)}</span>
-                    </div>
-                  )}
-                  <div className={flatRowCls}>
-                    <span className="text-[0.625rem] font-medium" style={{ color: colors.textSecondary, opacity: 0.5 }}>{rewardsSnapshot.key}</span>
-                    <span className="text-xs font-black tabular-nums">{formatCurrencyCompact(rewardsSnapshot.totalAll)}</span>
-                  </div>
+              <TileHeader title="My Rewards" action />
+              {myRewardsSnapshot ? (
+                <div className="flex-1 flex flex-col justify-center gap-1">
+                  <span className="text-2xl font-black tabular-nums leading-none" style={{ color: colors.textPrimary }}>
+                    {formatCurrencyCompact(myRewardsSnapshot.periodTotal)}
+                  </span>
+                  <span className="text-[0.625rem] font-semibold" style={{ color: colors.textSecondary, opacity: 0.55 }}>
+                    {myRewardsSnapshot.key} · {rewardRateLabel}
+                  </span>
                 </div>
               ) : (
-                <p className="text-xs opacity-40 flex-1 flex items-center">No data yet.</p>
+                <p className="text-xs opacity-40 flex-1 flex items-center">No rewards yet.</p>
               )}
             </GlassCard>
           </button>

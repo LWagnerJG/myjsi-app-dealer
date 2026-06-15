@@ -5,7 +5,6 @@ import { DEFAULT_HOME_APPS, allApps } from './constants/apps.js';
 import { INITIAL_OPPORTUNITIES, MY_PROJECTS_DATA, INITIAL_DESIGN_FIRMS, INITIAL_DEALERS, EMPTY_LEAD, STAGES } from './screens/projects/data.js';
 import { INITIAL_POSTS, INITIAL_POLLS, INITIAL_WINS, SUBREDDIT_POSTS } from './screens/community/data.js';
 import { INITIAL_MEMBERS } from './screens/members/data.js';
-import { DEALER_DIRECTORY_DATA } from './screens/resources/dealer-directory/data.js';
 
 import { AppHeader } from './components/navigation/AppHeader.jsx';
 import { ProfileMenu } from './components/navigation/ProfileMenu.jsx';
@@ -17,7 +16,6 @@ import { Modal } from './components/common/Modal.jsx';
 import { INITIAL_ASSETS } from './screens/library/data.js';
 import { AnimatedScreenWrapper } from './components/common/AnimatedScreenWrapper.jsx';
 import { usePersistentState } from './hooks/usePersistentState.js';
-import { useCompanyResource } from './hooks/useCompanyResource.js';
 import { ToastHost } from './components/common/ToastHost.jsx';
 import { ErrorBoundary } from './components/common/ErrorBoundary.jsx';
 import { ScreenSkeleton } from './components/common/ScreenSkeleton.jsx';
@@ -25,22 +23,15 @@ import { submitLeadToExcel } from './utils/submitLeadToExcel.js';
 import { INITIAL_SAMPLE_ORDERS, buildSubmittedSampleOrder, syncSampleOrdersWithSeeds } from './screens/samples/sampleOrders.js';
 
 // Lazy load less-frequently visited resource feature screens for bundle splitting
-const CommissionRatesScreen = React.lazy(() => import('./screens/resources/commission-rates/index.js'));
 const LeadTimesScreen = React.lazy(() => import('./screens/resources/lead-times/index.js'));
 const WeightRatingsScreen = React.lazy(() => import('./screens/resources/weight-ratings/index.js'));
 const ContractsScreen = React.lazy(() => import('./screens/resources/contracts/index.js'));
-const DealerDirectoryScreen = React.lazy(() => import('./screens/resources/dealer-directory/index.js'));
-const DealerDetailScreen = React.lazy(() => import('./screens/resources/dealer-directory/DealerDetailScreen.jsx').then(m => ({ default: m.DealerDetailScreen })));
 const DiscontinuedFinishesScreen = React.lazy(() => import('./screens/resources/discontinued-finishes/index.js'));
 const TradeshowsScreen = React.lazy(() => import('./screens/resources/tradeshows/index.js'));
 const SampleDiscountsScreen = React.lazy(() => import('./screens/resources/sample-discounts/index.js'));
 const SampleOrdersScreen = React.lazy(() => import('./screens/samples/SampleOrdersScreen.jsx').then(m => ({ default: m.SampleOrdersScreen })));
-const LoanerPoolScreen = React.lazy(() => import('./screens/resources/loaner-pool/index.js'));
 const InstallInstructionsScreen = React.lazy(() => import('./screens/resources/install-instructions/index.js'));
-const NewDealerSignUpScreen = React.lazy(() => import('./screens/resources/new-dealer-signup/index.js'));
 const PresentationsScreen = React.lazy(() => import('./screens/resources/presentations/index.js'));
-const RequestFieldVisitScreen = React.lazy(() => import('./screens/resources/request-field-visit/index.js'));
-const TourVisitScreen = React.lazy(() => import('./screens/resources/tour-visit/index.js'));
 const SearchFabricsScreen = React.lazy(() => import('./screens/resources/search-fabrics/index.js'));
 const RequestComYardageScreen = React.lazy(() => import('./screens/resources/request-com-yardage/index.js'));
 const SocialMediaScreen = React.lazy(() => import('./screens/resources/social-media/index.js'));
@@ -59,14 +50,9 @@ const RESOURCE_SLUG_ALIASES = {
     'design_days': 'tradeshows',
     'design-days': 'tradeshows', // keep supporting older hyphen variant
     'sample_discounts': 'sample-discounts',
-    'loaner_pool': 'loaner-pool',
     'install_instructions': 'install-instructions',
-    'request_field_visit': 'request-field-visit',
     'social_media': 'social-media',
-    'dealer_directory': 'dealer-directory',
-    'commission_rates': 'commission-rates',
     'weight_ratings': 'weight-ratings'
-    // 'new-dealer-signup' already canonical; no alias needed
 };
 
 function normalizeResourceSlug(raw) {
@@ -75,20 +61,14 @@ function normalizeResourceSlug(raw) {
 }
 
 const RESOURCE_FEATURE_SCREENS = {
-    'commission-rates': CommissionRatesScreen,
     'lead-times': LeadTimesScreen,
     'weight-ratings': WeightRatingsScreen,
     'contracts': ContractsScreen,
-    'dealer-directory': DealerDirectoryScreen,
     'discontinued-finishes': DiscontinuedFinishesScreen,
     'tradeshows': TradeshowsScreen,
     'sample-discounts': SampleDiscountsScreen,
-    'loaner-pool': LoanerPoolScreen,
     'install-instructions': InstallInstructionsScreen,
     'presentations': PresentationsScreen,
-    'request-field-visit': RequestFieldVisitScreen,
-    'tour-visit': TourVisitScreen,
-    'new-dealer-signup': NewDealerSignUpScreen,
     'social-media': SocialMediaScreen,
     'search-fabrics': SearchFabricsScreen,
     'request-com-yardage': RequestComYardageScreen,
@@ -141,10 +121,6 @@ const ScreenRouter = React.memo(({ screenKey, projectsScreenRef, SuspenseFallbac
         if (salesDetailKey === 'incentive-rewards') {
             return lazyWrap(SCREEN_MAP[salesDetailKey]);
         }
-    }
-
-    if (base === 'new-trip') {
-        return lazyWrap(TourVisitScreen);
     }
 
     // Standalone, shareable Good · Better · Best sales deck.
@@ -229,11 +205,6 @@ const ScreenRouter = React.memo(({ screenKey, projectsScreenRef, SuspenseFallbac
     }
 
     if (base === 'orders' && parts.length > 1) return lazyWrap(OrderDetailScreen);
-
-    // Dealer directory detail route: resources/dealer-directory/{id}
-    if (base === 'resources' && parts[1] === 'dealer-directory' && parts[2]) {
-        return lazyWrap(DealerDetailScreen, { screenKey });
-    }
 
     if (base === 'resources' && parts.length > 1) return lazyWrap(ResourceDetailScreen);
 
@@ -368,20 +339,11 @@ function App() {
     const [savedImageIds, setSavedImageIds] = usePersistentState('library.saved', []);
     const [postUpvotes, setPostUpvotes] = useState({});
 
-    const liveDealerDirectory = useCompanyResource('dealer-directory', DEALER_DIRECTORY_DATA);
-    const [dealerDirectory, setDealerDirectory] = useState(DEALER_DIRECTORY_DATA);
     const [designFirms, setDesignFirms] = useState(INITIAL_DESIGN_FIRMS);
     const [dealers, setDealers] = useState(INITIAL_DEALERS);
     const [newLeadData, setNewLeadData] = usePersistentState('draft.newLead', EMPTY_LEAD);
 
     const projectsScreenRef = useRef(null);
-    const liveDealerDirectoryHydratedRef = useRef(false);
-
-    useEffect(() => {
-        if (liveDealerDirectoryHydratedRef.current || !liveDealerDirectory.isLive || !Array.isArray(liveDealerDirectory.data)) return;
-        setDealerDirectory((prev) => (prev === DEALER_DIRECTORY_DATA ? liveDealerDirectory.data : prev));
-        liveDealerDirectoryHydratedRef.current = true;
-    }, [liveDealerDirectory.data, liveDealerDirectory.isLive]);
 
     const currentTheme = useMemo(() => (isDarkMode ? darkTheme : lightTheme), [isDarkMode]);
 
@@ -649,8 +611,6 @@ function App() {
         onUpdateCart: handleUpdateCart,
         sampleOrders,
         onSubmitSampleOrder: handleSubmitSampleOrder,
-        dealerDirectory,
-        setDealerDirectory,
         designFirms,
         setDesignFirms,
         dealers,
@@ -675,7 +635,7 @@ function App() {
         posts, polls, likedPosts, pollChoices, handleToggleLike,
         handleAddComment, handlePollVote, openCreateContentModal, openLibraryUploadModal, libraryAssets, savedImageIds,
         handleToggleSaveImage, postUpvotes, handleUpvote, cart, setCart,
-        handleUpdateCart, sampleOrders, handleSubmitSampleOrder, dealerDirectory, setDealerDirectory, designFirms, dealers, newLeadData,
+        handleUpdateCart, sampleOrders, handleSubmitSampleOrder, designFirms, dealers, newLeadData,
         handleNewLeadChange, isDarkMode, handleToggleTheme, handleLeadSuccess,
         handleAddInstall, projectsTabOverride, clearProjectsInitialTab, projectsStageOverride, clearProjectsInitialStage,
         homeApps, handleUpdateHomeApps, homeResetKey, setOpportunities

@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import {
-    Database, Search, Share2, FileText, DollarSign, Calendar, Percent,
-    Palette, Package, Users, MapPin, MonitorPlay, Wrench, Clock, ChevronRight, Gift, Scale, Plane
+    Database, Search, Share2, FileText, Calendar, Percent,
+    Palette, MonitorPlay, Wrench, Clock, ChevronRight, Gift, Scale
 } from 'lucide-react';
 import { RESOURCES_DATA } from './data.js';
 import { AppScreenLayout } from '../../components/common/AppScreenLayout.jsx';
@@ -14,18 +14,12 @@ const sublabelMap = {
     'Discontinued Finishes Database': 'Legacy surface archive',
     'Request COM Yardage': 'Fabric yardage form',
     'Search Fabrics': 'Textile library',
-    'Commission Rates': 'Rep commission by discount',
     'Contracts': 'Information and discounts',
-    'Dealer Directory': 'Partner contact finder',
     'Sample Discounts': 'Demo pricing overview',
     'Install Instructions': 'Assembly guidance and videos',
-    'Loaner Pool': 'Search sample chairs',
-    'Request Field Visit': 'Onsite tech scheduling',
-    'Tour Visit': 'Facility travel planning',
     'Social Media': 'Brand share kit',
     'Presentations': 'Slide deck library',
     'Tradeshows': 'Select and view show info',
-    'New Dealer Sign-Up': 'Sign up new dealers',
     'LWYD Marketplace': 'Rewards shop',
     'New Project': 'Start a new project or lead',
 };
@@ -43,14 +37,14 @@ const CORE_LABELS = {
 };
 
 const CORE_APP_CATEGORY_MAP = {
-    orders: 'Sales & Rep Tools',
-    sales: 'Sales & Rep Tools',
-    projects: 'Sales & Rep Tools',
-    'new-lead': 'Sales & Rep Tools',
+    orders: 'Sales Tools',
+    sales: 'Sales Tools',
+    projects: 'Sales Tools',
+    'new-lead': 'Sales Tools',
     community: 'Marketing & Communication',
     products: 'Product & Finish Resources',
-    samples: 'Dealer & Field Support',
-    replacements: 'Dealer & Field Support',
+    samples: 'Field Support',
+    replacements: 'Field Support',
 };
 
 const CORE_APP_SUBLABELS = {
@@ -79,7 +73,7 @@ export const ResourcesScreen = ({ theme, onNavigate, homeApps }) => {
                 label: CORE_LABELS[route] || route,
                 nav: route,
                 sublabel: CORE_APP_SUBLABELS[route] || 'Application',
-                resourceCategory: CORE_APP_CATEGORY_MAP[route] || 'Sales & Rep Tools',
+                resourceCategory: CORE_APP_CATEGORY_MAP[route] || 'Sales Tools',
             }));
     }, [homeApps]);
 
@@ -114,16 +108,11 @@ export const ResourcesScreen = ({ theme, onNavigate, homeApps }) => {
         const label = item.label;
         if (label.includes('Lead Times')) return Clock;
         if (label.includes('Weight Ratings')) return Scale;
-        if (label.includes('Commission')) return DollarSign;
         if (label.includes('Contract')) return FileText;
         if (label.includes('Social')) return Share2;
         if (label.includes('Sample')) return Percent;
         if (label.includes('Search Fabrics')) return Search;
         if (label.includes('Discontinued')) return Palette;
-        if (label.includes('Loaner')) return Package;
-        if (label.includes('Dealer')) return Users;
-        if (label.includes('Field Visit')) return MapPin;
-        if (label.includes('Tour Visit')) return Plane;
         if (label.includes('Presentations')) return MonitorPlay;
         if (label.includes('Install')) return Wrench;
         if (label.includes('Tradeshow')) return Calendar;

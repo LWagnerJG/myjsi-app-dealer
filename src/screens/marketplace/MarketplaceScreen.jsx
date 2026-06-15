@@ -8,7 +8,6 @@ import {
   Sparkles,
   Tag,
   Truck,
-  UserPlus,
   Wallet,
 } from 'lucide-react';
 import { EmptyState as SharedEmptyState } from '../../components/common/EmptyState.jsx';
@@ -36,7 +35,6 @@ import { TransactionRow } from './components/marketplace/TransactionRow.jsx';
 import { getMarketplacePalette } from './theme.js';
 
 const EARNING_PROGRAMS = [
-  { title: 'New dealer sign-ups', description: 'Bring a new dealer onboard.', amount: 750, icon: UserPlus, tone: 'success' },
   { title: 'Community activity', description: 'Posts, replies, and useful shares.', amount: 250, icon: Sparkles, tone: 'info' },
   { title: 'Product training', description: 'Finish LWYD learning modules.', amount: 100, icon: Award, tone: 'warning' },
   { title: 'Platform feedback', description: 'Feedback that improves the app.', amount: 100, icon: MessageSquare, tone: 'brand' },
