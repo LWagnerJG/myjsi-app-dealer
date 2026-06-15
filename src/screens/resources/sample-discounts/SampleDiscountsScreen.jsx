@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { SAMPLE_POLICIES } from './data.js';
 
 const INFO   = '#5B7B8C';
-const WARN   = '#C4956A';
 
 export const SampleDiscountsScreen = ({ theme, setSuccessMessage }) => {
     const isDark  = isDarkTheme(theme);
@@ -68,15 +67,6 @@ export const SampleDiscountsScreen = ({ theme, setSuccessMessage }) => {
                             style={{ color: colors.textPrimary, opacity: 0.42 }}
                         >
                             Effective May 1, 2021
-                        </span>
-                        <span
-                            className="inline-flex items-center text-[0.5625rem] font-black uppercase tracking-[0.1em] px-2 py-[3px] rounded-full"
-                            style={{
-                                backgroundColor: `${WARN}${isDark ? '28' : '18'}`,
-                                color: WARN,
-                            }}
-                        >
-                            No commission
                         </span>
                     </div>
                 </div>
