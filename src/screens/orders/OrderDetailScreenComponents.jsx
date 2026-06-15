@@ -331,6 +331,14 @@ export const ClipsModal = ({ onClose, dark, c }) => (
 export const ClaimRewardModal = ({ order, claim, onClaim, onClose, dark, c }) => {
   const claimed = !!claim;
   const divider = dark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.03)';
+
+  // Auto-close shortly after the reward is claimed so the user sees the confirmation
+  useEffect(() => {
+    if (!claimed) return;
+    const t = setTimeout(() => onClose?.(), 1100);
+    return () => clearTimeout(t);
+  }, [claimed, onClose]);
+
   return (
     <>
     <ModalSafeAreaCover visible={true} />

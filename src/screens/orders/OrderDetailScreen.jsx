@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import {
   Share2, Eye, Film, FileText, BarChart3,
-  Truck, PackageCheck, ClipboardCheck, Gift, BadgeCheck,
+  Truck, PackageCheck, ClipboardCheck, Gift, BadgeCheck, X,
 } from 'lucide-react';
 import { isDarkTheme } from '../../design-system/tokens.js';
 import { JSIActionButton, JSIActionButtonGroup } from '../../components/common/JSIButtons.jsx';
@@ -34,6 +34,13 @@ export const OrderDetailScreen = ({ theme, onNavigate, currentScreen }) => {
   const claim   = claims[orderId] || null;
   const claimReward = useCallback(() => {
     setClaims(p => ({ ...p, [orderId]: { ...CURRENT_REP, claimedAt: new Date().toISOString() } }));
+  }, [orderId, setClaims]);
+  const unclaimReward = useCallback(() => {
+    setClaims(p => {
+      const next = { ...p };
+      delete next[orderId];
+      return next;
+    });
   }, [orderId, setClaims]);
 
   const dark        = isDarkTheme(theme);
@@ -107,26 +114,31 @@ export const OrderDetailScreen = ({ theme, onNavigate, currentScreen }) => {
               </div>
 
               {/* claim reward CTA */}
-              <div className="px-5 pb-1">
+              <div className="px-5 pb-1 flex justify-end">
                 {claim ? (
                   <button
-                    onClick={() => setModal('claim')}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-full py-2.5 transition active:scale-[0.99]"
+                    onClick={unclaimReward}
+                    className="group inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition active:scale-[0.97]"
                     style={{ backgroundColor: 'rgba(34,197,94,0.10)' }}
-                    aria-label="Reward claimed"
+                    aria-label="Remove reward claim"
+                    title="Tap to remove claim"
                   >
-                    <BadgeCheck className="w-4 h-4" strokeWidth={2.5} style={{ color: '#22c55e' }} />
-                    <span className="text-[0.8125rem] font-semibold" style={{ color: '#16a34a' }}>Reward Claimed</span>
+                    <BadgeCheck className="w-3.5 h-3.5 group-hover:hidden" strokeWidth={2.5} style={{ color: '#22c55e' }} />
+                    <X className="w-3.5 h-3.5 hidden group-hover:block" strokeWidth={2.5} style={{ color: '#16a34a' }} />
+                    <span className="text-[0.75rem] font-semibold" style={{ color: '#16a34a' }}>
+                      <span className="group-hover:hidden">Reward Claimed</span>
+                      <span className="hidden group-hover:inline">Remove Claim</span>
+                    </span>
                   </button>
                 ) : (
                   <button
                     onClick={() => setModal('claim')}
-                    className="w-full inline-flex items-center justify-center gap-2 rounded-full py-2.5 transition active:scale-[0.99]"
-                    style={{ backgroundColor: c.accent, color: c.accentText || '#FFFFFF' }}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition active:scale-[0.97]"
+                    style={{ backgroundColor: `${c.accent}14`, color: c.accent }}
                     aria-label="Claim reward"
                   >
-                    <Gift className="w-4 h-4" strokeWidth={2.5} />
-                    <span className="text-[0.8125rem] font-semibold">Claim Reward</span>
+                    <Gift className="w-3.5 h-3.5" strokeWidth={2.5} />
+                    <span className="text-[0.75rem] font-semibold">Claim Reward</span>
                   </button>
                 )}
               </div>
