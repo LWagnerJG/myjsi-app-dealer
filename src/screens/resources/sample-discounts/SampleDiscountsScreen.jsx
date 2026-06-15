@@ -61,14 +61,6 @@ export const SampleDiscountsScreen = ({ theme, setSuccessMessage }) => {
                     >
                         Sample Policies
                     </h1>
-                    <div className="flex items-center gap-2 flex-wrap mt-2">
-                        <span
-                            className="text-xs font-semibold"
-                            style={{ color: colors.textPrimary, opacity: 0.42 }}
-                        >
-                            Effective May 1, 2021
-                        </span>
-                    </div>
                 </div>
 
                 {/* ── Policy cards ── */}
