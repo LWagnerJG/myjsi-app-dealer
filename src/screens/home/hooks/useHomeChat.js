@@ -2,7 +2,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { LEAD_TIMES_DATA, QUICKSHIP_SERIES } from '../../resources/lead-times/data.js';
 import { ORDER_DATA } from '../../orders/data.js';
-import { COMMISSION_RATES_DATA, BONUS_STRUCTURE } from '../../resources/commission-rates/data.js';
 import { CONTRACTS_DATA } from '../../resources/contracts/data.js';
 import { SAMPLE_POLICIES } from '../../resources/sample-discounts/data.js';
 import { COM_YARDAGE_DATA } from '../../resources/request-com-yardage/data.js';
@@ -32,7 +31,6 @@ const NAV = {
     help:         'Get Help',
     feedback:     'Share Feedback',
     leadTimes:    'Check Lead Times',
-    commissions:  'View Commissions',
     contracts:    'View Contracts',
     presentations:'Browse Presentations',
     fabrics:      'Search Fabrics',
@@ -56,7 +54,6 @@ const NAV_ROUTES = {
     help:          'help',
     feedback:      'feedback',
     leadTimes:     'resources/lead-times',
-    commissions:   'resources/commission-rates',
     contracts:     'resources/contracts',
     presentations: 'presentations',
     fabrics:       'resources/search-fabrics',
@@ -82,8 +79,6 @@ const INTENT_PATTERNS = [
     { intent: 'quickShip',     test: t => /\b(quick ?ship|fast ?ship|expedit|rush|12.*day|10.*day)\b/.test(t) },
     { intent: 'orderLookup',   test: t => /\b(\d{5,6}[-–]\d{2})\b/.test(t) || /\b(order|po|purchase order)\b.*\b\d{4,}/.test(t) },
     { intent: 'orderGen',      test: t => /\b(order|po |purchase order|shipment|track|ack|acknowledge)\b/.test(t) },
-    { intent: 'commissionRate', test: t => /\b(commission|rate|rep rate|spiff|comp plan)\b/.test(t) },
-    { intent: 'bonus',         test: t => /\b(bonus|incentive|quarterly|annual target|kicker)\b/.test(t) },
     { intent: 'contract',      test: t => /\b(contract|omnia|tips|premier|gsa|cooperative|government)\b/.test(t) },
     { intent: 'sampleDiscount',test: t => /\b(sample discount|sample program|sample pricing|sample rate)\b/.test(t) },
     { intent: 'comYardage',    test: t => /\b(com |com$|customer.*own.*material|yardage|com yard|fabric yard)\b/.test(t) },
@@ -127,13 +122,13 @@ function generateReply(text) {
     switch (intent) {
 
     case 'greeting':
-        return "Hello! I'm Elliott, your JSI sales assistant. I have real-time knowledge of **lead times**, **orders**, **commission rates**, **contracts**, and all **73 JSI product series**. What can I help you with?";
+        return "Hello! I'm Elliott, your JSI dealer assistant. I have real-time knowledge of **lead times**, **orders**, **contracts**, and all **73 JSI product series**. What can I help you with?";
 
     case 'thanks':
         return "You're welcome! Let me know if there's anything else I can help with.";
 
     case 'whoAreYou':
-        return "I'm **Elliott**, your built-in JSI sales assistant. I can answer questions about:\n\n• **Lead times** for any of the 73 JSI series\n• **QuickShip** availability (12 business days)\n• **Order** tracking and status\n• **Commission rates**, bonuses, and spiffs\n• **Contracts** (Omnia, TIPS, Premier, GSA)\n• **Sample discounts** and COM yardage\n• **Navigation** — I can point you to any screen\n\nJust ask!";
+        return "I'm **Elliott**, your built-in JSI dealer assistant. I can answer questions about:\n\n• **Lead times** for any of the 73 JSI series\n• **QuickShip** availability (12 business days)\n• **Order** tracking and status\n• **Contracts** (Omnia, TIPS, Premier, GSA)\n• **Sample discounts** and COM yardage\n• **Navigation** — I can point you to any screen\n\nJust ask!";
 
     case 'leadTimeSeries': {
         const entries = LEAD_TIMES_DATA.filter(d => d.series.toLowerCase() === series.toLowerCase());
@@ -161,7 +156,7 @@ function generateReply(text) {
             if (order) {
                 const ship = new Date(order.shipDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
                 const items = order.lineItems.map(li => `  • ${li.name} (${li.model}) × ${li.quantity}`).join('\n');
-                return `**Order ${order.orderNumber}**\n• **Status:** ${order.status}\n• **Company:** ${order.company}\n• **Project:** ${order.details}\n• **Net:** $${order.net.toLocaleString()}\n• **Est. Ship:** ${ship}\n• **Discount:** ${order.discount}\n\n**Line Items:**\n${items}\n\nOpen **${NAV.orders}** for full details.`;
+                return `**Order ${order.orderNumber}**\n• **Status:** ${order.status}\n• **Project:** ${order.details}\n• **Net:** $${order.net.toLocaleString()}\n• **Est. Ship:** ${ship}\n• **Discount:** ${order.discount}\n\n**Line Items:**\n${items}\n\nOpen **${NAV.orders}** for full details.`;
             }
             return `I couldn't find order **${orderNum}** in the current data. Double-check the number or search in **${NAV.orders}**.`;
         }
@@ -174,20 +169,6 @@ function generateReply(text) {
         const statusLines = Object.entries(statuses).map(([s, c]) => `• **${s}:** ${c}`).join('\n');
         const totalNet = ORDER_DATA.reduce((sum, o) => sum + o.net, 0);
         return `**Your Orders Overview** (${ORDER_DATA.length} total orders, $${totalNet.toLocaleString()} net)\n\n${statusLines}\n\nYou can search by PO, filter by status, or ask me about a specific order number. Go to **${NAV.orders}**.`;
-    }
-
-    case 'commissionRate': {
-        const rates = COMMISSION_RATES_DATA.standard.slice(0, 5);
-        const lines = rates.map(r => `• ${r.discount} → Rep **${r.rep}%** · Spiff **${r.spiff}%**`).join('\n');
-        return `**Commission Rate Schedule** (first 5 tiers):\n${lines}\n\n…and ${COMMISSION_RATES_DATA.standard.length - 5} more tiers.\n\nSee the full schedule at **${NAV.commissions}**.`;
-    }
-
-    case 'bonus': {
-        const q = BONUS_STRUCTURE.quarterly.thresholds;
-        const a = BONUS_STRUCTURE.annual.thresholds;
-        const qLines = q.map(t => `• $${t.target.toLocaleString()} → **${t.bonus}** — ${t.description}`).join('\n');
-        const aLines = a.map(t => `• $${t.target.toLocaleString()} → **${t.bonus}** — ${t.description}`).join('\n');
-        return `**Quarterly Bonus Targets:**\n${qLines}\n\n**Annual Bonus Targets:**\n${aLines}\n\nFull details at **${NAV.commissions}**.`;
     }
 
     case 'contract': {
@@ -245,7 +226,7 @@ function generateReply(text) {
     }
 
     case 'project':
-        return `Your project workspace lives in **${NAV.projects}**. You can:\n\n• Add new leads & opportunities\n• Track stages (Discovery → Won/Lost)\n• Manage installs and follow-ups\n• View project value & win rate\n\nAsk me about **commissions** to see how projects translate to earnings.`;
+        return `Your project workspace lives in **${NAV.projects}**. You can:\n\n• Add new leads & opportunities\n• Track stages (Discovery → Won/Lost)\n• Manage installs and follow-ups\n• View project value & win rate`;
 
     case 'sample':
         return `Head to **${NAV.samples}** to browse and request product samples. Add items to your cart and submit a request.\n\nFor **sample discounts** by series, ask me or visit **${NAV.sampleDisc}**.`;
@@ -277,7 +258,6 @@ function generateReply(text) {
             [/member/,       NAV.members],
             [/setting/,      NAV.settings],
             [/lead ?time/,   NAV.leadTimes],
-            [/commission/,   NAV.commissions],
             [/contract/,     NAV.contracts],
             [/present|deck/, NAV.presentations],
             [/fabric/,       NAV.fabrics],
@@ -295,10 +275,10 @@ function generateReply(text) {
     }
 
     case 'help':
-        return `For support:\n\n• Visit **${NAV.help}** for FAQs and guides\n• Submit feedback at **${NAV.feedback}**\n• Contact your JSI territory manager directly\n\nOr just ask me — I can answer most questions about products, orders, lead times, and commissions right here.`;
+        return `For support:\n\n• Visit **${NAV.help}** for FAQs and guides\n• Submit feedback at **${NAV.feedback}**\n• Contact your JSI territory manager directly\n\nOr just ask me — I can answer most questions about products, orders, and lead times right here.`;
 
     default:
-        return `I can help with that! Here's what I know about:\n\n• **Lead times** — Ask about any of the ${ALL_SERIES.length} JSI series\n• **QuickShip** — ${QUICKSHIP_SERIES.length} series ship in 12 business days\n• **Orders** — Look up any order by number\n• **Commissions** — Rates, spiffs, and bonus targets\n• **Contracts** — Omnia, TIPS, Premier, GSA details\n• **Products** — Series, categories, finishes, fabrics\n• **Navigation** — I'll point you to any screen\n\nTry asking "What's the lead time for Arwyn?" or "Show me order 450080-00"!`;
+        return `I can help with that! Here's what I know about:\n\n• **Lead times** — Ask about any of the ${ALL_SERIES.length} JSI series\n• **QuickShip** — ${QUICKSHIP_SERIES.length} series ship in 12 business days\n• **Orders** — Look up any order by number\n• **Contracts** — Omnia, TIPS, Premier, GSA details\n• **Products** — Series, categories, finishes, fabrics\n• **Navigation** — I'll point you to any screen\n\nTry asking "What's the lead time for Arwyn?" or "Show me order 450080-00"!`;
     }
 }
 
@@ -316,7 +296,6 @@ function generateNavigationActions(text) {
         [/member/, 'members'],
         [/setting/, 'settings'],
         [/lead ?time/, 'leadTimes'],
-        [/commission/, 'commissions'],
         [/contract/, 'contracts'],
         [/present|deck/, 'presentations'],
         [/fabric/, 'fabrics'],
@@ -338,14 +317,12 @@ function generateActions(text) {
     const actionMap = {
         greeting:        [],
         thanks:          [],
-        whoAreYou:       [act('leadTimes'), act('orders'), act('commissions'), act('contracts')],
+        whoAreYou:       [act('leadTimes'), act('orders'), act('contracts')],
         leadTimeSeries:  [act('leadTimes'), act('products')],
         leadTimeGen:     [act('leadTimes')],
         quickShip:       [act('leadTimes')],
         orderLookup:     [act('orders')],
         orderGen:        [act('orders')],
-        commissionRate:  [act('commissions')],
-        bonus:           [act('commissions')],
         contract:        [act('contracts')],
         sampleDiscount:  [act('sampleDisc')],
         comYardage:      [act('comYardage')],
@@ -354,7 +331,7 @@ function generateActions(text) {
         product:         [act('products')],
         seriesLookup:    [act('products'), act('leadTimes')],
         category:        [act('products')],
-        project:         [act('projects'), act('commissions')],
+        project:         [act('projects')],
         sample:          [act('samples'), act('sampleDisc')],
         marketplace:     [act('marketplace')],
         community:       [act('community')],

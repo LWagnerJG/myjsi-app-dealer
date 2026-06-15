@@ -2,7 +2,7 @@
 import { ArrowUpRight, Check, ChevronDown, Upload, FileText, Eye, Send, Paperclip, Users, Clock, CheckCircle, AlertCircle, Loader2, Pencil, Share2, Download, Mail, MapPin, Package, Phone, Truck, ShoppingBag, X, Trash2 } from 'lucide-react';
 import { isDarkTheme, DESIGN_TOKENS, JSI_COLORS, sectionCardSurface, FIELD_LABEL_CLASSNAME } from '../../../../design-system/tokens.js';
 import { formatCurrency } from '../../../../utils/format.js';
-import { STAGES, VERTICALS, COMPETITORS, DISCOUNT_OPTIONS, PO_TIMEFRAMES, INITIAL_DESIGN_FIRMS, INITIAL_DEALERS } from '../../data.js';
+import { STAGES, VERTICALS, COMPETITORS, DISCOUNT_OPTIONS, PO_TIMEFRAMES, INITIAL_DESIGN_FIRMS } from '../../data.js';
 import { ORDER_DATA, STATUS_COLORS } from '../../../orders/data.js';
 import { JSI_SERIES } from '../../../products/data.js';
 import { LEAD_TIMES_DATA, QUICKSHIP_SERIES } from '../../../resources/lead-times/data.js';
@@ -1010,15 +1010,6 @@ export const OpportunityDetail = ({ opp, theme, onUpdate, onDelete, onMarkLost, 
                       })}
                     </div>
                   </Row>
-                  <div className="space-y-1.5">
-                    <span className={`${FIELD_LABEL_CLASS} block`} style={{ color: c.textSecondary, opacity: 0.78 }}>Dealer Partners</span>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      {(draft.dealers || []).map(f => (
-                        <RemovableChip key={f} label={f} onRemove={() => removeFrom('dealers', f)} theme={theme} />
-                      ))}
-                      <SuggestInputPill collapsible placeholder="Add dealer" suggestions={INITIAL_DEALERS.filter(x => !(draft.dealers || []).includes(x))} onAdd={v => addUnique('dealers', v)} theme={theme} />
-                    </div>
-                  </div>
                   <Row label="A&D Firms" theme={theme}>
                     <div className="flex flex-wrap items-center gap-1.5">
                       {(draft.designFirms || []).map(f => (
@@ -1029,13 +1020,7 @@ export const OpportunityDetail = ({ opp, theme, onUpdate, onDelete, onMarkLost, 
                   </Row>
                   <div className="space-y-1.5">
                     <span className={`${FIELD_LABEL_CLASS} block`} style={{ color: c.textSecondary, opacity: 0.78 }}>Contacts</span>
-                    {((draft.dealers || []).length > 0 || contactList.length > 0) ? (
-                      <ContactSearchSelector value={contactList} onChange={setContacts} dealers={draft.dealers || []} theme={theme} multiple />
-                    ) : (
-                      <p className="flex min-h-[44px] items-center px-3.5 text-[0.75rem]" style={{ ...fieldSurface(isDark), color: c.textSecondary, opacity: 0.7 }}>
-                        Add a dealer partner to sync their contacts.
-                      </p>
-                    )}
+                    <ContactSearchSelector value={contactList} onChange={setContacts} dealers={draft.dealers || []} theme={theme} multiple />
                   </div>
                 </div>
               </Section>

@@ -331,8 +331,6 @@ export const NewLeadScreen = ({
   onSuccess,
   designFirms,
   setDesignFirms,
-  dealers,
-  setDealers,
   opportunities = [],
   newLeadData = {},
   onNewLeadChange,
@@ -361,9 +359,6 @@ export const NewLeadScreen = ({
   // Location/date "Unknown" collapsed state — show input only when user explicitly opens it
   const [locationInputOpen, setLocationInputOpen] = useState(() => !!newLeadData.installationLocation);
   const [dateInputOpen, setDateInputOpen] = useState(() => !!newLeadData.expectedInstallDate);
-  // Dealers "Out to Bid" state — collapses search area to a single pill
-  const [dealerOutToBid, setDealerOutToBid] = useState(() => (newLeadData.dealers || []).includes('Out to Bid'));
-
   // Custom discount mode — true when the stored value isn't in the predefined list
   const [discountCustom, setDiscountCustom] = useState(
     () => !!(newLeadData.discount && !DISCOUNT_OPTIONS_WITH_UNKNOWN.includes(newLeadData.discount)),
@@ -544,7 +539,6 @@ export const NewLeadScreen = ({
     if (!newLeadData.vertical) next.vertical = 'Vertical is required.';
     if (parseCurrency(newLeadData.estimatedList) <= 0) next.estimatedList = 'Estimated list must be greater than zero.';
     if (!String(newLeadData.endUser || '').trim()) next.endUser = 'Select or create an end user.';
-    if (!(newLeadData.dealers || []).length) next.dealers = 'Add at least one dealer.';
     if (!newLeadData.poTimeframe) next.poTimeframe = 'PO timeframe is required.';
     if (newLeadData.competitionPresent && !(newLeadData.competitors || []).length) {
       next.competitors = 'Add at least one competitor or switch Competition off.';
@@ -560,7 +554,6 @@ export const NewLeadScreen = ({
     newLeadData.otherVertical,
     newLeadData.estimatedList,
     newLeadData.endUser,
-    newLeadData.dealers,
     newLeadData.poTimeframe,
     newLeadData.competitionPresent,
     newLeadData.competitors,
@@ -635,7 +628,6 @@ export const NewLeadScreen = ({
       { label: 'Estimated List', points: estimatedListPoints, max: 14 },
       { label: 'PO Timeframe', points: poTimeframePoints, max: 8 },
       { label: 'End User', points: String(newLeadData.endUser || '').trim() ? 5 : 0, max: 5 },
-      { label: 'Dealer Coverage', points: (newLeadData.dealers || []).length ? 6 : 0, max: 6 },
       { label: 'A&D Alignment', points: (newLeadData.designFirms || []).length ? 3 : 1, max: 3 },
       { label: 'Discount Quality', points: discountPoints, max: 8 },
       { label: 'Competition Position', points: competitionPoints, max: 7 },
@@ -667,7 +659,6 @@ export const NewLeadScreen = ({
     newLeadData.estimatedList,
     newLeadData.poTimeframe,
     newLeadData.endUser,
-    newLeadData.dealers,
     newLeadData.designFirms,
     newLeadData.competitionPresent,
     newLeadData.competitors,
@@ -730,7 +721,6 @@ export const NewLeadScreen = ({
     if (parsedEstimatedList > 0) add('Estimated List', `$${parsedEstimatedList.toLocaleString()}`, 1);
     add('PO Timeframe', newLeadData.poTimeframe, 1);
     add('End User', newLeadData.endUser, 1);
-    if ((newLeadData.dealers || []).length) add('Dealers', (newLeadData.dealers || []).join(', '), 1);
     if ((newLeadData.designFirms || []).length) add('A&D Firms', (newLeadData.designFirms || []).join(', '), 1);
     if (newLeadData.competitionPresent) {
       add('Competition', 'Present', 1);
@@ -779,7 +769,7 @@ export const NewLeadScreen = ({
 
   const stepValid = useMemo(() => {
     if (step === 0) return !errors.project && !errors.projectStatus && !errors.vertical && !errors.otherVertical;
-    if (step === 1) return !errors.estimatedList && !errors.endUser && !errors.dealers && !errors.poTimeframe && !errors.competitors;
+    if (step === 1) return !errors.estimatedList && !errors.endUser && !errors.poTimeframe && !errors.competitors;
     return !errors.project && !errors.projectStatus && !errors.vertical && !errors.otherVertical
       && !errors.estimatedList && !errors.endUser && !errors.dealers && !errors.poTimeframe
       && !errors.competitors && !errors.jsiQuoteNumber;
@@ -1306,50 +1296,6 @@ export const NewLeadScreen = ({
                     </QuickPickButton>
                   </div>
                   <FieldError show={!!visibleError('endUser')} message={visibleError('endUser')} />
-                </div>
-              </Row>
-
-              <Row label="Dealer(s)" theme={theme} inline>
-                <div>
-                  {dealerOutToBid ? (
-                    <button
-                      type="button"
-                      onClick={() => { setDealerOutToBid(false); upd('dealers', []); markTouched('dealers'); }}
-                      className="w-full h-10 rounded-full border flex items-center justify-between px-4 transition-colors"
-                      style={{ borderColor: theme.colors.accent, backgroundColor: `${theme.colors.accent}12`, color: c.textPrimary }}
-                    >
-                      <span className="text-sm font-medium" style={{ color: theme.colors.accent }}>Out to Bid</span>
-                      <span className="text-xs" style={{ color: c.textSecondary, opacity: 0.55 }}>Add dealers</span>
-                    </button>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 min-w-0">
-                        <SpotlightMultiSelect
-                          selectedItems={newLeadData.dealers || []}
-                          onAddItem={(dealer) => {
-                            const norm = dealer.trim();
-                            const current = newLeadData.dealers || [];
-                            if (!current.some((d) => d.toLowerCase() === norm.toLowerCase())) upd('dealers', [...current, norm]);
-                            markTouched('dealers');
-                          }}
-                          onRemoveItem={(dealer) => { upd('dealers', (newLeadData.dealers || []).filter((item) => item !== dealer)); markTouched('dealers'); }}
-                          options={(newLeadData.dealers || []).length > 0 ? (dealers || []).filter((item) => item !== 'Undecided') : (dealers || [])}
-                          onAddNew={(dealer) => { const norm = dealer.trim(); setDealers((prev) => prev.some((d) => d.toLowerCase() === norm.toLowerCase()) ? prev : [norm, ...prev]); }}
-                          placeholder="Search or create dealer"
-                          theme={theme}
-                          compact={false}
-                          integratedChips
-                        />
-                      </div>
-                      <QuickPickButton
-                        theme={theme}
-                        onClick={() => { setDealerOutToBid(true); upd('dealers', ['Out to Bid']); markTouched('dealers'); }}
-                      >
-                        Out to Bid
-                      </QuickPickButton>
-                    </div>
-                  )}
-                  <FieldError show={!!visibleError('dealers')} message={visibleError('dealers')} />
                 </div>
               </Row>
 

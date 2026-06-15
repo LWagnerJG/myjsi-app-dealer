@@ -265,7 +265,7 @@ export const HomeFeatureContent = memo(({
                         <div className="text-left min-w-0 flex-1">
                             <div className="text-sm font-semibold truncate" style={{ color: colors.textPrimary }}>{smartTitleCase(order.details)}</div>
                             <div className="text-xs flex items-center gap-1.5 mt-0.5">
-                                <span className="truncate" style={{ color: colors.textSecondary }}>{smartTitleCase(order.company)}</span>
+                                {order.vertical && <span className="truncate" style={{ color: colors.textSecondary }}>{order.vertical}</span>}
                                 {order.date && <span className="flex-shrink-0" style={{ color: colors.textSecondary, opacity: 0.45 }}>{formatRelativeTime(order.date)}</span>}
                             </div>
                         </div>

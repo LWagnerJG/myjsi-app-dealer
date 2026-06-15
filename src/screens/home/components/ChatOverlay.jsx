@@ -44,7 +44,7 @@ function formatTimestamp(ts) {
 const SUGGESTIONS = [
     { icon: Clock, label: 'Lead times', query: 'What are the quickship series?' },
     { icon: Package, label: 'My orders', query: 'Show me my orders overview' },
-    { icon: BarChart3, label: 'Commissions', query: 'What are the commission rates?' },
+    { icon: BarChart3, label: 'Projects', query: 'Tell me about my projects' },
     { icon: FileText, label: 'Contracts', query: 'Tell me about JSI contracts' },
 ];
 

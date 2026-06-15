@@ -138,7 +138,7 @@ const ScreenRouter = React.memo(({ screenKey, projectsScreenRef, SuspenseFallbac
 
     if (base === 'sales' && parts[1]) {
         const salesDetailKey = parts.slice(1).join('/');
-        if (salesDetailKey === 'customer-rank' || salesDetailKey === 'incentive-rewards' || salesDetailKey === 'commissions') {
+        if (salesDetailKey === 'incentive-rewards') {
             return lazyWrap(SCREEN_MAP[salesDetailKey]);
         }
     }

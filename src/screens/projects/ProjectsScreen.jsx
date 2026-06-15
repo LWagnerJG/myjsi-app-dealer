@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useLayoutEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Briefcase, MapPin, Plus, X, Building2, ChevronDown, Check, Store, Pencil } from 'lucide-react';
+import { Briefcase, MapPin, Plus, X, Building2 } from 'lucide-react';
 import { EmptyState as SharedEmptyState } from '../../components/common/EmptyState.jsx';
 import { CITY_OPTIONS } from '../../constants/locations.js';
 import { AutoCompleteCombobox } from '../../components/forms/AutoCompleteCombobox.jsx';
@@ -19,8 +19,6 @@ import { resolveOpportunityCustomerLink } from '../../utils/projectLinks.js';
 
 const CUSTOMER_TYPES = [
   { id: 'end-users',    label: 'End Users',    singular: 'End User',    icon: Building2 },
-  { id: 'dealers',      label: 'Dealers',      singular: 'Dealer',      icon: Store     },
-  { id: 'design-firms', label: 'Design Firms', singular: 'Design Firm', icon: Pencil    },
 ];
 
 const COMPACT_PROJECTS_TAB_OPTIONS = [
@@ -28,77 +26,6 @@ const COMPACT_PROJECTS_TAB_OPTIONS = [
   { value: 'customers', label: 'Customers' },
   { value: 'my-projects', label: 'Installs' },
 ];
-
-const TypeDropdown = React.memo(({ value, onChange, theme }) => {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  const isDark = isDarkTheme(theme);
-  const c = theme.colors;
-  const current = CUSTOMER_TYPES.find(t => t.id === value) || CUSTOMER_TYPES[0];
-
-  useEffect(() => {
-    if (!open) return;
-    const close = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', close);
-    document.addEventListener('touchstart', close, { passive: true });
-    return () => { document.removeEventListener('mousedown', close); document.removeEventListener('touchstart', close); };
-  }, [open]);
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-1.5 active:opacity-60 transition-opacity select-none"
-        style={{ WebkitTapHighlightColor: 'transparent' }}
-      >
-        <span className="text-[1.375rem] font-bold tracking-tight leading-none" style={{ color: c.textPrimary }}>
-          {current.label}
-        </span>
-        <ChevronDown
-          className={`w-[18px] h-[18px] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-          style={{ color: c.textSecondary, opacity: 0.55, marginTop: 2 }}
-        />
-      </button>
-
-      {open && (
-        <div
-          className="absolute left-0 top-full mt-2 z-50 rounded-2xl overflow-hidden"
-          style={{
-            backgroundColor: isDark ? 'rgba(35,35,35,0.96)' : c.surface,
-            border: isDark ? '1px solid rgba(255,255,255,0.10)' : '1px solid rgba(0,0,0,0.08)',
-            boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.55)' : '0 8px 28px rgba(0,0,0,0.13)',
-            minWidth: 170,
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-          }}
-        >
-          {CUSTOMER_TYPES.map((type, idx) => {
-            const Icon = type.icon;
-            const active = type.id === value;
-            return (
-              <button
-                key={type.id}
-                onClick={() => { onChange(type.id); setOpen(false); }}
-                className="w-full text-left px-4 py-3 flex items-center gap-3 transition-colors"
-                style={{
-                  color: active ? c.accent : c.textPrimary,
-                  borderTop: idx > 0 ? `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}` : 'none',
-                }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.03)'}
-                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                <Icon className="w-4 h-4 flex-shrink-0" style={{ color: active ? c.accent : c.textSecondary, opacity: active ? 1 : 0.5 }} />
-                <span className="text-sm font-semibold flex-1">{type.label}</span>
-                {active && <Check className="w-3.5 h-3.5 flex-shrink-0" style={{ color: c.accent }} />}
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-});
-TypeDropdown.displayName = 'TypeDropdown';
 
 const AddCustomerModal = ({ theme, onClose, onAdd, customerType = 'end-users', typeSingular = 'Customer' }) => {
   const isDark = isDarkTheme(theme);
@@ -282,7 +209,7 @@ export const ProjectsScreen = forwardRef(({
   const [selectedOpportunity, setSelectedOpportunity] = useState(null);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customers, setCustomers] = useState(MOCK_CUSTOMERS);
-  const [customerType, setCustomerType] = usePersistentState('pref.projects.customerType', 'end-users');
+  const [customerType] = usePersistentState('pref.projects.customerType', 'end-users');
   const [showAddCustomer, setShowAddCustomer] = useState(false);
   const [companyFilter, setCompanyFilter] = useState(screenParams?.company || null);
   const screenParamsCompany = screenParams?.company || null;
@@ -608,7 +535,9 @@ export const ProjectsScreen = forwardRef(({
 
         {projectsTab === 'customers' && (
           <div className="px-4 sm:px-6 lg:px-8 pb-1 max-w-content mx-auto w-full">
-            <TypeDropdown value={customerType} onChange={setCustomerType} theme={theme} />
+            <span className="text-[1.375rem] font-bold tracking-tight leading-none" style={{ color: theme.colors.textPrimary }}>
+              End Users
+            </span>
           </div>
         )}
 

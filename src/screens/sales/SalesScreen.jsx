@@ -5,7 +5,6 @@ import {
   MONTHLY_SALES_DATA_BY_YEAR,
   ANNUAL_GOALS_BY_YEAR,
   SALES_VERTICALS_DATA,
-  CUSTOMER_RANK_DATA,
   INCENTIVE_REWARDS_DATA,
   BACKLOG_DATA,
 } from './data.js';
@@ -13,7 +12,7 @@ import { ORDER_DATA, STATUS_COLORS } from '../orders/data.js';
 import { SalesByVerticalBreakdown } from './components/SalesByVerticalBreakdown.jsx';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
 import { isDarkTheme, subtleBg } from '../../design-system/tokens.js';
-import { formatCurrency, formatCompanyName, formatCurrencyCompact } from '../../utils/format.js';
+import { formatCurrency, formatCurrencyCompact } from '../../utils/format.js';
 import { useCompanyResource } from '../../hooks/useCompanyResource.js';
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -95,8 +94,8 @@ export const SalesScreen = ({ theme, onNavigate }) => {
     return SALES_VERTICALS_DATA.find(v => v.label === selectedVertical)?.color || null;
   }, [selectedVertical]);
 
-  const topLeaders = useMemo(
-    () => [...CUSTOMER_RANK_DATA].sort((a, b) => (b.bookings || 0) - (a.bookings || 0)).slice(0, 3),
+  const topProjects = useMemo(
+    () => [...(BACKLOG_DATA.items || [])].sort((a, b) => (b.value || 0) - (a.value || 0)).slice(0, 3),
     [],
   );
   const chartMax = useMemo(
@@ -116,20 +115,6 @@ export const SalesScreen = ({ theme, onNavigate }) => {
     const totalSalesR = sales.reduce((s, r) => s + (r.amount || 0), 0);
     const totalDesignR = designers.reduce((s, r) => s + (r.amount || 0), 0);
     return { key, topSales, topDesigners, totalSalesR, totalDesignR, totalAll: totalSalesR + totalDesignR };
-  }, []);
-
-  const commissionsSnapshot = useMemo(() => {
-    const entries = Object.entries(INCENTIVE_REWARDS_DATA || {});
-    if (!entries.length) return null;
-    const years = [...new Set(entries.map(([k]) => k.split('-Q')[0]))].sort().reverse();
-    const targetYear = years[0];
-    if (!targetYear) return null;
-    const yearEntries = entries.filter(([k]) => k.startsWith(targetYear));
-    const allSales = yearEntries.flatMap(([, d]) => d?.sales || []);
-    const byPerson = {};
-    allSales.forEach(s => { byPerson[s.name] = (byPerson[s.name] || 0) + s.amount; });
-    const sorted = Object.entries(byPerson).sort((a, b) => b[1] - a[1]);
-    return { ytdTotal: sorted.reduce((s, [, v]) => s + v, 0), topEarners: sorted.slice(0, 3) };
   }, []);
 
   const monthlyRows = useMemo(() => (
@@ -495,16 +480,16 @@ export const SalesScreen = ({ theme, onNavigate }) => {
           </div>
         </GlassCard>
 
-        {/* ── Leaderboard + Rewards (2-col) ── */}
+        {/* ── Top Projects + Rewards (2-col) ── */}
         <div className="grid grid-cols-2 gap-4">
-          <button type="button" onClick={() => onNavigate('customer-rank')} className="w-full h-full text-left">
+          <button type="button" onClick={() => onNavigate('orders')} className="w-full h-full text-left">
             <GlassCard theme={theme} className="p-4 h-full flex flex-col" variant="elevated">
-              <TileHeader title="Leaderboard" action />
+              <TileHeader title="Top Projects" action />
               <div className="flex-1 divide-y" style={dividerStyle}>
-                {topLeaders.map(leader => (
-                  <div key={leader.id} className={flatRowCls}>
-                    <span className="text-xs font-semibold truncate">{leader.name.split(' ')[0]}</span>
-                    <span className="text-xs font-bold tabular-nums shrink-0 ml-1">{formatCurrencyCompact(leader.bookings)}</span>
+                {topProjects.map(p => (
+                  <div key={p.project} className={flatRowCls}>
+                    <span className="text-xs font-semibold truncate">{p.project}</span>
+                    <span className="text-xs font-bold tabular-nums shrink-0 ml-1">{formatCurrencyCompact(p.value)}</span>
                   </div>
                 ))}
               </div>
@@ -568,10 +553,10 @@ export const SalesScreen = ({ theme, onNavigate }) => {
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-semibold truncate" style={{ color: colors.textPrimary }}>
-                      {formatCompanyName(item.dealer)}
+                      {item.project}
                     </p>
                     <p className="text-[0.6875rem] mt-0.5 truncate" style={{ color: colors.textSecondary, opacity: 0.5 }}>
-                      {item.project}
+                      {item.vertical}
                     </p>
                   </div>
                   <div className="text-right shrink-0 ml-3">
@@ -676,10 +661,10 @@ export const SalesScreen = ({ theme, onNavigate }) => {
                         >
                           <div className="min-w-0">
                             <p className="text-sm font-semibold truncate" style={{ color: colors.textPrimary }}>
-                              {formatCompanyName(order.company)}
+                              {order.details}
                             </p>
                             <p className="text-xs mt-0.5 tabular-nums" style={{ color: colors.textSecondary, opacity: 0.45 }}>
-                              {order.details} · {new Date(order.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              {order.vertical} · {new Date(order.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                             </p>
                           </div>
                           <div className="text-right shrink-0 ml-3">
@@ -708,21 +693,6 @@ export const SalesScreen = ({ theme, onNavigate }) => {
             </AnimatePresence>
           </div>
         </GlassCard>
-
-        {/* ── Commissions — simplified single-row tile ── */}
-        {commissionsSnapshot && (
-          <button type="button" onClick={() => onNavigate('commissions')} className="w-full text-left">
-            <GlassCard theme={theme} className="p-4" variant="elevated">
-              <div className="flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="text-[0.625rem] font-semibold uppercase tracking-widest" style={{ color: colors.textSecondary, opacity: 0.45 }}>Commissions</p>
-                  <p className="text-xl font-black tabular-nums tracking-tight leading-tight mt-0.5">{formatCurrencyCompact(commissionsSnapshot.ytdTotal)}</p>
-                </div>
-                <ChevronRight className="w-4 h-4 shrink-0" style={{ color: colors.textSecondary, opacity: 0.35 }} />
-              </div>
-            </GlassCard>
-          </button>
-        )}
 
       </div>
     </div>

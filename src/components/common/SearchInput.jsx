@@ -26,7 +26,6 @@ export const HomeSearchInput = React.memo(function HomeSearchInput({
         'Lead times for Motif',
         'Compare Jasper and Motif specs',
         'Start a sample order',
-        'Check commission rates',
         'Draft a customer email',
     ], []);
     const HINT_OPACITY = 0.62;

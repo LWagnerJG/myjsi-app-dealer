@@ -7,9 +7,7 @@ import { NewLeadScreen } from '../screens/projects/NewLeadScreen.jsx';
 import { AddNewInstallScreen } from '../screens/projects/AddNewInstallScreen.jsx';
 
 const SalesScreen = React.lazy(() => import('../screens/sales/index.js').then(m => ({ default: m.SalesScreen })));
-const CustomerRankingScreen = React.lazy(() => import('../screens/sales/index.js').then(m => ({ default: m.CustomerRankingScreen })));
 const IncentiveRewardsScreen = React.lazy(() => import('../screens/sales/index.js').then(m => ({ default: m.IncentiveRewardsScreen })));
-const CommissionsScreen = React.lazy(() => import('../screens/sales/index.js').then(m => ({ default: m.CommissionsScreen })));
 const OrdersScreen = React.lazy(() => import('../screens/orders/index.js').then(m => ({ default: m.OrdersScreen })));
 const ProductsScreen = React.lazy(() => import('../screens/products/index.js').then(m => ({ default: m.ProductsScreen })));
 const ProductComparisonScreen = React.lazy(() => import('../screens/products/index.js').then(m => ({ default: m.ProductComparisonScreen })));
@@ -39,8 +37,6 @@ export const SCREEN_MAP = {
   'community': CommunityLibraryLayout,
   'replacements': ReplacementsScreen,
   'incentive-rewards': IncentiveRewardsScreen,
-  'customer-rank': CustomerRankingScreen,
-  'commissions': CommissionsScreen,
   'settings': SettingsScreen,
   'members': MembersScreen,
   'help': HelpScreen,
