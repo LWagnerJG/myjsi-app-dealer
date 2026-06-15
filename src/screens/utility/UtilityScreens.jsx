@@ -60,13 +60,13 @@ const CustomSelect = ({ label, value, onChange, options, theme, placeholder, req
         <div className={`relative ${isOpen ? 'z-20' : ''}`} ref={buttonRef}>
             {label && (
                 <label className="block text-sm font-medium mb-1 px-1" style={{ color: theme.colors.textSecondary }}>
-                    {label} {required && <span className="text-red-500">*</span>}
+                    {label} {required && <span style={{ color: theme.colors.error }}>*</span>}
                 </label>
             )}
             <button
                 type="button"
                 onClick={handleToggle}
-                className="w-full px-3 py-2 rounded-lg border text-sm text-left flex items-center justify-between transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/5 transform active:scale-95"
+                className="w-full px-3 py-2 rounded-lg border text-sm text-left flex items-center justify-between transition-all duration-200 hover:bg-black/5 dark:hover:bg-white/5 dark:hover:bg-white/5 transform active:scale-95"
                 style={{
                     backgroundColor: theme.colors.surface,
                     border: `1px solid ${theme.colors.border}`,
@@ -83,7 +83,7 @@ const CustomSelect = ({ label, value, onChange, options, theme, placeholder, req
                         backgroundColor: theme.colors.surface, 
                         borderColor: theme.colors.border,
                         transformOrigin: 'top center',
-                        boxShadow: `0 4px 30px ${theme.colors.shadow || 'rgba(0, 0, 0, 0.1)'}`,
+                        boxShadow: `0 4px 12px ${theme.colors.shadow || 'rgba(0, 0, 0, 0.08)'}`,
                         // Explicitly remove backdrop filters for solid appearance
                         backdropFilter: 'none',
                         WebkitBackdropFilter: 'none',
@@ -96,7 +96,7 @@ const CustomSelect = ({ label, value, onChange, options, theme, placeholder, req
                                 key={option.value}
                                 type="button"
                                 onClick={() => handleSelect(option)}
-                                className="w-full px-3 py-2 text-left text-sm hover:bg-black/5 dark:hover:bg-white/5 first:rounded-t-lg last:rounded-b-lg transition-all duration-200 transform active:scale-95"
+                                className="w-full px-3 py-2 text-left text-sm hover:bg-black/5 dark:hover:bg-white/5 dark:hover:bg-white/5 first:rounded-t-lg last:rounded-b-lg transition-all duration-200 transform active:scale-95"
                                 style={{ color: theme.colors.textPrimary }}
                             >
                                 {option.label}
@@ -109,7 +109,7 @@ const CustomSelect = ({ label, value, onChange, options, theme, placeholder, req
     );
 };
 
-// Resource detail screen placeholder - truly generic utility
+// Generic fallback rendered when a resource sub-route has no dedicated screen yet
 export const ResourceDetailScreen = ({ theme, currentScreen }) => (
     <div className="p-4">
         <PageTitle title="Resource Detail" theme={theme} />
@@ -122,5 +122,4 @@ export const ResourceDetailScreen = ({ theme, currentScreen }) => (
     </div>
 );
 
-// Export shared utility components
 export { CustomSelect };

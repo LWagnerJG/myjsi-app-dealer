@@ -1,789 +1,637 @@
-// HomeScreen with responsive dealer dashboard
-import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { allApps, QUICK_ACCESS_APPS, DEFAULT_QUICK_ACCESS_IDS, DEALER_QUICK_ACCESS_ALLOWLIST, REPLACEMENT_REQUESTS_DATA } from '../../data.jsx';
-import { GlassCard } from '../../components/common/GlassCard.jsx';
-import { HomeSearchInput } from '../../components/common/SearchInput.jsx';
-import { DropdownPortal } from '../../DropdownPortal.jsx';
-import { Briefcase, Package, ArrowRight, SlidersHorizontal, X, Check, TrendingUp, TrendingDown, ShoppingCart, MessageSquare } from 'lucide-react';
-import { useIsDesktop } from '../../hooks/useResponsive.js';
-import { DESIGN_TOKENS, JSI_TYPOGRAPHY } from '../../design-system/tokens.js';
-import { useModalState } from '../../hooks/useModalState.js';
+import React, { useState, useCallback, useMemo, useEffect, useRef, useDeferredValue } from 'react';
+import { allApps, DEFAULT_HOME_APPS } from '../../constants/apps.js';
+import { ORDER_DATA } from '../orders/data.js';
+import { RequestQuoteModal } from '../../components/common/RequestQuoteModal.jsx';
+import { SpecCheckRequestModal } from '../../components/common/SpecCheckRequestModal.jsx';
+import { getHomeChromePillStyles, HOME_CHROME_PILL_HEIGHT, HOME_SURFACE_LIGHT, HOME_SURFACE_DARK } from '../../design-system/homeChrome.js';
+import { isDarkTheme } from '../../design-system/tokens.js';
+import { usePersistentState } from '../../hooks/usePersistentState.js';
+import { useCompanyResource } from '../../hooks/useCompanyResource.js';
+import { MessageSquarePlus } from 'lucide-react';
+import { FloatingActionCTA } from '../../components/common/FloatingActionCTA.jsx';
+import { LEAD_TIMES_DATA } from '../resources/lead-times/data.js';
+import { INITIAL_OPPORTUNITIES } from '../projects/data.js';
+import { REPLACEMENT_REQUESTS_DATA } from '../replacements/data.js';
+import { PRODUCTS_CATEGORIES_DATA } from '../products/data.js';
+import { smartTitleCase } from '../../utils/format.js';
 import {
-    Button,
-    SectionHeader,
-    SkeletonQuickAccess,
-    SkeletonStat,
-    SkeletonList,
-    ScreenLayout
-} from '../../design-system/index.js';
+    PointerSensor,
+    KeyboardSensor,
+    useSensor,
+    useSensors
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable';
 
-// User role - dealer by default for this app
-const USER_ROLE = 'dealer'; // 'dealer' | 'internal'
+import { HomeHeader } from './components/HomeHeader.jsx';
+import { AppGrid } from './components/AppGrid.jsx';
+import { HomeFeatureCards } from './components/HomeFeatureCards.jsx';
+import { IndieSconce } from './components/IndieSconce.jsx';
+import { ChatOverlay } from './components/ChatOverlay.jsx';
+import { persistQuoteRequest } from '../../utils/quoteRequests.js';
+import { createProjectDraft, projectNameMatches } from '../../utils/projectHelpers.js';
+import { useHomeChat } from './hooks/useHomeChat.js';
+import { useIndieSconce } from './hooks/useIndieSconce.js';
+import { RfpDropModal } from '../rfp/RfpDropModal.jsx';
+import {
+    MIN_PINNED_APPS,
+    MAX_PINNED_APPS,
+    NON_REMOVABLE_APPS,
+    EXCLUDED_ROUTES,
+    areArraysEqual
+} from './utils/homeUtils.js';
 
-// Constants
-const MAX_QUICK_ACCESS_APPS = 9;
 
-// Quick Access Grid Component with integrated stats for desktop - Memoized for performance
-const QuickAccessGrid = React.memo(({ theme, onNavigate, activeAppIds, onCustomize, stats, isDesktop, cart, hasNewCommunityPosts, pendingReplacements }) => {
-    const activeApps = useMemo(() => {
-        return QUICK_ACCESS_APPS.filter(app => activeAppIds.includes(app.id)).slice(0, MAX_QUICK_ACCESS_APPS);
-    }, [activeAppIds]);
+export const HomeScreen = React.memo(({
+    theme,
+    onNavigate,
+    onVoiceActivate,
+    homeApps,
+    onUpdateHomeApps,
+    homeResetKey,
+    posts,
+    isDarkMode,
+    onToggleTheme,
+    cart,
+    opportunities = [],
+    myProjects = [],
+    setMyProjects,
+    members,
+    currentUserId,
+    setSuccessMessage,
+}) => {
+    const { data: ordersData } = useCompanyResource('orders', ORDER_DATA);
+    const { data: leadTimesData } = useCompanyResource('lead-times', LEAD_TIMES_DATA);
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [activeDragId, setActiveDragId] = useState(null);
+    const [showQuoteModal, setShowQuoteModal] = useState(false);
+    const [showSpecCheckModal, setShowSpecCheckModal] = useState(false);
+    const [rfpDropFile, setRfpDropFile] = useState(null);
+    const [showRfpDropModal, setShowRfpDropModal] = useState(false);
+    const rfpFileInputRef = useRef(null);
 
-    // Calculate cart item count
-    const cartItemCount = useMemo(() => {
-        if (!cart) return 0;
-        return Object.values(cart).reduce((sum, qty) => sum + qty, 0);
-    }, [cart]);
+    const {
+        isChatOpen, setIsChatOpen,
+        chatMessages, chatInput, setChatInput,
+        chatAttachments, isBotThinking,
+        chatFileInputRef, appendChatTurn,
+        openChatFromQuery, handleChatSubmit,
+        handleChatFilePick, handleChatFilesSelected,
+        handleRemoveAttachment, resetChat,
+    } = useHomeChat();
 
-    // Map app IDs to their stat data - Dynamic and smart blips
-    const getAppStats = (appId) => {
-        switch (appId) {
-            case 'sales':
-                if (!isDesktop || !stats) return null;
-                return { value: `$${stats.ytdSales > 0 ? (stats.ytdSales / 1000).toFixed(0) + 'k' : '0'}`, trend: stats.ytdTrend, accent: true };
-            case 'projects':
-                if (!isDesktop || !stats) return null;
-                return { value: stats.activeProjects };
-            case 'orders':
-                if (!isDesktop || !stats) return null;
-                return { value: stats.recentOrders };
-            case 'replacements':
-                // Only show if there are pending replacements
-                if (pendingReplacements > 0) {
-                    return { value: pendingReplacements, accent: true, pulse: true };
-                }
-                return null; // Hide blip if no pending replacements
-            case 'samples':
-                // Show cart count if items in cart
-                if (cartItemCount > 0) {
-                    return { value: cartItemCount, accent: true, icon: 'cart' };
-                }
-                return null; // Hide blip if cart is empty
-            case 'community':
-                // Only show "New" if there are new posts
-                if (hasNewCommunityPosts) {
-                    return { value: 'New', accent: true, pulse: true };
-                }
-                return null; // Hide blip if no new posts
-            case 'products':
-                if (!isDesktop) return null;
-                return { value: '7' }; // Number of categories
-            case 'resources':
-                if (!isDesktop) return null;
-                return { value: '15+' }; // Number of resources
-            case 'lead-times':
-                if (!isDesktop) return null;
-                return { value: 'Live' }; // Live data indicator
-            case 'contracts':
-                if (!isDesktop) return null;
-                return { value: '3' }; // Active contracts
-            case 'customer-directory':
-                if (!isDesktop) return null;
-                return { value: '50+' }; // Customer count
-            case 'discounts':
-                if (!isDesktop) return null;
-                return { value: '%' }; // Discount indicator
-            case 'loaner-pool':
-                if (!isDesktop) return null;
-                return { value: '12' }; // Available items
-            case 'discontinued-finishes':
-                if (!isDesktop) return null;
-                return { value: 'DB' }; // Database indicator
-            case 'social-media':
-                if (!isDesktop) return null;
-                return { value: '4' }; // Posts count
-            case 'design-days':
-                if (!isDesktop) return null;
-                return { value: '📅' }; // Calendar indicator
-            case 'presentations':
-                if (!isDesktop) return null;
-                return { value: '8' }; // Presentations count
-            case 'install-instructions':
-                if (!isDesktop) return null;
-                return { value: 'PDF' }; // Document indicator
-            case 'customer-ranking':
-                if (!isDesktop) return null;
-                return { value: '#' }; // Ranking indicator
+    const [homeFeatureMode, setHomeFeatureMode] = usePersistentState('pref.homeFeatureMode.primary', 'activity');
+    const [secondaryFeatureMode, setSecondaryFeatureMode] = usePersistentState('pref.homeFeatureMode.secondary', 'community');
+    const [recentSpotlightItems, setRecentSpotlightItems] = usePersistentState('home.spotlightRecents', []);
+    const [leadTimeFavorites, setLeadTimeFavorites] = useState([]);
+    const prevHomeResetKeyRef = useRef(homeResetKey);
+
+    // Handle quick action selection from dropdown
+    const handleQuickAction = useCallback((actionId) => {
+        switch (actionId) {
+            case 'presentation-builder':
+                onNavigate?.('presentations', { openBuilder: true });
+                break;
+            case 'quote':
+                setShowQuoteModal(true);
+                break;
+            case 'upload':
+                rfpFileInputRef.current?.click();
+                break;
+            case 'spec':
+                setShowSpecCheckModal(true);
+                break;
+            case 'feedback':
+                onNavigate?.('feedback');
+                break;
             default:
-                return null;
+                break;
         }
-    };
-
-    return (
-        <div className="mb-6">
-            <div className="flex items-center justify-between mb-4 px-5">
-                <div>
-                    <h3 
-                        className="font-semibold text-sm lg:text-base" 
-                        style={{ 
-                            color: theme.colors.textSecondary,
-                            fontFamily: JSI_TYPOGRAPHY.fontFamily,
-                            fontWeight: JSI_TYPOGRAPHY.weights.semibold
-                        }}
-                    >
-                        Quick Access
-                    </h3>
-                </div>
-                <button onClick={onCustomize} className="flex items-center gap-1.5 px-2 py-1 rounded-full transition-all hover:bg-[#353535]/5 dark:hover:bg-white/5" style={{ color: theme.colors.textSecondary }} title="Reconfigure Quick Access">
-                    <SlidersHorizontal className="w-4 h-4" />
-                    <span className={`text-xs font-medium ${isDesktop ? 'inline' : 'hidden sm:inline'}`}>Reconfigure</span>
-                </button>
-            </div>
-            <div className="grid grid-cols-3 gap-3 lg:gap-4">
-                {activeApps.map(app => {
-                    const appStats = getAppStats(app.id);
-
-                    return (
-                        <button
-                            key={app.id}
-                            onClick={() => onNavigate(app.route)}
-                            className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] relative group"
-                            style={{
-                                backgroundColor: theme.colors.surface,
-                                boxShadow: `0 2px 8px ${theme.colors.shadow}`,
-                                border: `1px solid ${theme.colors.border}`,
-                                minHeight: isDesktop ? '110px' : '88px'
-                            }}
-                        >
-                            {/* Dynamic stat badge - shows on mobile for actionable items, more on desktop */}
-                            {appStats && (
-                                <div
-                                    className={`absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-md ${appStats.pulse ? 'animate-pulse' : ''}`}
-                                    style={{ 
-                                        backgroundColor: appStats.accent ? `${theme.colors.accent}20` : theme.colors.subtle,
-                                        boxShadow: appStats.accent ? `0 0 8px ${theme.colors.accent}30` : 'none'
-                                    }}
-                                >
-                                    {appStats.icon === 'cart' && (
-                                        <ShoppingCart className="w-2.5 h-2.5" style={{ color: theme.colors.accent }} />
-                                    )}
-                                    <span
-                                        className="text-[10px] font-bold"
-                                        style={{ color: appStats.accent ? theme.colors.accent : theme.colors.textSecondary }}
-                                    >
-                                        {appStats.value}
-                                    </span>
-                                    {appStats.trend && (
-                                        <div className="flex items-center">
-                                            {appStats.trend > 0 ? (
-                                                <TrendingUp className="w-2.5 h-2.5 text-green-500" />
-                                            ) : (
-                                                <TrendingDown className="w-2.5 h-2.5 text-red-500" />
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Centered icon - always consistent */}
-                            <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${theme.colors.accent}12` }}>
-                                <app.icon className="w-5 h-5" style={{ color: theme.colors.accent }} />
-                            </div>
-
-                            {/* App name */}
-                            <span className="text-xs font-medium text-center leading-tight line-clamp-1" style={{ color: theme.colors.textPrimary }}>
-                                {app.name}
-                            </span>
-                        </button>
-                    );
-                })}
-            </div>
-        </div>
-    );
-}, (prevProps, nextProps) => {
-    return (
-        prevProps.activeAppIds === nextProps.activeAppIds &&
-        prevProps.theme === nextProps.theme &&
-        prevProps.isDesktop === nextProps.isDesktop &&
-        prevProps.stats === nextProps.stats &&
-        prevProps.cart === nextProps.cart &&
-        prevProps.hasNewCommunityPosts === nextProps.hasNewCommunityPosts &&
-        prevProps.pendingReplacements === nextProps.pendingReplacements
-    );
-});
-QuickAccessGrid.displayName = 'QuickAccessGrid';
-
-// Customize Home Modal Component
-const CustomizeHomeModal = ({ theme, isOpen, onClose, activeAppIds, onSave }) => {
-    const { openModal, closeModal } = useModalState();
-    const [selectedIds, setSelectedIds] = useState(activeAppIds);
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
-    const mobileNavHeight = 80;
-    const safeAreaBottom = typeof window !== 'undefined' ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--safe-area-inset-bottom') || '0', 10) : 0;
-    const bottomPadding = isMobile ? mobileNavHeight + safeAreaBottom + 24 : 0;
-
-    useEffect(() => {
-        if (isOpen) {
-            openModal();
-        } else {
-            closeModal();
-        }
-        return () => closeModal();
-    }, [isOpen, openModal, closeModal]);
-
-    useEffect(() => {
-        if (isOpen) setSelectedIds(activeAppIds);
-    }, [activeAppIds, isOpen]);
-
-    // Lock body scroll when modal is open
-    useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-            return () => { document.body.style.overflow = ''; };
-        }
-    }, [isOpen]);
-
-    // Handle escape key
-    useEffect(() => {
-        if (!isOpen) return;
-        const handleEscape = (e) => {
-            if (e.key === 'Escape') {
-                onSave(selectedIds);
-                onClose();
-            }
-        };
-        window.addEventListener('keydown', handleEscape);
-        return () => window.removeEventListener('keydown', handleEscape);
-    }, [isOpen, onClose, onSave, selectedIds]);
-
-    // Filter apps for dealer role - exclude settings, members, and resources (resources is always shown)
-    const allAppsForSelection = useMemo(() => {
-        if (USER_ROLE === 'dealer') {
-            return QUICK_ACCESS_APPS.filter(app =>
-                DEALER_QUICK_ACCESS_ALLOWLIST.includes(app.id) &&
-                !app.dealerHidden &&
-                app.id !== 'resources' // Resources is always included, don't show in selection
-            );
-        }
-        return QUICK_ACCESS_APPS.filter(app => app.id !== 'resources');
-    }, []);
-
-    const selectedCount = selectedIds.length;
-    const canAddMore = selectedCount < MAX_QUICK_ACCESS_APPS;
-
-    const toggleApp = (appId) => {
-        setSelectedIds(prev => {
-            const isSelected = prev.includes(appId);
-            if (isSelected) {
-                // Account for resources always being included
-                if (prev.filter(id => id !== 'resources').length <= 1) return prev;
-                return prev.filter(id => id !== appId);
-            } else {
-                // Account for resources always being included
-                if (prev.length >= MAX_QUICK_ACCESS_APPS) return prev;
-                return [...prev, appId];
-            }
-        });
-    };
-
-    // Auto-save and close when clicking backdrop
-    const handleBackdropClick = () => { onSave(ensureResourcesIncluded(selectedIds)); onClose(); };
-    const handleReset = () => {
-        // Reset to defaults, filtering out any dealer-hidden apps
-        const validDefaults = DEFAULT_QUICK_ACCESS_IDS.filter(id =>
-            USER_ROLE !== 'dealer' || DEALER_QUICK_ACCESS_ALLOWLIST.includes(id)
-        );
-        setSelectedIds(ensureResourcesIncluded(validDefaults));
-    };
-
-    if (!isOpen) return null;
-
-    return createPortal(
-        <>
-            {/* Full-screen dimming backdrop - covers header and nav */}
-            <div
-                className="fixed inset-0 bg-black/40 pointer-events-none"
-                style={{ zIndex: DESIGN_TOKENS.zIndex.overlay - 1 }}
-            />
-
-            {/* Interactive Backdrop - positioned below header */}
-            <div
-                className="fixed inset-0 lg:left-24"
-                style={{
-                    top: 76,
-                    zIndex: DESIGN_TOKENS.zIndex.overlay
-                }}
-                onClick={handleBackdropClick}
-            />
-
-            {/* Modal Container - positioned above bottom nav on mobile */}
-            <div
-                className="fixed inset-x-0 flex items-end justify-center lg:pl-24"
-                style={{
-                    top: 76,
-                    bottom: isMobile ? `${bottomPadding}px` : 0,
-                    padding: isMobile ? '1rem' : '1.5rem',
-                    zIndex: DESIGN_TOKENS.zIndex.modal
-                }}
-                onClick={handleBackdropClick}
-            >
-                <div
-                    style={{
-                        maxHeight: isMobile
-                            ? `calc(100vh - ${76 + bottomPadding}px)`
-                            : '85vh',
-                        backgroundColor: theme.colors.background
-                    }}
-                    className="w-full max-w-lg rounded-t-3xl max-h-[70vh] overflow-hidden flex flex-col shadow-2xl"
-                    onClick={e => e.stopPropagation()}
-                >
-                    <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: theme.colors.border }}>
-                        <div>
-                            <h2 className="text-base font-bold" style={{ color: theme.colors.textPrimary }}>Customize Quick Access</h2>
-                            <p className="text-xs mt-0.5" style={{ color: theme.colors.textSecondary }}>{selectedCount} of {MAX_QUICK_ACCESS_APPS} apps selected</p>
-                        </div>
-                        <button onClick={handleBackdropClick} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.colors.subtle }}>
-                            <X className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
-                        </button>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-4 pb-6 scrollbar-hide">
-                        <div className="grid grid-cols-3 gap-2.5">
-                            {allAppsForSelection.map(app => {
-                                const isActive = selectedIds.includes(app.id);
-                                const isDisabled = !isActive && !canAddMore;
-                                return (
-                                    <button key={app.id} onClick={() => !isDisabled && toggleApp(app.id)} disabled={isDisabled} className="flex flex-col items-center gap-1.5 p-3 rounded-2xl transition-all relative" style={{ backgroundColor: isActive ? `${theme.colors.accent}10` : theme.colors.surface, border: `1.5px solid ${isActive ? theme.colors.accent : theme.colors.border}`, opacity: isDisabled ? 0.4 : 1, cursor: isDisabled ? 'not-allowed' : 'pointer' }}>
-                                        {isActive && <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ backgroundColor: theme.colors.accent }}><Check className="w-2.5 h-2.5 text-white" /></div>}
-                                        <app.icon className="w-5 h-5" style={{ color: isActive ? theme.colors.accent : theme.colors.textSecondary }} />
-                                        <span className="text-[10px] font-medium text-center leading-tight line-clamp-2" style={{ color: isActive ? theme.colors.accent : theme.colors.textPrimary }}>{app.name}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-                    <div className="p-4 border-t flex gap-3" style={{ borderColor: theme.colors.border }}>
-                        <button onClick={handleReset} className="flex-1 py-3 rounded-full font-semibold text-sm transition-all active:scale-[0.98]" style={{ backgroundColor: theme.colors.subtle, color: theme.colors.textSecondary }}>Reset</button>
-                        <button onClick={handleBackdropClick} className="flex-1 py-3 rounded-full font-bold text-sm transition-all active:scale-[0.98]" style={{ backgroundColor: theme.colors.accent, color: '#FFFFFF' }}>Done</button>
-                    </div>
-                    {/* Safe area padding for iOS */}
-                    <div className="h-[env(safe-area-inset-bottom)]" />
-                </div>
-            </div>
-        </>,
-        document.body
-    );
-};
-
-// Status chip colors - subtle, muted palette
-const STATUS_CHIP_COLORS = {
-    'Discovery': { bg: 'rgba(59, 130, 246, 0.1)', text: '#3B82F6' },
-    'Specifying': { bg: 'rgba(234, 179, 8, 0.1)', text: '#CA8A04' },
-    'Decision/Bidding': { bg: 'rgba(249, 115, 22, 0.1)', text: '#EA580C' },
-    'PO Expected': { bg: 'rgba(168, 85, 247, 0.1)', text: '#9333EA' },
-    'Won': { bg: 'rgba(34, 197, 94, 0.1)', text: '#16A34A' },
-    'Lost': { bg: 'rgba(239, 68, 68, 0.1)', text: '#DC2626' },
-    'Quote': { bg: 'rgba(99, 102, 241, 0.1)', text: '#6366F1' },
-    'Order': { bg: 'rgba(20, 184, 166, 0.1)', text: '#0D9488' },
-    'Install': { bg: 'rgba(34, 197, 94, 0.1)', text: '#16A34A' },
-    'Closed': { bg: 'rgba(107, 114, 128, 0.1)', text: '#6B7280' },
-    'Active': { bg: 'rgba(107, 114, 128, 0.08)', text: '#6B7280' },
-};
-
-// Status Chip Component
-const StatusChip = ({ status }) => {
-    const colors = STATUS_CHIP_COLORS[status] || STATUS_CHIP_COLORS['Active'];
-    return (
-        <span
-            className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0"
-            style={{ backgroundColor: colors.bg, color: colors.text }}
-        >
-            {status}
-        </span>
-    );
-};
-
-// Recent Activity Feed Component - Memoized for performance
-const RecentActivityFeed = React.memo(({ theme, opportunities = [], orders = [], onNavigate, setProjectsInitialProjectId }) => {
-    const activities = useMemo(() => {
-        const items = [];
-        opportunities.slice(0, 3).forEach(opp => {
-            const status = opp.stage || 'Active';
-            const customerName = opp.customer || opp.company || 'Unknown';
-            items.push({
-                type: 'project',
-                title: opp.name || opp.project || 'Untitled Project',
-                subtitle: customerName,
-                status: status,
-                value: opp.value || '$0',
-                projectId: opp.id,
-                action: () => {
-                    if (setProjectsInitialProjectId && opp.id) {
-                        setProjectsInitialProjectId(opp.id);
-                    }
-                    onNavigate('projects');
-                },
-                icon: Briefcase,
-                color: theme.colors.accent
-            });
-        });
-        const sortedOrders = [...orders].filter(o => o.date && o.net).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 2);
-        sortedOrders.forEach(order => {
-            const orderStatus = order.status || 'Order';
-            items.push({
-                type: 'order',
-                title: `PO #${order.po || order.orderNumber}`,
-                subtitle: order.company || 'Order',
-                status: orderStatus,
-                value: `$${(order.net || 0).toLocaleString()}`,
-                action: () => onNavigate(`orders/${order.orderNumber || order.po}`),
-                icon: Package,
-                color: '#4A7C59'  // JSI success green
-            });
-        });
-        return items.slice(0, 5);
-    }, [opportunities, orders, theme.colors.accent, onNavigate, setProjectsInitialProjectId]);
-
-    if (activities.length === 0) return null;
-
-    return (
-        <GlassCard theme={theme} className="p-0 mb-6 overflow-hidden" variant="elevated">
-            <div className="flex items-center justify-between px-5 pt-6 mb-4">
-                <h3 
-                    className="font-semibold text-sm lg:text-base" 
-                    style={{ 
-                        color: theme.colors.textSecondary,
-                        fontFamily: JSI_TYPOGRAPHY.fontFamily,
-                        fontWeight: JSI_TYPOGRAPHY.weights.semibold
-                    }}
-                >
-                    Recent Activity
-                </h3>
-                <button 
-                    onClick={() => onNavigate('projects')} 
-                    className="text-xs font-medium flex items-center gap-1 transition-all hover:opacity-80 active:scale-95" 
-                    style={{ 
-                        color: theme.colors.accent,
-                        fontFamily: JSI_TYPOGRAPHY.fontFamily
-                    }}
-                >
-                    View All<ArrowRight className="w-3 h-3" />
-                </button>
-            </div>
-            <div className="space-y-1 pb-4">
-                {activities.map((activity, i) => (
-                    <button key={i} onClick={activity.action} className="w-full flex items-center gap-3 px-5 py-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors text-left border-b last:border-b-0 border-black/[0.03] dark:border-white/[0.03]">
-                        <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${activity.color}15` }}><activity.icon className="w-4 h-4" style={{ color: activity.color }} /></div>
-                        <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm truncate" style={{ color: theme.colors.textPrimary }}>{activity.title}</p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                                <p className="text-xs truncate" style={{ color: theme.colors.textSecondary }}>{activity.subtitle}</p>
-                                <StatusChip status={activity.status} />
-                            </div>
-                        </div>
-                        <p className="font-semibold text-sm flex-shrink-0" style={{ color: activity.color }}>{activity.value}</p>
-                    </button>
-                ))}
-            </div>
-        </GlassCard>
-    );
-}, (prevProps, nextProps) => {
-    return (
-        prevProps.opportunities === nextProps.opportunities &&
-        prevProps.orders === nextProps.orders &&
-        prevProps.theme === nextProps.theme
-    );
-});
-RecentActivityFeed.displayName = 'RecentActivityFeed';
-
-// Smart Search Component - Optimized with match header banner design
-// Includes file attachment for AI/RFP assistant
-const SmartSearch = React.memo(({ theme, onNavigate, onAskAI, onVoiceActivate }) => {
-    const [query, setQuery] = useState('');
-    const [isFocused, setIsFocused] = useState(false);
-    const [attachedFiles, setAttachedFiles] = useState([]);
-    const anchorRef = useRef(null);
-    const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
-
-    const filtered = useMemo(() => {
-        if (!query.trim()) return [];
-        const q = query.toLowerCase();
-        return allApps.filter(app => app.name.toLowerCase().includes(q) || (app.keywords || []).some(k => k.toLowerCase().includes(q))).slice(0, 6);
-    }, [query]);
-
-    const submit = useCallback((q) => {
-        if (q.trim() || attachedFiles.length > 0) {
-            // Include file info in the AI query for future RFP processing
-            const fileInfo = attachedFiles.length > 0 
-                ? ` [${attachedFiles.length} file(s) attached: ${attachedFiles.map(f => f.name).join(', ')}]` 
-                : '';
-            onAskAI(q + fileInfo);
-            setQuery('');
-            setAttachedFiles([]);
-        }
-    }, [onAskAI, attachedFiles]);
-
-    const handleFileAdd = useCallback((files) => {
-        setAttachedFiles(prev => [...prev, ...files]);
-    }, []);
-
-    const updatePos = useCallback(() => {
-        if (!anchorRef.current) return;
-        const rect = anchorRef.current.getBoundingClientRect();
-        setPos({ top: rect.bottom + 8, left: rect.left, width: rect.width });
-    }, []);
-
-    const handleFocus = useCallback(() => setIsFocused(true), []);
-    const handleBlur = useCallback(() => setIsFocused(false), []);
-    const handleNavigate = useCallback((route) => {
-        onNavigate(route);
-        setQuery('');
-        setIsFocused(false);
     }, [onNavigate]);
 
-    useEffect(() => {
-        if (!isFocused) return;
-        updatePos();
-        window.addEventListener('resize', updatePos);
-        return () => window.removeEventListener('resize', updatePos);
-    }, [isFocused, updatePos]);
+    const handleSpecCheckSubmit = useCallback((payload) => {
+        const typedProjectName = (payload?.projectInput || '').trim();
+        const selectedProject = payload?.selectedProject || null;
 
-    return (
-        <div ref={anchorRef} className="relative mb-6">
-            <GlassCard 
-                theme={theme} 
-                variant="elevated" 
-                className="w-full px-5" 
-                style={{ 
-                    borderRadius: 9999, 
-                    paddingTop: 0, 
-                    paddingBottom: 0,
-                    height: 56,
-                    backgroundColor: theme.colors.surface,
-                    boxShadow: DESIGN_TOKENS.shadows.md,
-                    border: `1px solid ${theme.colors.border}`
-                }}
-            >
-                <HomeSearchInput 
-                    onSubmit={submit} 
-                    value={query} 
-                    onChange={setQuery} 
-                    onFocus={handleFocus} 
-                    onBlur={handleBlur} 
-                    onVoiceClick={() => onVoiceActivate('Voice Activated')} 
-                    onFileAdd={handleFileAdd}
-                    attachedFiles={attachedFiles}
-                    theme={theme} 
-                    className="w-full" 
-                />
-            </GlassCard>
-            
-            {/* Show attached files indicator below search bar */}
-            {attachedFiles.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2 px-2">
-                    {attachedFiles.map((file, i) => (
-                        <div 
-                            key={i}
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium"
-                            style={{ 
-                                backgroundColor: `${theme.colors.accent}15`, 
-                                color: theme.colors.accent 
-                            }}
-                        >
-                            <span className="truncate max-w-[120px]">{file.name}</span>
-                            <button
-                                onClick={() => setAttachedFiles(prev => prev.filter((_, idx) => idx !== i))}
-                                className="w-4 h-4 rounded-full flex items-center justify-center hover:bg-black/10 transition-colors"
-                            >
-                                <X className="w-3 h-3" />
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            )}
-            
-            {isFocused && filtered.length > 0 && (
-                <DropdownPortal>
-                    <div className="absolute" style={{ top: pos.top, left: pos.left, width: pos.width, zIndex: 10000 }}>
-                        <GlassCard theme={theme} className="p-1" variant="elevated">
-                            <ul className="max-h-64 overflow-y-auto scrollbar-hide">
-                                {filtered.map((app) => (
-                                    <li key={app.route} onMouseDown={() => handleNavigate(app.route)} className="flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-all active:scale-[0.99]" style={{ color: theme.colors.textPrimary }}>
-                                        <app.icon className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
-                                        <span className="text-sm">{app.name}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </GlassCard>
-                    </div>
-                </DropdownPortal>
-            )}
-        </div>
-    );
-}, (prevProps, nextProps) => {
-    return prevProps.theme === nextProps.theme;
-});
-SmartSearch.displayName = 'SmartSearch';
+        let targetProject = selectedProject;
+        if (!targetProject && typedProjectName) {
+            const existing = (myProjects || []).find((project) => projectNameMatches(project, typedProjectName));
 
-// Helper to filter out disallowed apps for dealer role
-const filterAllowedAppIds = (appIds) => {
-    if (USER_ROLE !== 'dealer') return appIds;
-    return appIds.filter(id => DEALER_QUICK_ACCESS_ALLOWLIST.includes(id));
-};
-
-// Ensure resources app is always included
-const ensureResourcesIncluded = (appIds) => {
-    if (!appIds.includes('resources')) {
-        // Replace last item with resources if at max, or add if not
-        if (appIds.length >= MAX_QUICK_ACCESS_APPS) {
-            return [...appIds.slice(0, -1), 'resources'];
+            if (existing) {
+                targetProject = existing;
+            } else {
+                const newProject = createProjectDraft(typedProjectName, {
+                    location: 'Location TBD',
+                    image: 'https://webresources.jsifurniture.com/production/uploads/jsi_vision_install_0000010.jpg',
+                    specCheckRequests: [],
+                });
+                targetProject = newProject;
+                if (typeof setMyProjects === 'function') {
+                    setMyProjects((prev) => [newProject, ...(prev || [])]);
+                }
+            }
         }
-        return [...appIds, 'resources'];
-    }
-    return appIds;
-};
 
-// Main HomeScreen Component
-export const HomeScreen = ({ theme, onNavigate, onAskAI, onVoiceActivate, opportunities = [], orders = [], customerDirectory = [], cart = {}, posts = [], setProjectsInitialProjectId }) => {
-    const isDesktop = useIsDesktop();
+        if (targetProject && typeof setMyProjects === 'function') {
+            setMyProjects((prev) => (prev || []).map((project) => {
+                if (String(project.id) !== String(targetProject.id)) return project;
+                const nextRequest = {
+                    id: `spec_${Date.now()}`,
+                    notes: payload?.notes || '',
+                    files: (payload?.files || []).map((file) => ({ name: file.name, size: file.size, type: file.type })),
+                    createdAt: Date.now(),
+                };
+                return {
+                    ...project,
+                    specCheckRequests: [nextRequest, ...(project.specCheckRequests || [])],
+                };
+            }));
+        }
+
+        setShowSpecCheckModal(false);
+        onNavigate?.('projects', { tab: 'my-projects' });
+        if (typeof setSuccessMessage === 'function') {
+            setSuccessMessage('Spec check request submitted');
+            setTimeout(() => setSuccessMessage(''), 1600);
+        }
+    }, [myProjects, onNavigate, setMyProjects, setSuccessMessage]);
+
+    const isDark = isDarkTheme(theme);
     
-    // Track last seen community timestamp in localStorage
-    const [lastSeenCommunity, setLastSeenCommunity] = useState(() => {
-        try {
-            return parseInt(localStorage.getItem('community.lastSeen') || '0', 10);
-        } catch {
-            return 0;
+    const {
+        lampOn,
+        lampLightReady,
+        shouldAnimateIn,
+        lampAnim,
+        lampRight,
+        handleLampClick
+    } = useIndieSconce(isDarkMode, onToggleTheme);
+
+    const colors = useMemo(() => ({
+        background: theme?.colors?.background || '#F0EDE8',
+        surface: theme?.colors?.surface || '#FFFFFF',
+        tileSurface: isDark ? HOME_SURFACE_DARK : HOME_SURFACE_LIGHT,
+        tileShadow: 'none',
+        accent: theme?.colors?.accent || '#353535',
+        textPrimary: theme?.colors?.textPrimary || '#353535',
+        textSecondary: theme?.colors?.textSecondary || '#666666',
+        border: theme?.colors?.border || '#E3E0D8'
+    }), [theme, isDark]);
+
+    const allAppRoutes = useMemo(() => new Set(allApps.map(app => app.route)), []);
+    const homeEligibleRoutes = useMemo(
+        () => new Set(allApps.filter((app) => app.homeEligible !== false).map((app) => app.route)),
+        []
+    );
+
+    const normalizeHomeApps = useCallback((list) => {
+        const baseList = Array.isArray(list) ? list : [];
+        const unique = baseList.filter((route, index) => baseList.indexOf(route) === index);
+        const known = unique.filter(route => allAppRoutes.has(route) && homeEligibleRoutes.has(route));
+        const withResources = known.includes('resources') ? known : ['resources', ...known];
+        return withResources.length ? withResources : DEFAULT_HOME_APPS;
+    }, [allAppRoutes, homeEligibleRoutes]);
+
+    const safeHomeApps = useMemo(() => {
+        return normalizeHomeApps(homeApps);
+    }, [homeApps, normalizeHomeApps]);
+
+    useEffect(() => {
+        if (!onUpdateHomeApps) return;
+        if (!Array.isArray(homeApps)) return;
+        const normalized = normalizeHomeApps(homeApps);
+        if (!areArraysEqual(homeApps, normalized)) {
+            onUpdateHomeApps(normalized);
         }
-    });
+    }, [homeApps, normalizeHomeApps, onUpdateHomeApps]);
 
-    // Calculate if there are new community posts
-    const hasNewCommunityPosts = useMemo(() => {
-        if (!posts || posts.length === 0) return false;
-        // Check if any post was created after the last time user visited community
-        return posts.some(post => {
-            const postTime = post.createdAt || 0;
-            return postTime > lastSeenCommunity;
-        });
-    }, [posts, lastSeenCommunity]);
-
-    // Calculate pending replacements
-    const pendingReplacements = useMemo(() => {
-        return REPLACEMENT_REQUESTS_DATA.filter(r => r.status === 'Pending').length;
+    useEffect(() => {
+        try {
+            const raw = localStorage.getItem('leadTimeFavorites');
+            const parsed = raw ? JSON.parse(raw) : [];
+            setLeadTimeFavorites(Array.isArray(parsed) ? parsed : []);
+        } catch {
+            setLeadTimeFavorites([]);
+        }
     }, []);
 
-    // Calculate stats at parent level for use in QuickAccessGrid
-    const stats = useMemo(() => {
-        const now = new Date();
-        const yearStart = new Date(now.getFullYear(), 0, 1);
-
-        const ytdSales = orders
-            .filter(o => {
-                const status = (o.status || '').toLowerCase();
-                const isShipped = status.includes('ship') || status === 'shipping';
-                if (!isShipped || !o.date) return false;
-                return new Date(o.date) >= yearStart;
-            })
-            .reduce((sum, o) => sum + (o.net || 0), 0);
-
-        const activeProjects = opportunities.filter(o => o.stage !== 'Won' && o.stage !== 'Lost').length;
-        const wonProjects = opportunities.filter(o => o.stage === 'Won').length;
-
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        const recentOrders = orders.filter(o => {
-            if (!o.date) return false;
-            return new Date(o.date) >= thirtyDaysAgo;
-        }).length;
-
-        const ytdTrend = 12;
-
-        return { ytdSales, activeProjects, wonProjects, recentOrders, ytdTrend };
-    }, [opportunities, orders]);
-
-    const [activeAppIds, setActiveAppIds] = useState(() => {
-        try {
-            const saved = localStorage.getItem('quickAccessApps');
-            const parsed = saved ? JSON.parse(saved) : DEFAULT_QUICK_ACCESS_IDS;
-            // Filter out any disallowed apps for dealer role
-            let filtered = filterAllowedAppIds(parsed);
-            // Ensure resources is always included
-            filtered = ensureResourcesIncluded(filtered);
-            // If filtering removed apps, backfill with defaults
-            if (filtered.length < parsed.length) {
-                const defaults = filterAllowedAppIds(DEFAULT_QUICK_ACCESS_IDS);
-                const needed = Math.min(MAX_QUICK_ACCESS_APPS, parsed.length) - filtered.length;
-                const backfill = defaults.filter(id => !filtered.includes(id)).slice(0, needed);
-                return [...filtered, ...backfill];
-            }
-            return filtered;
-        } catch {
-            return ensureResourcesIncluded(filterAllowedAppIds(DEFAULT_QUICK_ACCESS_IDS));
-        }
-    });
-
-    const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
-
+    // Close chat only when homeResetKey actually changes (e.g., clicking MyJSI logo)
     useEffect(() => {
-        localStorage.setItem('quickAccessApps', JSON.stringify(activeAppIds));
-    }, [activeAppIds]);
+        if (prevHomeResetKeyRef.current !== homeResetKey) {
+            prevHomeResetKeyRef.current = homeResetKey;
+            if (isChatOpen) {
+                resetChat();
+                setSearchQuery('');
+            }
+        }
+    }, [homeResetKey, isChatOpen, resetChat]);
 
-    const header = useMemo(() => (
-        <div className="pt-6 pb-2 px-5">
-            <h1 
-                className="mb-1" 
-                style={{ 
-                    color: theme.colors.textPrimary,
-                    fontFamily: DESIGN_TOKENS.typography.fontFamily,
-                    fontSize: DESIGN_TOKENS.typography.h3.size,
-                    fontWeight: DESIGN_TOKENS.typography.h3.weight,
-                    lineHeight: DESIGN_TOKENS.typography.h3.lineHeight,
-                    letterSpacing: DESIGN_TOKENS.typography.h3.letterSpacing
-                }}
-            >
-                Dashboard
-            </h1>
-            <p 
-                className="text-xs lg:text-sm" 
-                style={{ 
-                    color: theme.colors.textSecondary,
-                    fontFamily: DESIGN_TOKENS.typography.fontFamily
-                }}
-            >
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-            </p>
-        </div>
-    ), [theme, theme.colors.textPrimary, theme.colors.textSecondary]);
+    const currentApps = useMemo(() => {
+        return safeHomeApps.map(route => allApps.find(a => a.route === route)).filter(Boolean);
+    }, [safeHomeApps]);
+
+    const availableApps = useMemo(() => {
+        return allApps.filter(
+            (app) => app.homeEligible !== false && !safeHomeApps.includes(app.route) && !EXCLUDED_ROUTES.has(app.route)
+        );
+    }, [safeHomeApps]);
+
+    const allOpportunities = useMemo(() => {
+        return opportunities.length > 0 ? opportunities : INITIAL_OPPORTUNITIES;
+    }, [opportunities]);
+
+    // useDeferredValue so keystrokes feel instant even on slow devices
+    const deferredSearchQuery = useDeferredValue(searchQuery);
+    const spotlightResults = useMemo(() => {
+        const q = deferredSearchQuery.trim().toLowerCase();
+        if (!q) return [];
+        const results = [];
+
+        // Apps — max 3
+        allApps
+            .filter(app => app.name?.toLowerCase().includes(q) || app.route?.toLowerCase().includes(q))
+            .slice(0, 3)
+            .forEach(app => results.push({ type: 'app', ...app }));
+
+        // Orders — max 2
+        ORDER_DATA
+            .filter(o =>
+                o.details?.toLowerCase().includes(q) ||
+                o.company?.toLowerCase().includes(q) ||
+                o.orderNumber?.toLowerCase().includes(q)
+            )
+            .slice(0, 2)
+            .forEach(o => results.push({
+                type: 'order',
+                name: smartTitleCase(o.details),
+                subtitle: smartTitleCase(o.company),
+                route: `orders/${o.orderNumber}`,
+                status: o.status,
+                net: o.net,
+            }));
+
+        // Projects — max 2
+        allOpportunities
+            .filter(p =>
+                (p.name || '').toLowerCase().includes(q) ||
+                (p.company || '').toLowerCase().includes(q) ||
+                (p.contact || '').toLowerCase().includes(q)
+            )
+            .slice(0, 2)
+            .forEach(p => results.push({
+                type: 'project',
+                name: p.name,
+                subtitle: p.company || p.stage,
+                route: `projects/${p.id}`,
+            }));
+
+        // Products — max 2
+        (PRODUCTS_CATEGORIES_DATA || [])
+            .filter(cat =>
+                (cat.name || '').toLowerCase().includes(q) ||
+                (cat.description || '').toLowerCase().includes(q)
+            )
+            .slice(0, 2)
+            .forEach(cat => results.push({
+                type: 'product',
+                name: cat.name,
+                subtitle: cat.description,
+                route: cat.nav,
+            }));
+
+        return results.slice(0, 8);
+    }, [deferredSearchQuery, allOpportunities]);
+
+    const toggleApp = useCallback((route) => {
+        if (!onUpdateHomeApps) return;
+        if (NON_REMOVABLE_APPS.has(route)) return;
+        if (safeHomeApps.includes(route)) {
+            if (safeHomeApps.length > MIN_PINNED_APPS) {
+                onUpdateHomeApps(safeHomeApps.filter(r => r !== route));
+            }
+        } else {
+            if (safeHomeApps.length < MAX_PINNED_APPS) {
+                onUpdateHomeApps([...safeHomeApps, route]);
+            }
+        }
+    }, [safeHomeApps, onUpdateHomeApps]);
+
+    const handleSearchSubmit = useCallback((val) => {
+        const trimmed = val?.trim();
+        if (!trimmed) return;
+        const isChatIntent = trimmed.startsWith('?') || trimmed.toLowerCase().startsWith('ask ');
+        if (isChatIntent || spotlightResults.length === 0) {
+            openChatFromQuery(trimmed);
+        } else {
+            onNavigate?.(spotlightResults[0].route);
+        }
+        setSearchQuery('');
+    }, [onNavigate, openChatFromQuery, spotlightResults]);
+
+    const recordRecentSpotlightItem = useCallback((item) => {
+        setRecentSpotlightItems(prev => {
+            const filtered = (prev || []).filter(r => r.route !== item.route);
+            return [item, ...filtered].slice(0, 5);
+        });
+    }, [setRecentSpotlightItems]);
+
+    const handleRfpFileDrop = useCallback((file) => {
+        setRfpDropFile(file);
+        setShowRfpDropModal(true);
+    }, []);
+
+    const handleRfpAccept = useCallback(() => {
+        setShowRfpDropModal(false);
+        onNavigate?.('rfp-responder', { preloadedFile: rfpDropFile });
+        setRfpDropFile(null);
+    }, [onNavigate, rfpDropFile]);
+
+    const handleRfpDismiss = useCallback(() => {
+        setShowRfpDropModal(false);
+        setRfpDropFile(null);
+    }, []);
+
+    const handleRfpFilePick = useCallback((e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setRfpDropFile(file);
+            setShowRfpDropModal(true);
+        }
+        // Reset so the same file can be re-selected
+        e.target.value = '';
+    }, []);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
+
+    const handleReorder = useCallback((event) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        if (!onUpdateHomeApps) return;
+        const oldIndex = safeHomeApps.indexOf(active.id);
+        const newIndex = safeHomeApps.indexOf(over.id);
+        if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) return;
+        onUpdateHomeApps(arrayMove(safeHomeApps, oldIndex, newIndex));
+    }, [onUpdateHomeApps, safeHomeApps]);
+
+    const activeApp = useMemo(() => {
+        return allApps.find(app => app.route === activeDragId) || null;
+    }, [activeDragId]);
+
+    const todayLabel = useMemo(() => {
+        const now = new Date();
+        return now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+    }, []);
+
+    const communityPosts = useMemo(() => {
+        if (!Array.isArray(posts) || posts.length === 0) return [];
+        return posts.slice(0, 3);
+    }, [posts]);
+
+    const homeFeatureOptions = useMemo(() => ([
+        { id: 'activity', label: 'Recent Activity' },
+        { id: 'community', label: 'Community' },
+        { id: 'lead-times', label: 'Lead Times' },
+        { id: 'announcements', label: 'Announcements' },
+        { id: 'products', label: 'Products' },
+        { id: 'projects', label: 'Projects' },
+        { id: 'marketplace', label: 'LWYD Marketplace' },
+    ]), []);
+
+    const leadTimeFavoritesData = useMemo(() => {
+        if (!leadTimeFavorites.length) return [];
+        return leadTimesData.filter(item => leadTimeFavorites.includes(item.series))
+            .slice(0, 6);
+    }, [leadTimeFavorites, leadTimesData]);
+
+    const recentOrders = useMemo(() => {
+        return [...ordersData].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+    }, [ordersData]);
+
+    const FEATURE_ROUTES = useMemo(() => ({
+        community: 'community',
+        'lead-times': 'resources/lead-times',
+        products: 'products',
+        projects: 'projects',
+        marketplace: 'marketplace',
+    }), []);
+    const navigateFeature = useCallback((mode) => {
+        onNavigate(FEATURE_ROUTES[mode] || 'orders');
+    }, [onNavigate, FEATURE_ROUTES]);
+
+    const samplesCartCount = useMemo(() => Object.values(cart || {}).reduce((sum, qty) => sum + qty, 0), [cart]);
+
+    const replacementRequests = useMemo(() => REPLACEMENT_REQUESTS_DATA, []);
+
+    // Always 3 cols on mobile; sm+ picks column count to avoid orphaned tiles
+    const appGridCols = useMemo(() => {
+        const count = currentApps.length;
+        // Mobile is always 3 cols. sm+ picks the best column count to avoid orphans.
+        const GRID_MAP = {
+            3: 'grid-cols-3',                             // 1×3
+            4: 'grid-cols-3 sm:grid-cols-4',              // mobile 3+1, sm 1×4
+            5: 'grid-cols-3 sm:grid-cols-5',              // mobile 3+2, sm 1×5
+            6: 'grid-cols-3',                             // 2×3 at all sizes
+            7: 'grid-cols-3 sm:grid-cols-4',              // mobile 3+3+1, sm 4+3
+            8: 'grid-cols-3 sm:grid-cols-4',              // mobile 3+3+2, sm 2×4
+            9: 'grid-cols-3',                             // 3×3 at all sizes
+        };
+        return {
+            view: GRID_MAP[count] || 'grid-cols-3 sm:grid-cols-4',
+            edit: 'grid-cols-3 sm:grid-cols-4',
+        };
+    }, [currentApps.length]);
+
+    const hoverBg = isDark ? 'hover:bg-white/[0.06]' : 'hover:bg-black/[0.03] dark:hover:bg-white/[0.08]';
+    const chromePillStyles = getHomeChromePillStyles(isDark);
+
+
 
     return (
-        <ScreenLayout
-            theme={theme}
-            header={isDesktop ? header : null}
-            maxWidth="wide"
-            padding={true}
-            paddingBottom="8rem"
-        >
-            <SmartSearch theme={theme} onNavigate={onNavigate} onAskAI={onAskAI} onVoiceActivate={onVoiceActivate} />
+        <div data-home-scroll-container="true" className="flex flex-col min-h-full scrollbar-hide app-header-offset" style={{ backgroundColor: colors.background, position: 'relative', overflowX: 'hidden' }}>
 
-            <QuickAccessGrid
-                theme={theme}
-                onNavigate={onNavigate}
-                activeAppIds={activeAppIds}
-                onCustomize={() => setIsCustomizeOpen(true)}
-                stats={stats}
-                isDesktop={isDesktop}
-                cart={cart}
-                hasNewCommunityPosts={hasNewCommunityPosts}
-                pendingReplacements={pendingReplacements}
+            {/* ── Indie Sconce – only visible in dark mode, portalled to body ── */}
+            <IndieSconce
+                isDarkMode={isDarkMode}
+                lampRight={lampRight}
+                handleLampClick={handleLampClick}
+                lampAnim={lampAnim}
+                lampLightReady={lampLightReady}
+                lampOn={lampOn}
+                shouldAnimateIn={shouldAnimateIn}
             />
 
-            <RecentActivityFeed theme={theme} opportunities={opportunities} orders={orders} onNavigate={onNavigate} setProjectsInitialProjectId={setProjectsInitialProjectId} />
-
-            <button
+            {/* Mobile sticky feedback pill — hidden on sm+ */}
+            <FloatingActionCTA
+                theme={theme}
                 onClick={() => onNavigate('feedback')}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl transition-all active:scale-[0.98] hover:opacity-90 mb-6"
+                visible={!isEditMode}
+                disableInitialAnimation
+                icon={<MessageSquarePlus />}
+                label="Share Feedback"
+                className="sm:hidden"
+                zIndex={40}
+            />
+
+            <div
+                className="px-4 sm:px-6 lg:px-8 flex flex-col max-w-content mx-auto w-full gap-4 sm:gap-6 py-4 sm:py-6 pb-20 sm:pb-6"
                 style={{
-                    backgroundColor: '#F97316',
-                    border: '1px solid #EA580C',
-                    color: '#FFFFFF',
-                    boxShadow: DESIGN_TOKENS.shadows.sm,
-                    fontFamily: DESIGN_TOKENS.typography.fontFamily,
+                    position: 'relative',
+                    zIndex: 2,
                 }}
             >
-                <MessageSquare className="w-4 h-4" />
-                <span className="text-sm font-medium">Share Feedback</span>
-            </button>
 
-            <CustomizeHomeModal theme={theme} isOpen={isCustomizeOpen} onClose={() => setIsCustomizeOpen(false)} activeAppIds={activeAppIds} onSave={setActiveAppIds} />
-        </ScreenLayout>
+                {/* Header + Search — side-by-side on lg, stacked otherwise */}
+                <HomeHeader
+                    colors={colors}
+                    todayLabel={todayLabel}
+                    theme={theme}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
+                    handleSearchSubmit={handleSearchSubmit}
+                    onVoiceActivate={onVoiceActivate}
+                    handleQuickAction={handleQuickAction}
+                    spotlightResults={spotlightResults}
+                    onNavigate={onNavigate}
+                    openChatFromQuery={openChatFromQuery}
+                    isDark={isDark}
+                    onRfpFileDrop={handleRfpFileDrop}
+                    recentItems={recentSpotlightItems}
+                    onRecordRecent={recordRecentSpotlightItem}
+                />
+
+                {/* App grid */}
+                <div className="relative">
+                    <AppGrid
+                        isEditMode={isEditMode}
+                        setIsEditMode={setIsEditMode}
+                        currentApps={currentApps}
+                        availableApps={availableApps}
+                        safeHomeApps={safeHomeApps}
+                        activeDragId={activeDragId}
+                        setActiveDragId={setActiveDragId}
+                        activeApp={activeApp}
+                        sensors={sensors}
+                        handleReorder={handleReorder}
+                        toggleApp={toggleApp}
+                        onUpdateHomeApps={onUpdateHomeApps}
+                        onNavigate={onNavigate}
+                        colors={colors}
+                        isDark={isDark}
+                        appGridCols={appGridCols}
+                        recentOrders={recentOrders}
+                        posts={posts}
+                        leadTimeFavoritesData={leadTimeFavoritesData}
+                        samplesCartCount={samplesCartCount}
+                        opportunities={allOpportunities}
+                        replacementRequests={replacementRequests}
+                    />
+                </div>
+
+                {/* Home feature card(s) — flex-grow to fill remaining space */}
+                <HomeFeatureCards
+                    theme={theme}
+                    colors={colors}
+                    isDark={isDark}
+                    isEditMode={isEditMode}
+                    homeFeatureMode={homeFeatureMode}
+                    setHomeFeatureMode={setHomeFeatureMode}
+                    secondaryFeatureMode={secondaryFeatureMode}
+                    setSecondaryFeatureMode={setSecondaryFeatureMode}
+                    homeFeatureOptions={homeFeatureOptions}
+                    navigateFeature={navigateFeature}
+                    leadTimeFavoritesData={leadTimeFavoritesData}
+                    communityPosts={communityPosts}
+                    onNavigate={onNavigate}
+                    opportunities={opportunities}
+                    recentOrders={recentOrders}
+                    hoverBg={hoverBg}
+                />
+
+                {/* Feedback CTA — desktop inline only; mobile uses sticky bar below */}
+                {!isEditMode && (
+                    <div className="hidden sm:flex flex-col items-center gap-2 pb-2">
+                        <button
+                            onClick={() => onNavigate('feedback')}
+                            className="flex items-center gap-2 px-5 rounded-full transition-all active:scale-[0.97] hover:opacity-80"
+                            style={{
+                                ...chromePillStyles,
+                                height: HOME_CHROME_PILL_HEIGHT,
+                                color: colors.textSecondary,
+                            }}
+                        >
+                            <MessageSquarePlus className="w-4 h-4" />
+                            <span className="text-sm font-semibold">Share Feedback</span>
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {/* Request Quote Modal */}
+            <RequestQuoteModal
+                show={showQuoteModal}
+                onClose={() => setShowQuoteModal(false)}
+                theme={theme}
+                members={members}
+                currentUserId={currentUserId}
+                onSubmit={(data) => {
+                    persistQuoteRequest(data, { source: 'home-dashboard' });
+                    if (typeof setSuccessMessage === 'function') {
+                        setSuccessMessage('Quote request submitted');
+                        setTimeout(() => setSuccessMessage(''), 1800);
+                    }
+                }}
+            />
+            <SpecCheckRequestModal
+                show={showSpecCheckModal}
+                onClose={() => setShowSpecCheckModal(false)}
+                theme={theme}
+                myProjects={myProjects}
+                onSubmit={handleSpecCheckSubmit}
+            />
+
+            <RfpDropModal
+                show={showRfpDropModal}
+                onClose={handleRfpDismiss}
+                onAccept={handleRfpAccept}
+                file={rfpDropFile}
+                theme={theme}
+            />
+
+            {/* Hidden file input for Upload a File quick action */}
+            <input
+                ref={rfpFileInputRef}
+                type="file"
+                accept=".pdf"
+                className="hidden"
+                onChange={handleRfpFilePick}
+            />
+
+            <ChatOverlay
+                isChatOpen={isChatOpen}
+                setIsChatOpen={setIsChatOpen}
+                chatMessages={chatMessages}
+                chatInput={chatInput}
+                setChatInput={setChatInput}
+                chatAttachments={chatAttachments}
+                isBotThinking={isBotThinking}
+                chatFileInputRef={chatFileInputRef}
+                handleChatSubmit={handleChatSubmit}
+                handleChatFilePick={handleChatFilePick}
+                handleChatFilesSelected={handleChatFilesSelected}
+                handleRemoveAttachment={handleRemoveAttachment}
+                appendChatTurn={appendChatTurn}
+                onNavigate={onNavigate}
+                colors={colors}
+                isDark={isDark}
+            />
+
+        </div>
     );
-};
+});
+HomeScreen.displayName = 'HomeScreen';

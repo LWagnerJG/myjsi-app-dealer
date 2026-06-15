@@ -1,399 +1,261 @@
-// screens/members/MembersScreen.jsx
-import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { GlassCard } from '../../components/common/GlassCard.jsx';
-import { StyledSelect } from '../../components/forms/StyledSelect.jsx';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
-    Mail,
-    Phone,
-    ChevronDown,
-    ChevronUp,
-    Trash2,
-    Shield,
-    User as UserIcon,
+    Search,
+    Users,
+    Building2,
+    UserPlus,
+    X,
 } from 'lucide-react';
 
 import {
     INITIAL_MEMBERS,
+    INITIAL_DEALER_COMPANIES,
+    REP_ROLES,
+    isAdminRole,
     PERMISSION_LABELS,
-    USER_TITLES,
-    USER_ROLES,
-    PERMISSION_DESCRIPTIONS,
 } from './data.js';
+import { SegmentedToggle } from '../../components/common/GroupedToggle.jsx';
+import { TabContent } from '../../components/common/TabContent.jsx';
+import StandardSearchBar from '../../components/common/StandardSearchBar.jsx';
+import { PageTitle } from '../../components/common/PageTitle.jsx';
 
-const DropdownMenu = ({ options, onSelect, theme }) => {
-    return (
-        <GlassCard
-            theme={theme}
-            className="absolute top-20 right-2 w-48 p-2 space-y-1 z-30"
-        >
-            {options.map((option) => (
-                <button
-                    key={option.label}
-                    onClick={() => onSelect(option.value)}
-                    className="w-full text-left flex items-center px-3 py-2 rounded-lg transition-colors hover:bg-black/10 dark:hover:bg-white/10"
-                    style={{ color: theme.colors.textPrimary }}
-                >
-                    <option.icon className="w-4 h-4 mr-3" style={{ color: theme.colors.secondary }} />
-                    {option.label}
-                </button>
-            ))}
-        </GlassCard>
+import { MembersErrorBoundary } from './components/members/MembersErrorBoundary.jsx';
+import { ConfirmModal } from './components/members/SharedComponents.jsx';
+import { InviteModal } from './components/members/InviteModal.jsx';
+import { MemberCard } from './components/members/MemberCard.jsx';
+import { DealerCompanyCard } from './components/members/DealerCompanyCard.jsx';
+
+const useMediaQuery = (query) => {
+    const [matches, setMatches] = useState(() =>
+        typeof window !== 'undefined' ? window.matchMedia(query).matches : false
     );
+    useEffect(() => {
+        const mql = window.matchMedia(query);
+        const handler = (e) => setMatches(e.matches);
+        mql.addEventListener('change', handler);
+        return () => mql.removeEventListener('change', handler);
+    }, [query]);
+    return matches;
 };
 
-/* ===========================
-   Error Boundary (unchanged)
-   =========================== */
-class MembersErrorBoundary extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = { hasError: false, error: null };
-    }
-    static getDerivedStateFromError(error) {
-        return { hasError: true, error };
-    }
-    componentDidCatch(error, info) {
-        console.error('Members screen error:', error, info);
-    }
-    render() {
-        if (this.state.hasError) {
-            return (
-                <div className="flex flex-col items-center justify-center h-full p-4">
-                    <h2 className="text-lg font-bold mb-2">Something went wrong</h2>
-                    <p className="text-sm text-gray-600 mb-4">
-                        There was an error loading the members screen.
-                    </p>
-                    <button
-                        onClick={() => this.setState({ hasError: false, error: null })}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-lg"
-                    >
-                        Try Again
-                    </button>
-                </div>
-            );
-        }
-        return this.props.children;
-    }
-}
-
-/* =======================
-   Permission pill toggle
-   ======================= */
-const PillToggle = ({ label, enabled, onToggle, theme, disabled }) => {
-    return (
-        <button
-            type="button"
-            onClick={disabled ? undefined : onToggle}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
-                } ${enabled ? 'shadow-sm' : ''}`}
-            style={{
-                backgroundColor: enabled ? theme.colors.accent : theme.colors.subtle,
-                color: enabled ? '#fff' : theme.colors.textPrimary,
-                border: `1px solid ${enabled ? theme.colors.accent : theme.colors.border}`,
-            }}
-            title={PERMISSION_DESCRIPTIONS?.[label] || ''}
-            aria-pressed={enabled}
-        >
-            {label}
-        </button>
-    );
-};
-
-/* =================
-   Member row (tile)
-   ================= */
-const MemberRow = ({
-    theme,
-    user,
-    expanded,
-    onToggle,
-    onChangeField,
-    onTogglePerm,
-    onDelete,
-}) => {
-    if (!user || !user.permissions) return null;
-
-    return (
-        <GlassCard theme={theme} className="p-0 rounded-[24px]">
-            <button
-                type="button"
-                onClick={onToggle}
-                className="w-full px-4 py-4 text-left rounded-[24px]"
-                style={{ backgroundColor: 'transparent' }}
-            >
-                <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                        <div
-                            className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: theme.colors.subtle }}
-                        >
-                            <UserIcon className="w-5 h-5" style={{ color: theme.colors.accent }} />
-                        </div>
-                        <div className="min-w-0">
-                            <div className="font-semibold truncate" style={{ color: theme.colors.textPrimary }}>
-                                {(user.firstName || '') + ' ' + (user.lastName || '')}
-                            </div>
-                            <div className="text-xs mt-0.5 truncate flex items-center gap-1 opacity-80" style={{ color: theme.colors.textSecondary }}>
-                                <Mail className="w-3.5 h-3.5" />
-                                {user.email || ''}
-                            </div>
-                        </div>
-                    </div>
-                    {expanded ? (
-                        <ChevronUp className="w-5 h-5" style={{ color: theme.colors.secondary }} />
-                    ) : (
-                        <ChevronDown className="w-5 h-5" style={{ color: theme.colors.secondary }} />
-                    )}
-                </div>
-            </button>
-
-            {expanded && (
-                <div className="px-4 pb-4 pt-2 space-y-4">
-                    {/* Contact bits */}
-                    {user.phone && (
-                        <div className="flex items-center gap-2 text-sm" style={{ color: theme.colors.textSecondary }}>
-                            <Phone className="w-4 h-4" />
-                            {user.phone}
-                        </div>
-                    )}
-
-                    {/* Role & Title using StyledSelect */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <StyledSelect
-                            label="Role"
-                            value={user.role || 'User'}
-                            onChange={(e) => onChangeField('role', e.target.value)}
-                            options={USER_ROLES}
-                            theme={theme}
-                        />
-                        <StyledSelect
-                            label="Title"
-                            value={user.title || 'Sales'}
-                            onChange={(e) => onChangeField('title', e.target.value)}
-                            options={USER_TITLES}
-                            theme={theme}
-                        />
-                    </div>
-
-                    {/* Permissions */}
-                    {user.role !== 'Admin' && (
-                        <div className="space-y-2">
-                            <div className="text-sm font-semibold" style={{ color: theme.colors.textPrimary }}>
-                                Permissions
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                                {Object.entries(PERMISSION_LABELS).map(([key, label]) => {
-                                    const locked =
-                                        !user.permissions.salesData &&
-                                        ['commissions', 'dealerRewards', 'customerRanking'].includes(key);
-                                    return (
-                                        <PillToggle
-                                            key={key}
-                                            label={label}
-                                            enabled={!!user.permissions[key]}
-                                            disabled={locked}
-                                            onToggle={() => onTogglePerm(key)}
-                                            theme={theme}
-                                        />
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="pt-1">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                if (window.confirm(`Delete ${user.firstName} ${user.lastName}? This cannot be undone.`)) {
-                                    onDelete();
-                                }
-                            }}
-                            className="inline-flex items-center gap-2 px-4 py-2 rounded-full font-semibold text-sm"
-                            style={{ backgroundColor: '#fee2e2', color: '#b91c1c' }}
-                        >
-                            <Trash2 className="w-4 h-4" />
-                            Delete User
-                        </button>
-                    </div>
-                </div>
-            )}
-        </GlassCard>
-    );
-};
-
-/* ==================
-   Screen component
-   ================== */
-const MembersScreenContent = ({ theme, onNavigate }) => {
+const MembersScreenContent = ({ theme }) => {
+    const [tab, setTab] = useState('team');
     const [original, setOriginal] = useState(INITIAL_MEMBERS);
     const [members, setMembers] = useState(INITIAL_MEMBERS);
     const [expandedId, setExpandedId] = useState(null);
-    const [dirty, setDirty] = useState(false);
-    const [showDropdown, setShowDropdown] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [confirmDelete, setConfirmDelete] = useState(null);
+    const [showInvite, setShowInvite] = useState(false);
+    const isDesktop = useMediaQuery('(min-width: 1024px)');
 
-    const handleToggleExpand = useCallback((id) => {
-        setExpandedId((prev) => (prev === id ? null : id));
-    }, []);
+    const toggle = useCallback((id) => setExpandedId(prev => prev === id ? null : id), []);
+
+    const isUserDirty = useCallback((user) => {
+        const orig = original.find(o => o.id === user.id);
+        if (!orig) return true; // newly invited user
+        return user.role !== orig.role || JSON.stringify(user.permissions) !== JSON.stringify(orig.permissions);
+    }, [original]);
+
+    const saveUser = useCallback((id) => {
+        const user = members.find(m => m.id === id);
+        if (!user) return;
+        setOriginal(prev => {
+            const exists = prev.find(o => o.id === id);
+            return exists ? prev.map(o => o.id === id ? { ...user } : o) : [...prev, { ...user }];
+        });
+    }, [members]);
 
     const updateUser = useCallback((id, updater) => {
-        setMembers((prev) =>
-            prev.map((m) => (m.id === id ? (typeof updater === 'function' ? updater(m) : { ...m, ...updater }) : m))
-        );
-        setDirty(true);
+        setMembers(prev => prev.map(m => m.id === id ? (typeof updater === 'function' ? updater(m) : { ...m, ...updater }) : m));
     }, []);
 
-    const onChangeField = useCallback((id, field, value) => {
-        updateUser(id, { [field]: value });
+    const onChangeRole = useCallback((id, role) => {
+        updateUser(id, (m) => {
+            if (isAdminRole(role)) {
+                const allTrue = {};
+                Object.keys(PERMISSION_LABELS).forEach(k => allTrue[k] = true);
+                return { ...m, role, permissions: allTrue };
+            }
+            return { ...m, role };
+        });
     }, [updateUser]);
 
     const onTogglePerm = useCallback((id, key) => {
         updateUser(id, (m) => {
             const next = { ...m.permissions, [key]: !m.permissions[key] };
-            if (key === 'salesData' && !next.salesData) {
-                next.commissions = false;
-                next.dealerRewards = false;
-                next.customerRanking = false;
-            }
             return { ...m, permissions: next };
         });
     }, [updateUser]);
 
-    const onDelete = useCallback((id) => {
-        setMembers((prev) => prev.filter((m) => m.id !== id));
-        setExpandedId((prev) => (prev === id ? null : prev));
-        setDirty(true);
+    const requestDelete = useCallback((user) => {
+        setConfirmDelete({ id: user.id, name: `${user.firstName} ${user.lastName}` });
     }, []);
 
-    const saveAll = useCallback(() => {
-        // TODO: Replace with API call when backend is ready
-        // await api.saveMembers(members);
-        setOriginal(members);
-        setDirty(false);
-    }, [members]);
+    const executeDelete = useCallback(() => {
+        if (!confirmDelete) return;
+        setMembers(prev => prev.filter(m => m.id !== confirmDelete.id));
+        setOriginal(prev => prev.filter(o => o.id !== confirmDelete.id));
+        setExpandedId(prev => prev === confirmDelete.id ? null : prev);
+        setConfirmDelete(null);
+    }, [confirmDelete]);
 
-    const cancelAll = useCallback(() => {
-        setMembers(original);
-        setDirty(false);
+    const handleInvite = useCallback((invitee) => {
+        const newUser = {
+            id: `user-${Date.now()}`,
+            firstName: invitee.firstName,
+            lastName: invitee.lastName,
+            email: invitee.email,
+            phone: invitee.phone || '',
+            role: invitee.role,
+            permissions: isAdminRole(invitee.role)
+                ? Object.fromEntries(Object.keys(PERMISSION_LABELS).map(k => [k, true]))
+                : Object.fromEntries(Object.keys(PERMISSION_LABELS).map(k => [k, false])),
+        };
+        setMembers(prev => [...prev, newUser]);
+        setOriginal(prev => [...prev, { ...newUser }]);
+    }, []);
+
+    const switchTab = useCallback((t) => {
+        setTab(t);
         setExpandedId(null);
-    }, [original]);
+        setSearchQuery('');
+    }, []);
 
-    const admins = useMemo(() => members.filter((m) => m.role === 'Admin'), [members]);
-    const users = useMemo(() => members.filter((m) => m.role !== 'Admin'), [members]);
+    // Search only applies to dealers tab
+    const filteredDealers = useMemo(() => {
+        if (!searchQuery.trim()) return INITIAL_DEALER_COMPANIES;
+        const q = searchQuery.toLowerCase();
+        return INITIAL_DEALER_COMPANIES.filter(d =>
+            d.name.toLowerCase().includes(q) ||
+            d.city?.toLowerCase().includes(q) ||
+            d.users.some(u => `${u.firstName} ${u.lastName} ${u.email}`.toLowerCase().includes(q))
+        );
+    }, [searchQuery]);
 
-    const dropdownOptions = [
-        { label: 'Settings', value: 'settings', icon: Shield },
-        { label: 'Help', value: 'help', icon: Mail },
-        { label: 'Log Out', value: 'logout', icon: Trash2 },
-    ];
+    const tabOptions = useMemo(() => [
+        { value: 'team', label: 'My Team', badge: members.length },
+        { value: 'dealers', label: 'Dealers', badge: INITIAL_DEALER_COMPANIES.length },
+    ], [members.length]);
 
     return (
-        <div className="flex flex-col h-full" style={{ backgroundColor: theme.colors.background }}>
-            <div className="relative">
-                <button
-                    onClick={() => setShowDropdown((prev) => !prev)}
-                    className="absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center border transition-colors hover:bg-black/5 dark:hover:bg:white/5"
-                    style={{ backgroundColor: theme.colors.subtle, borderColor: theme.colors.border }}
-                >
-                    <UserIcon className="w-5 h-5" style={{ color: theme.colors.secondary }} />
-                </button>
-                {showDropdown && (
-                    <DropdownMenu
-                        options={dropdownOptions}
-                        onSelect={(value) => {
-                            setShowDropdown(false);
-                            // Handle navigation based on selection
-                            if (value === 'settings' || value === 'help' || value === 'logout') {
-                                onNavigate?.(value);
-                            }
-                        }}
+        <div className="flex flex-col h-full app-header-offset" style={{ backgroundColor: theme.colors.background, color: theme.colors.textPrimary }}>
+            <div className="flex-1 overflow-y-auto scrollbar-hide">
+                <div className="px-4 sm:px-6 lg:px-8 pb-24 lg:pb-12 max-w-content mx-auto w-full">
+
+                    {/* Header */}
+                    <PageTitle
+                        title={tab === 'dealers' ? 'Dealers' : 'Members'}
+                        subtitle={tab === 'team' ? `${members.length} team members` : `${INITIAL_DEALER_COMPANIES.length} accounts`}
                         theme={theme}
-                    />
-                )}
-            </div>
+                        className="px-0 pt-4 pb-3"
+                        titleClassName="text-[1.375rem]"
+                        subtitleClassName="mt-0.5"
+                    >
+                        {tab === 'team' && (
+                            <button
+                                onClick={() => setShowInvite(true)}
+                                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.8125rem] font-semibold transition-all active:scale-95 shrink-0 mt-0.5"
+                                style={{ backgroundColor: theme.colors.accent, color: theme.colors.accentText }}
+                            >
+                                <UserPlus className="w-3.5 h-3.5" />
+                                Invite
+                            </button>
+                        )}
+                    </PageTitle>
 
-            <div className="flex-1 overflow-y-auto px-4 pb-28 pt-4 space-y-6 scrollbar-hide">
-                {/* Administrators */}
-                {admins.length > 0 && (
-                    <section>
-                        <div className="mb-3 flex items-center gap-2">
-                            <Shield className="w-5 h-5" style={{ color: theme.colors.accent }} />
-                            <h2 className="text-lg font-bold" style={{ color: theme.colors.textPrimary }}>
-                                Administrators
-                            </h2>
-                        </div>
-                        <div className="space-y-3">
-                            {admins.map((u) => (
-                                <MemberRow
-                                    key={u.id}
-                                    theme={theme}
-                                    user={u}
-                                    expanded={expandedId === u.id}
-                                    onToggle={() => handleToggleExpand(u.id)}
-                                    onChangeField={(field, val) => onChangeField(u.id, field, val)}
-                                    onTogglePerm={(key) => onTogglePerm(u.id, key)}
-                                    onDelete={() => onDelete(u.id)}
-                                />
-                            ))}
-                        </div>
-                    </section>
-                )}
+                    {/* Pill tabs */}
+                    <div className="mb-4">
+                        <SegmentedToggle
+                            value={tab}
+                            onChange={switchTab}
+                            options={tabOptions}
+                            size="sm"
+                            theme={theme}
+                            fullWidth
+                        />
+                    </div>
 
-                {/* Users */}
-                <section>
-                    <h2 className="text-lg font-bold mb-3" style={{ color: theme.colors.textPrimary }}>
-                        Users
-                    </h2>
-                    <div className="space-y-3">
-                        {users.map((u) => (
-                            <MemberRow
-                                key={u.id}
+                    {/* Search — dealers tab only */}
+                    {tab === 'dealers' && (
+                        <div className="mb-4">
+                            <StandardSearchBar
+                                value={searchQuery}
+                                onChange={setSearchQuery}
+                                placeholder="Search dealers or contacts…"
                                 theme={theme}
-                                user={u}
-                                expanded={expandedId === u.id}
-                                onToggle={() => handleToggleExpand(u.id)}
-                                onChangeField={(field, val) => onChangeField(u.id, field, val)}
-                                onTogglePerm={(key) => onTogglePerm(u.id, key)}
-                                onDelete={() => onDelete(u.id)}
                             />
-                        ))}
-                    </div>
-                </section>
+                        </div>
+                    )}
+
+                    {/* Tab content */}
+                    <TabContent activeKey={tab} tabIndex={tabOptions.findIndex(o => o.value === tab)}>
+                    {tab === 'team' ? (
+                        members.length > 0 ? (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+                                {members.map(u => (
+                                    <MemberCard
+                                        key={u.id}
+                                        theme={theme}
+                                        user={u}
+                                        expanded={expandedId === u.id}
+                                        onToggle={() => toggle(u.id)}
+                                        onChangeRole={(role) => onChangeRole(u.id, role)}
+                                        onTogglePerm={(key) => onTogglePerm(u.id, key)}
+                                        onRequestDelete={() => requestDelete(u)}
+                                        isDesktop={isDesktop}
+                                        isDirty={isUserDirty(u)}
+                                        onSave={() => saveUser(u.id)}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="py-20 text-center" style={{ color: theme.colors.textSecondary }}>
+                                <Users className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                                <p className="text-sm">No team members yet</p>
+                            </div>
+                        )
+                    ) : (
+                        filteredDealers.length > 0 ? (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2.5">
+                                {filteredDealers.map(d => (
+                                    <DealerCompanyCard
+                                        key={d.id}
+                                        company={d}
+                                        expanded={expandedId === d.id}
+                                        onToggle={() => toggle(d.id)}
+                                        theme={theme}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="py-20 text-center" style={{ color: theme.colors.textSecondary }}>
+                                <Building2 className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                                <p className="text-sm">{searchQuery ? 'No dealers match your search' : 'No dealers signed up yet'}</p>
+                            </div>
+                        )
+                    )}
+                    </TabContent>
+
+                </div>
             </div>
 
-            {dirty && (
-                <div
-                    className="fixed bottom-0 left-0 right-0 z-20 px-4 py-3"
-                    style={{
-                        backgroundColor: theme.colors.surface,
-                        borderTop: `1px solid ${theme.colors.border}`,
-                        backdropFilter: 'blur(8px)',
-                    }}
-                >
-                    <div className="max-w-screen-md mx-auto flex items-center gap-2">
-                        <button
-                            type="button"
-                            onClick={cancelAll}
-                            className="px-4 py-2 rounded-full font-semibold text-sm"
-                            style={{
-                                backgroundColor: theme.colors.subtle,
-                                color: theme.colors.textPrimary,
-                                border: `1px solid ${theme.colors.border}`,
-                            }}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="button"
-                            onClick={saveAll}
-                            className="px-5 py-2 rounded-full font-semibold text-sm text-white"
-                            style={{ backgroundColor: theme.colors.accent }}
-                        >
-                            Save changes
-                        </button>
-                    </div>
-                </div>
-            )}
+            <ConfirmModal
+                open={!!confirmDelete}
+                title="Remove team member"
+                message={confirmDelete ? `${confirmDelete.name} will lose access to this app. This can't be undone.` : ''}
+                confirmLabel="Remove"
+                onConfirm={executeDelete}
+                onCancel={() => setConfirmDelete(null)}
+                theme={theme}
+            />
+
+            <InviteModal
+                open={showInvite}
+                onClose={() => setShowInvite(false)}
+                onInvite={handleInvite}
+                theme={theme}
+                roles={REP_ROLES}
+            />
         </div>
     );
 };

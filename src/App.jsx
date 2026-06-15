@@ -1,52 +1,59 @@
 ﻿import React, { useState, useMemo, useCallback, useEffect, useRef, Suspense } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { lightTheme, darkTheme } from './data/index.js';
-import { DEFAULT_HOME_APPS, allApps } from './data.jsx';
-import { INITIAL_OPPORTUNITIES, MY_PROJECTS_DATA, INITIAL_DESIGN_FIRMS, EMPTY_LEAD, STAGES } from './screens/projects/data.js';
-import { INITIAL_POSTS, INITIAL_POLLS } from './screens/community/data.js';
+import { DEFAULT_HOME_APPS, allApps } from './constants/apps.js';
+import { INITIAL_OPPORTUNITIES, MY_PROJECTS_DATA, INITIAL_DESIGN_FIRMS, INITIAL_DEALERS, EMPTY_LEAD, STAGES } from './screens/projects/data.js';
+import { INITIAL_POSTS, INITIAL_POLLS, INITIAL_WINS, SUBREDDIT_POSTS } from './screens/community/data.js';
 import { INITIAL_MEMBERS } from './screens/members/data.js';
-import { CUSTOMER_DIRECTORY_DATA } from './screens/resources/customer-directory/data.js';
-import { ORDER_DATA } from './screens/orders/data.js';
-import { MOCK_CUSTOMERS } from './data/mockCustomers.js';
+import { DEALER_DIRECTORY_DATA } from './screens/resources/dealer-directory/data.js';
 
-import { AppHeader, ProfileMenu, SCREEN_MAP, VoiceModal, SuccessToast } from './ui.jsx';
-import { OrderDetailScreen } from './screens/orders/index.js';
-import { SalesScreen } from './screens/sales/SalesScreen.jsx';
+import { AppHeader } from './components/navigation/AppHeader.jsx';
+import { ProfileMenu } from './components/navigation/ProfileMenu.jsx';
+import { VoiceModal, SuccessToast } from './components/feedback/ToastsAndModals.jsx';
+import { SCREEN_MAP, ProductComparisonScreen, CompetitiveAnalysisScreen, SalesScreen, SamplesScreen } from './config/screenMap.js';
+import { SERIES_CATEGORIES } from './screens/products/data.js';
+import { SeriesCategoryPickerScreen } from './screens/products/SeriesCategoryPickerScreen.jsx';
 import { Modal } from './components/common/Modal.jsx';
-import { ResourceDetailScreen } from './screens/utility/UtilityScreens.jsx';
-import { ProductComparisonScreen, CompetitiveAnalysisScreen } from './screens/products/index.js';
-import { SamplesScreen } from './screens/samples/index.js';
-import { CreateContentModal } from './screens/community/CreateContentModal.jsx';
+import { INITIAL_ASSETS } from './screens/library/data.js';
 import { AnimatedScreenWrapper } from './components/common/AnimatedScreenWrapper.jsx';
-import { ProjectsScreen } from './screens/projects/ProjectsScreen.jsx';
-import { CustomerMicrositeScreen } from './screens/customers/CustomerMicrositeScreen.jsx';
-import { StandardsProgramDetailScreen } from './screens/customers/StandardsProgramDetailScreen.jsx';
 import { usePersistentState } from './hooks/usePersistentState.js';
-import { useModalState } from './hooks/useModalState.js';
-import { NavigationShell } from './components/navigation/NavigationShell.jsx';
+import { useCompanyResource } from './hooks/useCompanyResource.js';
 import { ToastHost } from './components/common/ToastHost.jsx';
+import { ErrorBoundary } from './components/common/ErrorBoundary.jsx';
+import { ScreenSkeleton } from './components/common/ScreenSkeleton.jsx';
+import { submitLeadToExcel } from './utils/submitLeadToExcel.js';
+import { INITIAL_SAMPLE_ORDERS, buildSubmittedSampleOrder, syncSampleOrdersWithSeeds } from './screens/samples/sampleOrders.js';
 
 // Lazy load less-frequently visited resource feature screens for bundle splitting
+const CommissionRatesScreen = React.lazy(() => import('./screens/resources/commission-rates/index.js'));
 const LeadTimesScreen = React.lazy(() => import('./screens/resources/lead-times/index.js'));
+const WeightRatingsScreen = React.lazy(() => import('./screens/resources/weight-ratings/index.js'));
 const ContractsScreen = React.lazy(() => import('./screens/resources/contracts/index.js'));
-const CustomerDirectoryScreen = React.lazy(() => import('./screens/resources/customer-directory/index.js'));
+const DealerDirectoryScreen = React.lazy(() => import('./screens/resources/dealer-directory/index.js'));
+const DealerDetailScreen = React.lazy(() => import('./screens/resources/dealer-directory/DealerDetailScreen.jsx').then(m => ({ default: m.DealerDetailScreen })));
 const DiscontinuedFinishesScreen = React.lazy(() => import('./screens/resources/discontinued-finishes/index.js'));
 const TradeshowsScreen = React.lazy(() => import('./screens/resources/tradeshows/index.js'));
 const SampleDiscountsScreen = React.lazy(() => import('./screens/resources/sample-discounts/index.js'));
+const SampleOrdersScreen = React.lazy(() => import('./screens/samples/SampleOrdersScreen.jsx').then(m => ({ default: m.SampleOrdersScreen })));
 const LoanerPoolScreen = React.lazy(() => import('./screens/resources/loaner-pool/index.js'));
 const InstallInstructionsScreen = React.lazy(() => import('./screens/resources/install-instructions/index.js'));
+const NewDealerSignUpScreen = React.lazy(() => import('./screens/resources/new-dealer-signup/index.js'));
 const PresentationsScreen = React.lazy(() => import('./screens/resources/presentations/index.js'));
 const RequestFieldVisitScreen = React.lazy(() => import('./screens/resources/request-field-visit/index.js'));
+const TourVisitScreen = React.lazy(() => import('./screens/resources/tour-visit/index.js'));
 const SearchFabricsScreen = React.lazy(() => import('./screens/resources/search-fabrics/index.js'));
 const RequestComYardageScreen = React.lazy(() => import('./screens/resources/request-com-yardage/index.js'));
 const SocialMediaScreen = React.lazy(() => import('./screens/resources/social-media/index.js'));
 const ComColRequest = React.lazy(() => import('./screens/resources/search-fabrics/ComColRequest.jsx').then(m => ({ default: m.ComColRequest })));
-// Scan mini app screens (feature flagged)
-const ScanScreen = React.lazy(() => import('./screens/resources/scan/index.js'));
-const ScanCameraScreen = React.lazy(() => import('./screens/resources/scan/ScanCameraScreen.jsx'));
-const OrderReceivingStatusScreen = React.lazy(() => import('./screens/resources/scan/OrderReceivingStatusScreen.jsx'));
+const ProjectsScreen = React.lazy(() => import('./screens/projects/ProjectsScreen.jsx').then(m => ({ default: m.ProjectsScreen })));
+const OrderDetailScreen = React.lazy(() => import('./screens/orders/index.js').then(m => ({ default: m.OrderDetailScreen })));
+const ResourceDetailScreen = React.lazy(() => import('./screens/utility/UtilityScreens.jsx').then(m => ({ default: m.ResourceDetailScreen })));
+const CreateContentModal = React.lazy(() => import('./screens/community/CreateContentModal.jsx').then(m => ({ default: m.CreateContentModal })));
+const UploadToLibraryModal = React.lazy(() => import('./screens/library/UploadToLibraryModal.jsx').then(m => ({ default: m.UploadToLibraryModal })));
+const CustomsScreen = React.lazy(() => import('./screens/products/CustomsScreen.jsx').then(m => ({ default: m.CustomsScreen })));
+const StudioOnePagerDetailScreen = React.lazy(() => import('./screens/studio/OnePagerDetailScreen.jsx').then(m => ({ default: m.OnePagerDetailScreen })));
 
-// Centralized legacy -> canonical slug mapping for resource feature routes
+// Legacy underscore routes aliased to their canonical hyphenated slugs
 const RESOURCE_SLUG_ALIASES = {
     'discontinued_finishes': 'discontinued-finishes',
     'design_days': 'tradeshows',
@@ -56,22 +63,23 @@ const RESOURCE_SLUG_ALIASES = {
     'install_instructions': 'install-instructions',
     'request_field_visit': 'request-field-visit',
     'social_media': 'social-media',
-    'dealer_directory': 'customer-directory', // legacy support
-    'dealer-directory': 'customer-directory',
-    'customer_directory': 'customer-directory'
+    'dealer_directory': 'dealer-directory',
+    'commission_rates': 'commission-rates',
+    'weight_ratings': 'weight-ratings'
+    // 'new-dealer-signup' already canonical; no alias needed
 };
 
 function normalizeResourceSlug(raw) {
-    // Only transform single segment slugs (ignore nested paths like search-fabrics/...)
     if (!raw || raw.includes('/')) return raw;
     return RESOURCE_SLUG_ALIASES[raw] || raw;
 }
 
-// Map canonical resource feature slugs to their (lazy) components
 const RESOURCE_FEATURE_SCREENS = {
+    'commission-rates': CommissionRatesScreen,
     'lead-times': LeadTimesScreen,
+    'weight-ratings': WeightRatingsScreen,
     'contracts': ContractsScreen,
-    'customer-directory': CustomerDirectoryScreen,
+    'dealer-directory': DealerDirectoryScreen,
     'discontinued-finishes': DiscontinuedFinishesScreen,
     'tradeshows': TradeshowsScreen,
     'sample-discounts': SampleDiscountsScreen,
@@ -79,174 +87,304 @@ const RESOURCE_FEATURE_SCREENS = {
     'install-instructions': InstallInstructionsScreen,
     'presentations': PresentationsScreen,
     'request-field-visit': RequestFieldVisitScreen,
+    'tour-visit': TourVisitScreen,
+    'new-dealer-signup': NewDealerSignUpScreen,
     'social-media': SocialMediaScreen,
     'search-fabrics': SearchFabricsScreen,
     'request-com-yardage': RequestComYardageScreen,
-    'comcol-request': ComColRequest,
-    // Scan mini app routes
-    'scan': ScanScreen,
-    'scan/camera': ScanCameraScreen,
+    'comcol-request': ComColRequest
 };
 
-// URL path <-> screen key mapping
-const screenToPath = (screenKey) => {
-    if (!screenKey || screenKey === 'home') return '/';
-    return '/' + screenKey.replace(/\//g, '/');
+const screenToPath = (screen) => {
+    if (!screen || screen === 'home') return '/';
+    return `/${encodeURI(screen)}`;
 };
 
 const pathToScreen = (pathname) => {
-    if (!pathname || pathname === '/') return 'home';
-    // Remove leading slash and return
-    return pathname.slice(1);
+    const trimmed = pathname.replace(/^\/+|\/+$/g, '');
+    return trimmed ? decodeURI(trimmed) : 'home';
 };
 
-const ScreenRouter = ({ screenKey, projectsScreenRef, SuspenseFallback, ...rest }) => {
-if (!screenKey) return null;
-const parts = screenKey.split('/');
-const base = parts[0];
+const ScreenRouter = React.memo(({ screenKey, projectsScreenRef, SuspenseFallback, ...rest }) => {
+    if (!screenKey) return null;
+    const parts = screenKey.split('/');
+    const base = parts[0];
 
-if (base === 'projects') return <ProjectsScreen ref={projectsScreenRef} {...rest} />;
+    if (base === 'projects' && parts[1]) {
+            const oppId = parts[1];
+        return (
+            <Suspense fallback={SuspenseFallback}>
+                <ProjectsScreen ref={projectsScreenRef} {...rest} deepLinkOppId={oppId} />
+            </Suspense>
+        );
+    }
+    if (base === 'projects') {
+        return (
+            <Suspense fallback={SuspenseFallback}>
+                <ProjectsScreen ref={projectsScreenRef} {...rest} />
+            </Suspense>
+        );
+    }
 
-// Product category routes: products/category/:categoryId or products/category/:categoryId/:productId
-if (base === 'products' && parts[1] === 'category' && parts.length >= 3) {
-    const categoryId = parts[2];
-    // Competition view: products/category/:categoryId/competition/:productId
-    if (parts[3] === 'competition') {
-        const productId = parts[4] || null;
-        return <CompetitiveAnalysisScreen {...rest} categoryId={categoryId} productId={productId} />;
-    }
-    // Category product listing with optional initial product: products/category/:categoryId/:productId
-    const initialProductId = parts[3] || null;
-    return <ProductComparisonScreen {...rest} categoryId={categoryId} initialProductId={initialProductId} />;
-}
+    const lazyWrap = (Comp, extraProps) => (
+        <Suspense fallback={SuspenseFallback}>
+            {React.createElement(Comp, { ...rest, ...extraProps })}
+        </Suspense>
+    );
 
-// Order detail routes: orders/:orderNumber
-if (base === 'orders' && parts[1]) {
-    const orderNumber = parts[1];
-    return <OrderDetailScreen orderNumber={orderNumber} {...rest} />;
-}
-    
-// Customer microsite routes
-if (base === 'customers') {
-    const customerId = parts[1];
-    // Standards program detail: customers/:customerId/standards/:programId
-    if (parts[2] === 'standards' && parts[3]) {
-        return <StandardsProgramDetailScreen customerId={customerId} programId={parts[3]} {...rest} />;
-    }
-    // Customer microsite: customers/:customerId
-    if (customerId) {
-        return <CustomerMicrositeScreen customerId={customerId} {...rest} />;
-    }
-    // Redirect to projects/customers tab if just /customers
-    return <ProjectsScreen ref={projectsScreenRef} {...rest} />;
-}
-    
-// Resource feature routes
-if (base === 'resources') {
-    // Extract the sub-path after "resources/"
-    const subPath = screenKey.slice('resources/'.length);
-    const normalizedSlug = normalizeResourceSlug(subPath.split('/')[0]);
-    
-    // Handle COM/COL request flow within search-fabrics
-    if (subPath.startsWith('search-fabrics/')) {
-        const subResource = subPath.slice('search-fabrics/'.length);
-        if (subResource === 'comcol-request') {
-            const ComColRequestScreen = RESOURCE_FEATURE_SCREENS['comcol-request'];
-            return <Suspense fallback={SuspenseFallback}><ComColRequestScreen {...rest} /></Suspense>;
+    if (screenKey === 'samples/cart') return lazyWrap(SamplesScreen, { initialCartOpen: true });
+    if (screenKey === 'samples/orders') return lazyWrap(SampleOrdersScreen);
+    if (base === 'samples') return lazyWrap(SamplesScreen);
+
+    if (base === 'sales' && parts[1]) {
+        const salesDetailKey = parts.slice(1).join('/');
+        if (salesDetailKey === 'customer-rank' || salesDetailKey === 'incentive-rewards' || salesDetailKey === 'commissions') {
+            return lazyWrap(SCREEN_MAP[salesDetailKey]);
         }
     }
-    
-    // Handle Scan mini app routes
-    if (subPath.startsWith('scan/')) {
-        const scanSubPath = subPath.slice('scan/'.length);
-        // Scan camera screen
-        if (scanSubPath === 'camera') {
-            return <Suspense fallback={SuspenseFallback}><ScanCameraScreen {...rest} /></Suspense>;
+
+    if (base === 'new-trip') {
+        return lazyWrap(TourVisitScreen);
+    }
+
+    // Standalone, shareable Good · Better · Best sales deck.
+    // Supports /presentations/good-better-best and /resources/presentations/good-better-best.
+    if (base === 'presentations' && parts[1] === 'good-better-best') {
+        return lazyWrap(SCREEN_MAP['good-better-best'], { gbbSection: parts[2] || null });
+    }
+    if (base === 'resources' && parts[1] === 'presentations' && parts[2] === 'good-better-best') {
+        return lazyWrap(SCREEN_MAP['good-better-best'], { gbbSection: parts[3] || null });
+    }
+
+    if (base === 'resources') {
+        const slug = parts.slice(1).join('/');
+        const firstSegment = slug.split('/')[0];
+        const normalizedFirst = normalizeResourceSlug(firstSegment);
+        const normalized = [normalizedFirst, ...slug.split('/').slice(1)].join('/');
+
+        // Social media supports nested vertical/deep-link routes, e.g.
+        // resources/social-media/law-firms or resources/social-media/workplace.
+        if (normalizedFirst === 'social-media') {
+            return lazyWrap(SocialMediaScreen);
         }
-        // Order receiving status: scan/order/:orderId
-        if (scanSubPath.startsWith('order/')) {
-            const orderId = scanSubPath.slice('order/'.length);
-            return <Suspense fallback={SuspenseFallback}><OrderReceivingStatusScreen orderId={orderId} {...rest} /></Suspense>;
+
+        // Tradeshows sub-routes: resources/tradeshows/{brandId}/{showId?}
+        if (normalizedFirst === 'tradeshows' && parts.length >= 3) {
+            return lazyWrap(TradeshowsScreen, {
+                initialBrandId: parts[2],
+                initialShowId: parts[3] || null,
+            });
+        }
+
+        if (normalizedFirst === 'weight-ratings') {
+            return lazyWrap(WeightRatingsScreen, {
+                initialSeriesSlug: parts[2] || null
+            });
+        }
+
+        // Direct feature screen match (single segment feature slugs only)
+        if (RESOURCE_FEATURE_SCREENS[normalized]) {
+            return lazyWrap(RESOURCE_FEATURE_SCREENS[normalized]);
         }
     }
-    
-    const FeatureScreen = RESOURCE_FEATURE_SCREENS[normalizedSlug];
-    if (FeatureScreen) return <Suspense fallback={SuspenseFallback}><FeatureScreen {...rest} /></Suspense>;
-    
-    // Fall back to ResourceDetailScreen for other slugs
-    if (parts.length > 1) return <ResourceDetailScreen {...rest} />;
-}
 
-const ScreenComponent = SCREEN_MAP[base] || SalesScreen;
-return <ScreenComponent {...rest} />;
-};
+    if (base === 'community' && parts[1] === 'post' && parts[2]) {
+        const ScreenComponent = SCREEN_MAP[base] || SalesScreen;
+        return (
+            <Suspense fallback={SuspenseFallback}>
+                <ScreenComponent {...rest} focusPostId={parts[2]} />
+            </Suspense>
+        );
+    }
+
+    if (base === 'community' && parts[1] === 'studio' && parts[2]) {
+        return lazyWrap(StudioOnePagerDetailScreen, { screenParams: { ...(rest.screenParams || {}), slug: parts[2] } });
+    }
+
+    if (base === 'products' && parts[1] === 'series' && parts[2]) {
+        const matches = SERIES_CATEGORIES[parts[2]];
+        if (matches?.length === 1) {
+            return lazyWrap(ProductComparisonScreen, { categoryId: matches[0].categoryId, initialProductId: matches[0].productId });
+        }
+        if (matches?.length > 1) {
+            return lazyWrap(SeriesCategoryPickerScreen, { seriesSlug: parts[2], categories: matches });
+        }
+        // Fallback: show products screen if slug not recognized
+    }
+
+    if (base === 'products' && parts[1] === 'category' && parts[2] === 'customs') {
+        return lazyWrap(CustomsScreen);
+    }
+
+    if (base === 'products' && parts[1] === 'category' && parts.length === 3) {
+        return lazyWrap(ProductComparisonScreen, { categoryId: parts[2], initialProductId: rest.screenParams?.initialProductId });
+    }
+    if (base === 'products' && parts[1] === 'category' && (parts[2] === 'competition' || parts[3] === 'competition')) {
+        const productId = parts[3] === 'competition' && parts[4] ? parts[4] : null;
+        return (
+            <Suspense fallback={SuspenseFallback}>
+                <CompetitiveAnalysisScreen {...rest} categoryId={parts[2]} productId={productId} />
+            </Suspense>
+        );
+    }
+
+    if (base === 'orders' && parts.length > 1) return lazyWrap(OrderDetailScreen);
+
+    // Dealer directory detail route: resources/dealer-directory/{id}
+    if (base === 'resources' && parts[1] === 'dealer-directory' && parts[2]) {
+        return lazyWrap(DealerDetailScreen, { screenKey });
+    }
+
+    if (base === 'resources' && parts.length > 1) return lazyWrap(ResourceDetailScreen);
+
+    const ScreenComponent = SCREEN_MAP[base] || SalesScreen;
+    return (
+        <Suspense fallback={SuspenseFallback}>
+            <ScreenComponent {...rest} />
+        </Suspense>
+    );
+});
+ScreenRouter.displayName = 'ScreenRouter';
 
 function App() {
+    const routerNavigate = useNavigate();
     const location = useLocation();
-    const navigate = useNavigate();
-    
-    // Persistent preferences / cart
-    const [isDarkMode, setIsDarkMode] = usePersistentState('pref.darkMode', false);
+
+    const [isDarkMode, setIsDarkMode] = useState(false);
     const [cart, setCart] = usePersistentState('samples.cart', {});
+    const [sampleOrders, setSampleOrders] = usePersistentState('samples.orders', INITIAL_SAMPLE_ORDERS);
     const [homeApps, setHomeApps] = usePersistentState('pref.homeApps', DEFAULT_HOME_APPS);
 
-    // Migrate previously stored 6-app selection to new 8-app default
+    // Reset to current default if stored count mismatches (e.g. after adding new apps)
     useEffect(() => {
-        if (!Array.isArray(homeApps) || homeApps.length !== 8) {
+        if (!Array.isArray(homeApps) || homeApps.length !== DEFAULT_HOME_APPS.length) {
             setHomeApps(DEFAULT_HOME_APPS);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Navigation state - derive current screen from URL
-    const currentScreen = useMemo(() => pathToScreen(location.pathname), [location.pathname]);
-    const [lastNavigationDirection, setLastNavigationDirection] = useState('forward');
-    const [navigationHistoryLength, setNavigationHistoryLength] = useState(1);
-    
-    // Track navigation history length for back button visibility
     useEffect(() => {
-        const handlePopState = () => {
-            setLastNavigationDirection('backward');
-        };
-        window.addEventListener('popstate', handlePopState);
-        return () => window.removeEventListener('popstate', handlePopState);
-    }, []);
+        setSampleOrders((prev) => syncSampleOrdersWithSeeds(prev));
+    }, [setSampleOrders]);
 
-    // UI state
+    const [lastNavigationDirection, setLastNavigationDirection] = useState('forward');
+    const [screenParams, setScreenParams] = useState({});
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const profileBtnRef = useRef(null);
     const [voiceMessage, setVoiceMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
     const [alertInfo, setAlertInfo] = useState({ show: false, message: '' });
+    const [homeResetKey, setHomeResetKey] = useState(0);
+    const backHandlerRef = useRef(null);
+    const backHandlerRegistrationRef = useRef(0);
+    const backInteractionLockRef = useRef(false);
+    const backInteractionTimerRef = useRef(null);
 
-    // Domain state
-    const [userSettings, setUserSettings] = useState({ id: 1, firstName: 'Luke', lastName: 'Wagner', homeAddress: '5445 N Deerwood Lake Rd, Jasper, IN 47546' });
-    const [opportunities, setOpportunities] = useState(INITIAL_OPPORTUNITIES);
+    const [navDepth, setNavDepth] = useState(0);
+    const navDepthRef = useRef(navDepth);
+    useEffect(() => { navDepthRef.current = navDepth; }, [navDepth]);
+
+    // Track whether the last navigation was initiated by our handleNavigate/handleBack
+    const internalNavRef = useRef(false);
+
+    const currentScreen = useMemo(() => pathToScreen(location.pathname), [location.pathname]);
+    const isHomeScreen = !currentScreen || currentScreen === 'home';
+
+    const releaseBackInteractionLock = useCallback(() => {
+        if (backInteractionTimerRef.current) {
+            clearTimeout(backInteractionTimerRef.current);
+            backInteractionTimerRef.current = null;
+        }
+        backInteractionLockRef.current = false;
+    }, []);
+
+    const lockBackInteraction = useCallback((ms = 260) => {
+        releaseBackInteractionLock();
+        backInteractionLockRef.current = true;
+        backInteractionTimerRef.current = setTimeout(() => {
+            backInteractionLockRef.current = false;
+            backInteractionTimerRef.current = null;
+        }, ms);
+    }, [releaseBackInteractionLock]);
+
+    useEffect(() => () => {
+        releaseBackInteractionLock();
+    }, [releaseBackInteractionLock]);
+
+    // Sync navDepth when browser native back/forward triggers a location change
+    // without going through handleNavigate/handleBack (e.g. native swipe-back,
+    // hardware back button, browser forward/back buttons).
+    useEffect(() => {
+        releaseBackInteractionLock();
+        if (internalNavRef.current) {
+            // This location change was triggered by our code — already handled
+            internalNavRef.current = false;
+            return;
+        }
+        // External navigation (native gesture, browser button, etc.)
+        // Use 'none' so AnimatedScreenWrapper skips its CSS slide animation —
+        // the browser/OS already provided the visual transition.
+        if (isHomeScreen) {
+            setLastNavigationDirection('none');
+            setNavDepth(0);
+        } else if (navDepthRef.current === 0) {
+            // Navigated to a non-home screen externally (e.g. browser forward)
+            setLastNavigationDirection('none');
+            setNavDepth(1);
+        }
+    }, [currentScreen, isHomeScreen, releaseBackInteractionLock]);
+
+    const screenLabel = useMemo(() => {
+        if (!currentScreen || currentScreen === 'home') return 'Home';
+        const app = allApps.find(a => a.route === currentScreen.split('/')[0]);
+        return app?.name || currentScreen.split('/')[0].replace(/-/g, ' ');
+    }, [currentScreen]);
+
+    const [userSettings, setUserSettings] = useState({ id: 1, firstName: 'Luke', lastName: 'Wagner', homeAddress: '5445 N Deerwood Lake Rd, Jasper, IN 47546', shirtSize: 'L' });
+    const [opportunities, setOpportunities] = usePersistentState('projects.opportunities', INITIAL_OPPORTUNITIES);
     const [myProjects, setMyProjects] = useState(MY_PROJECTS_DATA);
     const [projectsTabOverride, setProjectsTabOverride] = useState(null);
-    const [projectsInitialProjectId, setProjectsInitialProjectId] = useState(null);
-    const [selectedProject, setSelectedProject] = useState(null);
+    const [projectsStageOverride, setProjectsStageOverride] = useState(null);
     const [members, setMembers] = useState(INITIAL_MEMBERS);
     const [currentUserId] = useState(1);
 
-    // Community
-    const [posts, setPosts] = useState(INITIAL_POSTS);
+    useEffect(() => {
+        setOpportunities((prev) => {
+            if (!Array.isArray(prev)) return INITIAL_OPPORTUNITIES;
+            const existingIds = new Set(prev.map((opportunity) => String(opportunity?.id)));
+            const missingSeeded = INITIAL_OPPORTUNITIES.filter((opportunity) => !existingIds.has(String(opportunity.id)));
+            if (missingSeeded.length === 0) return prev;
+            return [...prev, ...missingSeeded];
+        });
+    }, [setOpportunities]);
+
+    const [posts, setPosts] = useState([...INITIAL_POSTS, ...INITIAL_WINS, ...SUBREDDIT_POSTS]);
     const [polls, setPolls] = useState(INITIAL_POLLS);
     const [likedPosts, setLikedPosts] = useState({});
     const [pollChoices, setPollChoices] = useState({});
     const [showCreateContentModal, setShowCreateContentModal] = useState(false);
+    const [showLibraryUploadModal, setShowLibraryUploadModal] = useState(false);
+    const [libraryAssets, setLibraryAssets] = useState(INITIAL_ASSETS);
+    const [savedImageIds, setSavedImageIds] = usePersistentState('library.saved', []);
+    const [postUpvotes, setPostUpvotes] = useState({});
 
-    // Directories / leads
-    const [customerDirectory] = useState(CUSTOMER_DIRECTORY_DATA);
-    const [customers, setCustomers] = useState(MOCK_CUSTOMERS);
+    const liveDealerDirectory = useCompanyResource('dealer-directory', DEALER_DIRECTORY_DATA);
+    const [dealerDirectory, setDealerDirectory] = useState(DEALER_DIRECTORY_DATA);
     const [designFirms, setDesignFirms] = useState(INITIAL_DESIGN_FIRMS);
+    const [dealers, setDealers] = useState(INITIAL_DEALERS);
     const [newLeadData, setNewLeadData] = usePersistentState('draft.newLead', EMPTY_LEAD);
-    const [customNavItems, setCustomNavItems] = usePersistentState('nav.customItems', ['home', 'projects', 'orders', 'sales', 'resources/dealer-directory']);
 
     const projectsScreenRef = useRef(null);
+    const liveDealerDirectoryHydratedRef = useRef(false);
+
+    useEffect(() => {
+        if (liveDealerDirectoryHydratedRef.current || !liveDealerDirectory.isLive || !Array.isArray(liveDealerDirectory.data)) return;
+        setDealerDirectory((prev) => (prev === DEALER_DIRECTORY_DATA ? liveDealerDirectory.data : prev));
+        liveDealerDirectoryHydratedRef.current = true;
+    }, [liveDealerDirectory.data, liveDealerDirectory.isLive]);
 
     const currentTheme = useMemo(() => (isDarkMode ? darkTheme : lightTheme), [isDarkMode]);
 
-    // mobile vh fix
     useEffect(() => {
         const setAppHeight = () => document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
         setAppHeight();
@@ -260,28 +398,85 @@ function App() {
 
     useEffect(() => { document.body.style.backgroundColor = currentTheme.colors.background; }, [currentTheme.colors.background]);
 
-    // Navigation handlers - now using URL
-    const handleNavigate = useCallback((screen) => {
+    // Sync data-theme attribute on <html> for CSS variable theming
+    useEffect(() => {
+        document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+    }, [isDarkMode]);
+
+    const navigateHome = useCallback(({ reset = true, direction = 'home' } = {}) => {
+        internalNavRef.current = true;
+        setLastNavigationDirection(direction);
+        setScreenParams({});
+        setNavDepth(0);
+        routerNavigate('/', { replace: true });
+        if (reset) {
+            setHomeResetKey((prev) => prev + 1);
+        }
+    }, [routerNavigate]);
+
+    const handleNavigate = useCallback((screen, params = {}) => {
+        if (!screen || screen === 'home') {
+            navigateHome({ reset: true, direction: 'home' });
+            return;
+        }
+
+        internalNavRef.current = true;
         setLastNavigationDirection('forward');
-        setNavigationHistoryLength(prev => prev + 1);
-        navigate(screenToPath(screen));
-    }, [navigate]);
+        setScreenParams(params || {});
+        if (screen === 'projects') {
+            if (params?.tab) setProjectsTabOverride(params.tab);
+            if (params?.stage) setProjectsStageOverride(params.stage);
+        }
+        setNavDepth(d => d + 1);
+        routerNavigate(screenToPath(screen));
+    }, [navigateHome, routerNavigate]);
 
     const handleBack = useCallback(() => {
-        if (currentScreen === 'projects' && projectsScreenRef.current?.clearSelection) {
-            const handled = projectsScreenRef.current.clearSelection();
-            if (handled) return;
+        if (backInteractionLockRef.current) {
+            return;
         }
-        setLastNavigationDirection('backward');
-        setNavigationHistoryLength(prev => Math.max(1, prev - 1));
-        navigate(-1);
-    }, [currentScreen, navigate]);
 
-    const handleHome = useCallback(() => { 
-        setNavigationHistoryLength(1);
-        setLastNavigationDirection('backward'); 
-        navigate('/');
-    }, [navigate]);
+        if (typeof backHandlerRef.current === 'function') {
+            lockBackInteraction(220);
+            const handled = backHandlerRef.current();
+            if (handled) {
+                return;
+            }
+            releaseBackInteractionLock();
+        }
+
+        if (navDepth > 0) {
+            lockBackInteraction(navDepth <= 1 ? 420 : 320);
+            internalNavRef.current = true;
+            setLastNavigationDirection(navDepth <= 1 ? 'home' : 'backward');
+            setScreenParams({});
+            setNavDepth(d => Math.max(0, d - 1));
+            routerNavigate(-1);
+        }
+    }, [routerNavigate, navDepth, lockBackInteraction, releaseBackInteractionLock]);
+
+    const setBackHandler = useCallback((handler) => {
+        if (typeof handler !== 'function') {
+            backHandlerRegistrationRef.current += 1;
+            backHandlerRef.current = null;
+            return () => {};
+        }
+
+        const registrationId = ++backHandlerRegistrationRef.current;
+        backHandlerRef.current = handler;
+
+        return () => {
+            if (backHandlerRegistrationRef.current !== registrationId) {
+                return;
+            }
+            backHandlerRegistrationRef.current += 1;
+            backHandlerRef.current = null;
+        };
+    }, []);
+
+    const handleHome = useCallback(() => {
+        navigateHome({ reset: true, direction: 'home' });
+    }, [navigateHome]);
 
     const handleVoiceActivate = useCallback((message) => { setVoiceMessage(message); setTimeout(() => setVoiceMessage(''), 1500); }, []);
     const handleAskAI = useCallback((query) => { setVoiceMessage(`AI Search: ${query}`); setTimeout(() => setVoiceMessage(''), 2500); }, []);
@@ -296,6 +491,26 @@ function App() {
             return next;
         });
     }, [setCart]);
+
+    const handleSubmitSampleOrder = useCallback((draft) => {
+        let createdOrder = null;
+        setSampleOrders((prev) => {
+            const existing = Array.isArray(prev) ? prev : INITIAL_SAMPLE_ORDERS;
+            createdOrder = buildSubmittedSampleOrder({
+                existingOrders: existing,
+                cartItems: draft?.cartItems || [],
+                shipToName: draft?.shipToName,
+                address1: draft?.address1,
+                address2: draft?.address2,
+                shipToType: draft?.shipToType,
+                linkedProjectId: draft?.linkedProjectId || null,
+                linkedProjectName: draft?.linkedProjectName || '',
+                userSettings,
+            });
+            return [createdOrder, ...existing];
+        });
+        return createdOrder;
+    }, [setSampleOrders, userSettings]);
 
     const handleToggleLike = useCallback((postId) => {
         setLikedPosts((prev) => {
@@ -312,58 +527,106 @@ function App() {
         setPosts((prev) => prev.map(p => p.id === postId ? { ...p, comments: [...(p.comments || []), { id: now, name: 'You', text }] } : p));
     }, []);
 
+    const handleUpvote = useCallback((postId) => {
+        setPostUpvotes((prev) => {
+            const isUp = !!prev[postId];
+            const next = { ...prev };
+            if (isUp) delete next[postId]; else next[postId] = true;
+            setPosts((p) => p.map(post => post.id === postId ? { ...post, upvotes: Math.max(0, (post.upvotes || 0) + (isUp ? -1 : 1)) } : post));
+            return next;
+        });
+    }, []);
+
+    const handleToggleSaveImage = useCallback((assetId) => {
+        setSavedImageIds(prev => {
+            const set = new Set(Array.isArray(prev) ? prev : []);
+            if (set.has(assetId)) set.delete(assetId); else set.add(assetId);
+            return [...set];
+        });
+    }, [setSavedImageIds]);
+
     const handlePollVote = useCallback((pollId, optionId) => {
         setPollChoices((prev) => ({ ...prev, [pollId]: optionId }));
         setPolls((prev) => prev.map(pl => pl.id !== pollId ? pl : { ...pl, options: pl.options.map(o => o.id === optionId ? { ...o, votes: (o.votes || 0) + 1 } : o) }));
     }, []);
+
+    // Reusable helper – flash a success toast for a fixed duration.
+    // Clears any in-flight timer so an earlier toast can't dismiss a newer one.
+    const successTimerRef = useRef(null);
+    const flashSuccess = useCallback((msg, ms = 1500) => {
+        clearTimeout(successTimerRef.current);
+        setSuccessMessage(msg);
+        successTimerRef.current = setTimeout(() => setSuccessMessage(''), ms);
+    }, []);
+    useEffect(() => () => clearTimeout(successTimerRef.current), []);
+
+    const handleLibraryUpload = useCallback((assets) => {
+        setLibraryAssets(prev => [...assets, ...prev]);
+        setShowLibraryUploadModal(false);
+        flashSuccess(assets.length > 1 ? `${assets.length} images uploaded!` : 'Image uploaded!');
+    }, [flashSuccess]);
 
     const handleCreatePost = useCallback((payload) => {
         if (payload.type === 'poll') setPolls((prev) => [payload, ...prev]); else {
             const post = { id: payload.id, type: 'post', user: payload.user, text: payload.text ?? payload.content ?? '', image: payload.image || null, images: payload.images || [], likes: payload.likes ?? 0, comments: payload.comments || [], timeAgo: 'now', createdAt: payload.createdAt || Date.now() };
             setPosts((prev) => [post, ...prev]);
         }
-        setShowCreateContentModal(false); setSuccessMessage('Posted!'); setTimeout(() => setSuccessMessage(''), 1500);
-    }, []);
+        setShowCreateContentModal(false); flashSuccess('Posted!');
+    }, [flashSuccess]);
 
     const handleShowAlert = useCallback((message) => setAlertInfo({ show: true, message }), []);
-    const handleNewLeadChange = useCallback((updates) => setNewLeadData((prev) => ({ ...prev, ...updates })), []);
+    const handleNewLeadChange = useCallback((updates) => setNewLeadData((prev) => ({ ...prev, ...updates })), [setNewLeadData]);
 
     const handleLeadSuccess = useCallback((lead) => {
-        const newOpp = { id: Date.now(), name: lead.project || 'Untitled Project', stage: lead.projectStatus && STAGES.includes(lead.projectStatus) ? lead.projectStatus : STAGES[0], discount: lead.discount || 'Undecided', value: lead.estimatedList || '$0', company: lead.designFirms?.[0] || lead.dealers?.[0] || 'Unknown', contact: lead.contact || '', poTimeframe: lead.poTimeframe || '', ...lead };
-        setOpportunities(prev => [newOpp, ...prev]); setNewLeadData(EMPTY_LEAD); handleNavigate('projects'); setProjectsTabOverride('pipeline'); setSuccessMessage('Lead Added'); setTimeout(() => setSuccessMessage(''), 1500);
-    }, [handleNavigate, setNewLeadData]);
+        // Fire-and-forget: send lead data to shared Excel via Power Automate
+        submitLeadToExcel(lead);
+        // Normalize lead → opportunity: rename `project` → `name` so all opportunities
+        // share the same canonical `name` field. Drop the redundant `project` key so
+        // consumers don't need `opp.name || opp.project` defensive fallbacks.
+        const { project: _project, projectStatus: _projectStatus, ...leadRest } = lead;
+        const newOpp = { id: Date.now(), name: lead.project || 'Untitled Project', stage: lead.projectStatus && STAGES.includes(lead.projectStatus) ? lead.projectStatus : STAGES[0], discount: lead.discount || 'Undecided', value: lead.estimatedList || '$0', company: lead.designFirms?.[0] || lead.dealers?.[0] || 'Unknown', contact: lead.contact || '', poTimeframe: lead.poTimeframe || '', ...leadRest };
+        setOpportunities(prev => [newOpp, ...prev]); setNewLeadData(EMPTY_LEAD); handleNavigate('projects', { tab: 'pipeline', stage: newOpp.stage }); flashSuccess('Lead Added');
+    }, [handleNavigate, setNewLeadData, flashSuccess, setOpportunities]);
 
     const handleAddInstall = useCallback((install) => {
         const enriched = { id: 'inst-' + Date.now(), photos: install.photos || [], standards: [], quotes: [], ...install };
-        setMyProjects(prev => [enriched, ...prev]); handleNavigate('projects'); setProjectsTabOverride('my-projects'); setSuccessMessage('Install Added'); setTimeout(() => setSuccessMessage(''), 1500);
-    }, [handleNavigate]);
+        setMyProjects(prev => [enriched, ...prev]); handleNavigate('projects', { tab: 'my-projects' }); flashSuccess('Install Added');
+    }, [handleNavigate, flashSuccess]);
 
     const handleUpdateHomeApps = useCallback((apps) => {
         if (!Array.isArray(apps)) return;
         const filtered = apps.filter(r => allApps.some(a => a.route === r));
-        if (filtered.length === 8) setHomeApps(filtered);
+        setHomeApps(filtered);
     }, [setHomeApps]);
 
-    const handleAddCustomer = useCallback((newCustomer) => {
-        setCustomers(prev => [newCustomer, ...prev]);
-    }, []);
+    const handleToggleTheme = useCallback(() => setIsDarkMode(d => !d), []);
+    const openCreateContentModal = useCallback(() => setShowCreateContentModal(true), []);
+    const openLibraryUploadModal = useCallback(() => setShowLibraryUploadModal(true), []);
+    const closeLibraryUploadModal = useCallback(() => setShowLibraryUploadModal(false), []);
+    const clearProjectsInitialTab = useCallback(() => setProjectsTabOverride(null), []);
+    const clearProjectsInitialStage = useCallback(() => setProjectsStageOverride(null), []);
+    const toggleProfileMenu = useCallback(() => setShowProfileMenu(p => !p), []);
+    const closeProfileMenu = useCallback(() => setShowProfileMenu(false), []);
+    const closeCreateContentModal = useCallback(() => setShowCreateContentModal(false), []);
+    const closeAlert = useCallback(() => setAlertInfo({ show: false, message: '' }), []);
 
-    const screenProps = {
+    const screenProps = useMemo(() => ({
         theme: currentTheme,
         onNavigate: handleNavigate,
         onAskAI: handleAskAI,
         onVoiceActivate: handleVoiceActivate,
         handleBack,
+        setBackHandler,
         userSettings,
         setUserSettings,
         setSuccessMessage,
         showAlert: handleShowAlert,
         currentScreen,
+        screenParams,
         opportunities,
         setOpportunities,
         myProjects,
         setMyProjects,
-        setSelectedProject,
         members,
         setMembers,
         currentUserId,
@@ -374,104 +637,93 @@ function App() {
         onToggleLike: handleToggleLike,
         onAddComment: handleAddComment,
         onPollVote: handlePollVote,
-        openCreateContentModal: () => setShowCreateContentModal(true),
+        openCreateContentModal,
+        openLibraryUploadModal,
+        libraryAssets,
+        savedImageIds,
+        onToggleSaveImage: handleToggleSaveImage,
+        postUpvotes,
+        onUpvote: handleUpvote,
         cart,
         setCart,
         onUpdateCart: handleUpdateCart,
-        customerDirectory,
-        customers,
-        setCustomers,
-        onAddCustomer: handleAddCustomer,
+        sampleOrders,
+        onSubmitSampleOrder: handleSubmitSampleOrder,
+        dealerDirectory,
+        setDealerDirectory,
         designFirms,
         setDesignFirms,
+        dealers,
+        setDealers,
         newLeadData,
         onNewLeadChange: handleNewLeadChange,
         isDarkMode,
-        onToggleTheme: () => setIsDarkMode(d => !d),
-        customNavItems,
-        onUpdateNavItems: setCustomNavItems,
+        onToggleTheme: handleToggleTheme,
         onSuccess: handleLeadSuccess,
         onAddInstall: handleAddInstall,
         projectsInitialTab: projectsTabOverride,
-        clearProjectsInitialTab: () => setProjectsTabOverride(null),
-        setProjectsTabOverride,
-        projectsInitialProjectId,
-        clearProjectsInitialProjectId: () => setProjectsInitialProjectId(null),
-        setProjectsInitialProjectId,
+        clearProjectsInitialTab,
+        projectsInitialStage: projectsStageOverride,
+        clearProjectsInitialStage,
         homeApps,
         onUpdateHomeApps: handleUpdateHomeApps,
-        orders: ORDER_DATA
-    };
+        homeResetKey
+    }), [
+        currentTheme, handleNavigate, handleAskAI, handleVoiceActivate,
+        handleBack, setBackHandler, userSettings, handleShowAlert, currentScreen, screenParams,
+        opportunities, myProjects, members, currentUserId,
+        posts, polls, likedPosts, pollChoices, handleToggleLike,
+        handleAddComment, handlePollVote, openCreateContentModal, openLibraryUploadModal, libraryAssets, savedImageIds,
+        handleToggleSaveImage, postUpvotes, handleUpvote, cart, setCart,
+        handleUpdateCart, sampleOrders, handleSubmitSampleOrder, dealerDirectory, setDealerDirectory, designFirms, dealers, newLeadData,
+        handleNewLeadChange, isDarkMode, handleToggleTheme, handleLeadSuccess,
+        handleAddInstall, projectsTabOverride, clearProjectsInitialTab, projectsStageOverride, clearProjectsInitialStage,
+        homeApps, handleUpdateHomeApps, homeResetKey, setOpportunities
+    ]);
 
-    const suspenseFallback = (
-        <div className="flex items-center justify-center w-full h-full text-sm" style={{ color: currentTheme.colors.textSecondary }}>
-            Loading…
-        </div>
-    );
-
-    // Tap-to-scroll-top functionality for status bar area
-    const handleStatusBarClick = useCallback(() => {
-        // Find the active scroll container (the one that's currently visible)
-        const scrollContainers = document.querySelectorAll('.flex-1.overflow-y-auto, .overflow-y-auto.scrollbar-hide');
-        scrollContainers.forEach(container => {
-            if (container.scrollTop > 0) {
-                container.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        });
-        // Also try window scroll as fallback
-        if (window.scrollY > 0) {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }, []);
-
-    // Check if we should show back button (not on home, and has history)
-    const showBackButton = currentScreen !== 'home' && navigationHistoryLength > 1;
+    const suspenseFallback = useMemo(() => (
+        <ScreenSkeleton theme={currentTheme} />
+    ), [currentTheme]);
 
     return (
         <ToastHost theme={currentTheme}>
-            {/* Status bar tap area for scroll-to-top */}
-            <div 
-                onClick={handleStatusBarClick}
-                className="fixed top-0 left-0 right-0 z-[10000]"
-                style={{ 
-                    height: 'env(safe-area-inset-top, 0px)',
-                    backgroundColor: currentTheme.colors.background,
-                    cursor: 'pointer',
-                    WebkitTapHighlightColor: 'transparent',
-                }}
-                aria-label="Tap to scroll to top"
-            />
             <div className="h-screen-safe w-screen font-sans flex flex-col relative" style={{ backgroundColor: currentTheme.colors.background }}>
+                <div aria-live="polite" aria-atomic="true" className="sr-only">
+                    {screenLabel} screen
+                </div>
                 <AppHeader
                     theme={currentTheme}
                     userName={userSettings.firstName}
-                    showBack={showBackButton}
+                    showBack={!isHomeScreen && navDepth > 0}
                     handleBack={handleBack}
                     onHomeClick={handleHome}
-                    onProfileClick={() => setShowProfileMenu(p => !p)}
+                    onProfileClick={toggleProfileMenu}
                     isDarkMode={isDarkMode}
+                    profileBtnRef={profileBtnRef}
                 />
-
-                {/* Persistent Navigation Layer */}
-                <NavigationShell
-                    currentScreen={currentScreen}
-                    onNavigate={handleNavigate}
-                    theme={currentTheme}
-                    customNavItems={customNavItems}
-                />
-
-                <div className="flex-1 pt-[76px] overflow-hidden" style={{ backgroundColor: currentTheme.colors.background }}>
-                    <AnimatedScreenWrapper screenKey={currentScreen} direction={lastNavigationDirection} onSwipeBack={showBackButton ? handleBack : null}>
-                        <ScreenRouter screenKey={currentScreen} projectsScreenRef={projectsScreenRef} SuspenseFallback={suspenseFallback} {...screenProps} />
+                <main className="flex-1 overflow-hidden max-w-content mx-auto w-full" style={{ backgroundColor: currentTheme.colors.background }}>
+                    <AnimatedScreenWrapper screenKey={currentScreen} direction={lastNavigationDirection}>
+                        <ErrorBoundary screenKey={currentScreen} theme={currentTheme}>
+                            <ScreenRouter screenKey={currentScreen} projectsScreenRef={projectsScreenRef} SuspenseFallback={suspenseFallback} {...screenProps} />
+                        </ErrorBoundary>
                     </AnimatedScreenWrapper>
-                </div>
+                </main>
                 {showProfileMenu && (
-                    <ProfileMenu show={showProfileMenu} onClose={() => setShowProfileMenu(false)} onNavigate={handleNavigate} theme={currentTheme} />
+                    <ProfileMenu show={showProfileMenu} onClose={closeProfileMenu} onNavigate={handleNavigate} theme={currentTheme} anchorRef={profileBtnRef} isDarkMode={isDarkMode} onToggleTheme={handleToggleTheme} />
                 )}
                 <VoiceModal message={voiceMessage} show={!!voiceMessage} theme={currentTheme} />
                 <SuccessToast message={successMessage} show={!!successMessage} theme={currentTheme} />
-                <CreateContentModal show={showCreateContentModal} onClose={() => setShowCreateContentModal(false)} theme={currentTheme} onCreatePost={handleCreatePost} />
-                <Modal show={alertInfo.show} onClose={() => setAlertInfo({ show: false, message: '' })} title="Alert" theme={currentTheme}>
+                {showCreateContentModal && (
+                    <Suspense fallback={null}>
+                        <CreateContentModal show={showCreateContentModal} onClose={closeCreateContentModal} theme={currentTheme} onCreatePost={handleCreatePost} />
+                    </Suspense>
+                )}
+                {showLibraryUploadModal && (
+                    <Suspense fallback={null}>
+                        <UploadToLibraryModal show={showLibraryUploadModal} onClose={closeLibraryUploadModal} theme={currentTheme} onUpload={handleLibraryUpload} />
+                    </Suspense>
+                )}
+                <Modal show={alertInfo.show} onClose={closeAlert} title="Alert" theme={currentTheme}>
                     <p>{alertInfo.message}</p>
                 </Modal>
             </div>

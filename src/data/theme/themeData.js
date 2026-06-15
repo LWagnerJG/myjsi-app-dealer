@@ -1,80 +1,92 @@
-// JSI Visual Identity Theme
-// ===========================
-// Brand Philosophy: Modern, Accessible, Confident
-// Typography: Neue Haas Grotesk Display Pro
-// Color Approach: Earth-toned, warm, grounded (NO pure black)
-
-// JSI Health Color Palette
-const JSI_PALETTE = {
-    // Primary
-    charcoal: '#353535',      // Primary text & action (replaces pure black)
-    white: '#FFFFFF',         // High contrast
-    
-    // Earth-Toned Neutrals
-    stone: '#E3E0D8',         // Warm neutral
-    warmBeige: '#F0EDE8',     // Soft background
-    sageGrey: '#DFE2DD',      // Cool neutral
-    lightGrey: '#EAECE9',     // Lightest neutral
-    
-    // Softer Accent Options (less stark than pure charcoal)
-    warmCharcoal: '#4A4543',  // Warmer, softer charcoal
-    earthBrown: '#5C534A',    // Earth-toned brown-grey
-    slateGrey: '#4E5552',     // Cooler slate option
-    
-    // Semantic
-    success: '#4A7C59',       // Earthy green
-    warning: '#C4956A',       // Warm amber
-    error: '#B85C5C',         // Muted red
-    info: '#5B7B8C',          // Slate blue
-};
+// JSI Digital Brand Themes
+// Aligned with JSI Digital Style Guide 1.0
+// Primary accent: JSI Charcoal (#353535)
 
 export const lightTheme = {
     colors: {
-        background: JSI_PALETTE.warmBeige,        // #F0EDE8 - Warm Beige (Primary Color from style guide)
-        surface: JSI_PALETTE.white,               // #FFFFFF - Clean white for cards (Primary Color)
-        primary: JSI_PALETTE.charcoal,            // #353535 - Primary text (Primary Color)
-        accent: JSI_PALETTE.charcoal,             // #353535 - Charcoal for buttons/CTAs (matches style guide)
-        secondary: JSI_PALETTE.sageGrey,          // #DFE2DD - Secondary elements (Primary Color)
-        textPrimary: JSI_PALETTE.charcoal,        // #353535 - Main text (NO pure black)
-        textSecondary: '#5C5C5C',                 // Softer secondary text
-        border: JSI_PALETTE.stone,                // #E3E0D8 - Subtle borders (Primary Color)
-        shadow: 'rgba(53,53,53,0.12)',            // Charcoal-based shadow
-        subtle: JSI_PALETTE.lightGrey,            // #EAECE9 - Subtle backgrounds (Primary Color)
-        stone: JSI_PALETTE.stone,                 // #E3E0D8 - For explicit stone usage
-        sageGrey: JSI_PALETTE.sageGrey,           // #DFE2DD - For explicit sage usage
-        warmBeige: JSI_PALETTE.warmBeige,         // #F0EDE8 - For explicit warm beige usage
-        // Semantic colors
-        success: JSI_PALETTE.success,
-        warning: JSI_PALETTE.warning,
-        error: JSI_PALETTE.error,
-        info: JSI_PALETTE.info,
+        // Core colors
+        background: '#F0EDE8', // jsi-warm-beige
+        surface: '#FFFFFF',
+        primary: '#353535', // jsi-charcoal
+        accent: '#353535',
+        secondary: '#353535',
+        textPrimary: '#353535',
+        textSecondary: '#5B7B8C', // jsi-info for secondary text
+        border: '#E3E0D8', // jsi-stone
+        shadow: 'rgba(53, 53, 53, 0.1)',
+        subtle: '#DFE2DD', // jsi-sage-grey
+
+        // Semantic colors - for consistent usage across components
+        accentText: '#FFFFFF', // Text on accent/primary buttons
+        inputBackground: '#FFFFFF', // Form input backgrounds
+        overlay: 'rgba(0, 0, 0, 0.5)', // Modal/drawer overlays
+
+        // Status colors
+        success: '#4A7C59',
+        successLight: 'rgba(74, 124, 89, 0.12)',
+        warning: '#C4956A',
+        warningLight: 'rgba(196, 149, 106, 0.12)',
+        error: '#B85C5C',
+        errorLight: 'rgba(184, 92, 92, 0.12)',
+        destructive: '#B85C5C',
+        destructiveLight: 'rgba(184, 92, 92, 0.12)',
+        destructiveBorder: 'rgba(184, 92, 92, 0.25)',
+        info: '#5B7B8C',
+        infoLight: 'rgba(91, 123, 140, 0.12)',
+
+        // Interactive states
+        hoverLight: 'rgba(0, 0, 0, 0.05)',
+        activeLight: 'rgba(0, 0, 0, 0.08)',
+        focusRing: 'rgba(53, 53, 53, 0.2)',
+
+        // Special feature colors
+        quickShip: '#D4AF37', // Gold for QuickShip badges
+        overlayDark: 'rgba(0, 0, 0, 0.6)', // Dark scrim for overlays on images
     },
-    backdropFilter: 'blur(24px)',                 // JSI blur level (matches style guide Background Blur 24)
-    fontFamily: '"Neue Haas Grotesk Display Pro", "Helvetica Neue", Helvetica, Arial, sans-serif',
 };
 
 export const darkTheme = {
     colors: {
-        background: '#1A1A1A',                    // Deep charcoal (not pure black)
-        surface: '#252525',                       // Card surfaces
-        primary: JSI_PALETTE.white,               // Inverted for dark mode
-        accent: '#B8B0A8',                        // Warm light accent on dark
-        secondary: '#888888',                     // Muted secondary
-        textPrimary: '#F5F5F5',                   // Off-white text
-        textSecondary: '#A0A0A0',                 // Softer secondary
-        border: 'rgba(255,255,255,0.1)',          // Subtle light borders
-        shadow: 'rgba(0,0,0,0.4)',                // Deeper shadows
-        subtle: 'rgba(255,255,255,0.06)',         // Subtle highlights
-        stone: '#3A3A3A',                         // Dark mode stone
-        sageGrey: '#2F2F2F',                      // Dark mode sage
-        // Semantic colors (adjusted for dark)
+        // Core colors
+        background: '#161616',
+        surface: '#242424',
+        primary: '#ECE5DD',
+        accent: '#E5DDD3',
+        secondary: '#B7AEA5',
+        textPrimary: '#E9E2DA',
+        textSecondary: '#9A9188',
+        border: 'rgba(255, 255, 255, 0.05)',
+        shadow: 'rgba(0, 0, 0, 0.5)',
+        subtle: 'rgba(255, 255, 255, 0.06)',
+
+        // Semantic colors - for consistent usage across components
+        accentText: '#1A1A1A', // Text on accent/primary buttons (dark on light)
+        inputBackground: 'rgba(255, 255, 255, 0.065)', // Form input backgrounds
+        overlay: 'rgba(0, 0, 0, 0.7)', // Modal/drawer overlays
+
+        // Status colors
         success: '#6B9B7A',
+        successLight: 'rgba(107, 155, 122, 0.2)',
         warning: '#D4A87A',
+        warningLight: 'rgba(212, 168, 122, 0.2)',
         error: '#C87070',
+        errorLight: 'rgba(200, 112, 112, 0.2)',
+        destructive: '#C87070',
+        destructiveLight: 'rgba(200, 112, 112, 0.2)',
+        destructiveBorder: 'rgba(200, 112, 112, 0.4)',
         info: '#7B9BAC',
+        infoLight: 'rgba(123, 155, 172, 0.2)',
+
+        // Interactive states
+        hoverLight: 'rgba(255, 255, 255, 0.055)',
+        activeLight: 'rgba(255, 255, 255, 0.085)',
+        focusRing: 'rgba(255, 255, 255, 0.3)',
+
+        // Special feature colors
+        quickShip: '#D4AF37', // Gold for QuickShip badges
+        overlayDark: 'rgba(0, 0, 0, 0.7)', // Dark scrim for overlays on images
     },
-    backdropFilter: 'blur(24px)',
-    fontFamily: '"Neue Haas Grotesk Display Pro", "Helvetica Neue", Helvetica, Arial, sans-serif',
 };
 
-export const logoLight = 'https://i.imgur.com/qskYhB0.png';
+
+export const logoLight = '/myjsi-logo.png';

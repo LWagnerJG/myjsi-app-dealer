@@ -1,234 +1,211 @@
-import React, { useMemo, useState, useCallback } from 'react';
-import { GlassCard, ScreenLayout } from '../../design-system/index.js';
-import { Modal } from '../../components/common/Modal';
-import { Building2, TrendingUp } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { SegmentedToggle } from '../../components/common/GroupedToggle';
+import { CountUp } from '../../components/common/CountUp';
+import StandardSearchBar from '../../components/common/StandardSearchBar.jsx';
 import { CUSTOMER_RANK_DATA } from './data.js';
-import { motion } from 'framer-motion';
-import { JSI_COLORS } from '../../design-system/tokens.js';
+import { isDarkTheme } from '../../design-system/tokens.js';
+import { motion, AnimatePresence } from 'framer-motion';
+import { TrendingUp, TrendingDown, ChevronRight, Search, X } from 'lucide-react';
+import { formatCurrency, formatCurrencyCompact } from '../../utils/format.js';
+import { ScreenTopChrome } from '../../components/common/ScreenTopChrome.jsx';
 
-// Customer Leaderboard - shows PROJECT NAMES ranked by Ordered/Invoiced
+const RANKING_TAB_OPTIONS = [
+    { value: 'sales', label: 'Sales' },
+    { value: 'bookings', label: 'Bookings' }
+];
+
+// Podium rank styling — gold / silver / bronze
+const RANK_CONFIG = {
+    1: { emoji: '🥇', gradient: 'linear-gradient(135deg, rgba(232,199,103,0.18), rgba(247,232,173,0.08))', border: '#E8C767', glow: 'rgba(232,199,103,0.12)' },
+    2: { emoji: '🥈', gradient: 'linear-gradient(135deg, rgba(200,205,211,0.18), rgba(236,239,242,0.08))', border: '#C8CDD3', glow: 'rgba(200,205,211,0.12)' },
+    3: { emoji: '🥉', gradient: 'linear-gradient(135deg, rgba(217,160,121,0.18), rgba(244,209,190,0.08))', border: '#D9A079', glow: 'rgba(217,160,121,0.12)' },
+};
 
 export const CustomerRankingScreen = ({ theme, onNavigate }) => {
     const [tab, setTab] = useState('sales');
-    const [modalData, setModalData] = useState(null);
+    const [search, setSearch] = useState('');
+    const [showSearch, setShowSearch] = useState(false);
+    const isDark = isDarkTheme(theme);
+    const bdr = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
 
-    // Extract all projects from all customers and rank them
-    const projectRows = useMemo(() => {
-        const allProjects = [];
-        
-        CUSTOMER_RANK_DATA.forEach(customer => {
-            (customer.orders || []).forEach(order => {
-                allProjects.push({
-                    id: `${customer.id}-${order.projectName}`,
-                    projectName: order.projectName,
-                    customerName: customer.name,
-                    amount: order.amount,
-                    sales: order.amount,
-                    bookings: Math.round(order.amount * (0.9 + Math.random() * 0.2))
-                });
-            });
-        });
-        
-        const sorted = [...allProjects].sort((a, b) => (b[tab] || 0) - (a[tab] || 0));
-        return sorted.map((p, i) => ({ ...p, rank: i + 1 }));
+    const allRows = useMemo(() => {
+        const list = [...CUSTOMER_RANK_DATA].sort((a, b) => (b[tab] || 0) - (a[tab] || 0));
+        return list.map((c, i) => ({ ...c, rank: i + 1 }));
     }, [tab]);
 
-    const maxVal = useMemo(() => Math.max(...projectRows.map(r => r[tab] || 0), 1), [projectRows, tab]);
+    const rows = useMemo(() => {
+        if (!search.trim()) return allRows;
+        const q = search.toLowerCase();
+        return allRows.filter(r => r.name.toLowerCase().includes(q));
+    }, [allRows, search]);
 
-    const open = useCallback((project) => setModalData(project), []);
-    const close = useCallback(() => setModalData(null), []);
+    const maxVal = useMemo(() => Math.max(...allRows.map(r => r[tab] || 0), 1), [allRows, tab]);
+    const totalValue = useMemo(() => allRows.reduce((s, r) => s + (r[tab] || 0), 0), [allRows, tab]);
 
-    const medalStyle = (rank) => {
-        const map = {
-            1: { ring: JSI_COLORS.gold, fill: '#F7E8AD' },
-            2: { ring: '#C8CDD3', fill: '#ECEFF2' },
-            3: { ring: '#D9A079', fill: '#F4D1BE' },
-        }[rank];
-        if (!map) return { 
-            backgroundColor: theme.colors.subtle, 
-            color: theme.colors.textSecondary 
-        };
-        return {
-            background: `radial-gradient(120% 120% at 50% 0%, ${map.fill} 0%, #fff 90%)`,
-            border: `1px solid ${map.ring}`,
-            boxShadow: `0 0 0 2px ${map.ring}25 inset`,
-            color: theme.colors.textPrimary,
-        };
+    const goToDealer = (c) => onNavigate?.(`resources/dealer-directory/${c.id}`);
+
+    // Comparison metric: difference between sales and bookings
+    const getDelta = (c) => {
+        const s = c.sales || 0;
+        const b = c.bookings || 0;
+        return tab === 'sales' ? s - b : b - s;
     };
 
-    const Row = ({ project, index }) => {
-        const pct = Math.min(100, Math.round(((project[tab] || 0) / maxVal) * 100));
-        const isTop3 = project.rank <= 3;
-        
-        return (
-            <motion.button
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: index * 0.015 }}
-                onClick={() => open(project)}
-                className="w-full text-left"
-            >
-                <div 
-                    className="flex items-center gap-3 px-3 py-3 rounded-xl transition-all hover:bg-black/[0.02] active:scale-[0.99]"
-                >
-                    <div 
-                        className="h-8 w-8 rounded-full text-[11px] font-bold flex items-center justify-center flex-shrink-0" 
-                        style={medalStyle(project.rank)}
-                    >
-                        {project.rank}
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                        <div className="font-medium text-[13px] truncate" style={{ color: theme.colors.textPrimary }}>
-                            {project.projectName}
-                        </div>
-                        <div className="flex items-center gap-1 mt-0.5">
-                            <Building2 className="w-3 h-3" style={{ color: theme.colors.textSecondary }} />
-                            <span className="text-[11px] truncate" style={{ color: theme.colors.textSecondary }}>
-                                {project.customerName}
-                            </span>
-                        </div>
-                        <div className="mt-1.5 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: theme.colors.subtle }}>
-                            <motion.div 
-                                className="h-full rounded-full" 
-                                initial={{ width: 0 }}
-                                animate={{ width: `${pct}%` }}
-                                transition={{ duration: 0.35, delay: index * 0.015 }}
-                                style={{ backgroundColor: isTop3 ? theme.colors.accent : `${theme.colors.accent}70` }} 
-                            />
-                        </div>
-                    </div>
-                    
-                    <div className="pl-2 text-right flex-shrink-0">
-                        <div className="text-[15px] font-bold tabular-nums" style={{ color: theme.colors.accent }}>
-                            ${Number(project[tab] || 0).toLocaleString()}
-                        </div>
-                        <div className="text-[11px] font-medium" style={{ color: theme.colors.textSecondary }}>
-                            {tab === 'sales' ? 'Invoiced' : 'Ordered'}
-                        </div>
-                    </div>
+    const RankBadge = ({ rank }) => {
+        const cfg = RANK_CONFIG[rank];
+        if (cfg) {
+            return (
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0"
+                    style={{ background: cfg.gradient, border: `1.5px solid ${cfg.border}`, boxShadow: `0 2px 8px ${cfg.glow}` }}>
+                    {cfg.emoji}
                 </div>
-            </motion.button>
+            );
+        }
+        return (
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.075)' : 'rgba(0,0,0,0.04)', color: theme.colors.textSecondary }}>
+                {rank}
+            </div>
+        );
+    };
+
+    const Row = ({ c, i }) => {
+        const pct = Math.min(100, Math.round(((c[tab] || 0) / maxVal) * 100));
+        const delta = getDelta(c);
+        const otherTab = tab === 'sales' ? 'bookings' : 'sales';
+        const otherVal = c[otherTab] || 0;
+
+        return (
+            <button
+                onClick={() => goToDealer(c)}
+                className="w-full text-left group"
+            >
+                <div
+                    className="flex items-center gap-3 px-4 py-4 transition-colors"
+                    style={{ borderTop: i === 0 ? 'none' : `1px solid ${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.04)'}` }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.055)' : 'rgba(0,0,0,0.015)'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                    <RankBadge rank={c.rank} />
+
+                    <div className="flex-1 min-w-0 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                            <span className="font-semibold text-[0.9375rem] truncate" style={{ color: theme.colors.textPrimary }}>{c.name}</span>
+                            <div className="shrink-0 text-right">
+                                <div className="text-[0.9375rem] font-extrabold tabular-nums" style={{ color: theme.colors.textPrimary }}>
+                                    {formatCurrency(c[tab])}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                            {/* Progress bar */}
+                            <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.055)' : 'rgba(0,0,0,0.05)' }}>
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${pct}%` }}
+                                    transition={{ duration: 0.4, ease: 'easeOut' }}
+                                    className="h-full rounded-full"
+                                    style={{ background: isDark ? 'rgba(228,220,210,0.74)' : theme.colors.accent }}
+                                />
+                            </div>
+                            {/* Secondary metric */}
+                            <div className="flex items-center gap-1 shrink-0">
+                                <span className="text-[0.6875rem] font-medium tabular-nums" style={{ color: theme.colors.textSecondary }}>
+                                    {formatCurrencyCompact(otherVal)} {otherTab === 'sales' ? 'sold' : 'booked'}
+                                </span>
+                                {delta !== 0 && (
+                                    <span className="flex items-center text-[0.6875rem] font-bold" style={{ color: delta > 0 ? (isDark ? '#6B9B7A' : '#4A7C59') : (isDark ? '#C87070' : '#B85C5C') }}>
+                                        {delta > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <ChevronRight className="w-4 h-4 shrink-0 opacity-0 group-hover:opacity-40 transition-opacity" />
+                </div>
+            </button>
         );
     };
 
     return (
-        <ScreenLayout
-            theme={theme}
-            maxWidth="default"
-            padding={true}
-            paddingBottom="8rem"
-            gap="0.75rem"
-        >
-            {/* Toggle: Invoiced / Ordered */}
-            <div 
-                className="flex items-center rounded-full p-0.5"
-                style={{ backgroundColor: theme.colors.subtle }}
-            >
-                <button
-                    onClick={() => setTab('sales')}
-                    className="flex-1 py-2.5 px-4 rounded-full text-[13px] font-semibold transition-all"
-                    style={{ 
-                        backgroundColor: tab === 'sales' ? '#FFF' : 'transparent',
-                        color: tab === 'sales' ? theme.colors.textPrimary : theme.colors.textSecondary,
-                        boxShadow: tab === 'sales' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-                    }}
-                >
-                    Invoiced
-                </button>
-                <button
-                    onClick={() => setTab('bookings')}
-                    className="flex-1 py-2.5 px-4 rounded-full text-[13px] font-semibold transition-all"
-                    style={{ 
-                        backgroundColor: tab === 'bookings' ? '#FFF' : 'transparent',
-                        color: tab === 'bookings' ? theme.colors.textPrimary : theme.colors.textSecondary,
-                        boxShadow: tab === 'bookings' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-                    }}
-                >
-                    Ordered
-                </button>
+        <div className="h-full flex flex-col app-header-offset" style={{ backgroundColor: theme.colors.background }}>
+            {/* Summary Header */}
+            <ScreenTopChrome theme={theme} contentClassName="pt-4 pb-2 space-y-4">
+                {/* Aggregate KPI */}
+                <div className="rounded-[22px] overflow-hidden px-5 py-4" style={{ backgroundColor: theme.colors.surface, border: `1px solid ${bdr}` }}>
+                    <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                            <p className="text-[0.6875rem] font-bold uppercase tracking-[0.07em]" style={{ color: theme.colors.textSecondary }}>
+                                Total {tab === 'sales' ? 'Sales' : 'Bookings'} — {allRows.length} Dealers
+                            </p>
+                            <div className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color: theme.colors.textPrimary }}>
+                                <CountUp value={totalValue} prefix="$" duration={0.7} format={(v) => `$${Math.round(v).toLocaleString()}`} />
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {/* Search toggle */}
+                            <button
+                                onClick={() => { setShowSearch(!showSearch); if (showSearch) setSearch(''); }}
+                                className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                                style={{ backgroundColor: showSearch ? (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)') : (isDark ? 'rgba(255,255,255,0.055)' : 'rgba(0,0,0,0.04)') }}
+                            >
+                                {showSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Search bar */}
+                    <AnimatePresence>
+                        {showSearch && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                            >
+                                <div className="pt-3">
+                                    <StandardSearchBar
+                                        value={search}
+                                        onChange={setSearch}
+                                        placeholder="Search dealers..."
+                                        theme={theme}
+                                        autoFocus
+                                    />
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Tab Toggle */}
+                <SegmentedToggle
+                    value={tab}
+                    onChange={setTab}
+                    options={RANKING_TAB_OPTIONS}
+                    theme={theme}
+                    size="sm"
+                />
+            </ScreenTopChrome>
+
+            {/* Rankings List */}
+            <div className="flex-1 overflow-y-auto scrollbar-hide">
+                <div className="px-4 sm:px-6 lg:px-8 pt-3 pb-4 max-w-content mx-auto w-full">
+                    {rows.length === 0 ? (
+                        <div className="text-center py-16">
+                            <p className="text-sm font-medium" style={{ color: theme.colors.textSecondary }}>No dealers match "{search}"</p>
+                        </div>
+                    ) : (
+                        <div className="rounded-[22px] overflow-hidden" style={{ backgroundColor: theme.colors.surface, border: `1px solid ${bdr}` }}>
+                            {rows.map((c, i) => (
+                                <Row key={c.id} c={c} i={i} />
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {/* Project Rankings */}
-            <GlassCard theme={theme} className="p-2" variant="elevated">
-                {projectRows.map((project, i) => (
-                    <Row key={project.id} project={project} index={i} />
-                ))}
-                
-                {projectRows.length === 0 && (
-                    <div className="p-8 text-center">
-                        <p className="text-[13px]" style={{ color: theme.colors.textSecondary }}>
-                            No project data available
-                        </p>
-                    </div>
-                )}
-            </GlassCard>
-
-            {/* Project Detail Modal */}
-            <Modal show={!!modalData} onClose={close} title={modalData?.projectName || ''} theme={theme}>
-                {!!modalData && (
-                    <div className="space-y-4">
-                        {/* Customer info */}
-                        <div 
-                            className="flex items-center gap-3 p-3 rounded-xl"
-                            style={{ backgroundColor: theme.colors.subtle }}
-                        >
-                            <Building2 className="w-4 h-4" style={{ color: theme.colors.accent }} />
-                            <div>
-                                <p className="text-[11px]" style={{ color: theme.colors.textSecondary }}>Customer</p>
-                                <p className="font-medium text-[13px]" style={{ color: theme.colors.textPrimary }}>
-                                    {modalData.customerName}
-                                </p>
-                            </div>
-                        </div>
-                        
-                        {/* Stats grid */}
-                        <div className="grid grid-cols-2 gap-3">
-                            <div 
-                                className="rounded-xl p-3 text-center" 
-                                style={{ backgroundColor: `${theme.colors.accent}08` }}
-                            >
-                                <div className="text-[11px] font-medium mb-1" style={{ color: theme.colors.textSecondary }}>
-                                    Invoiced
-                                </div>
-                                <div className="text-xl font-bold tabular-nums" style={{ color: theme.colors.accent }}>
-                                    ${Number(modalData.sales || 0).toLocaleString()}
-                                </div>
-                            </div>
-                            <div 
-                                className="rounded-xl p-3 text-center" 
-                                style={{ backgroundColor: theme.colors.subtle }}
-                            >
-                                <div className="text-[11px] font-medium mb-1" style={{ color: theme.colors.textSecondary }}>
-                                    Ordered
-                                </div>
-                                <div className="text-xl font-bold tabular-nums" style={{ color: theme.colors.textPrimary }}>
-                                    ${Number(modalData.bookings || 0).toLocaleString()}
-                                </div>
-                            </div>
-                        </div>
-                        
-                        {/* Ranking */}
-                        <div 
-                            className="flex items-center justify-between p-3 rounded-xl"
-                            style={{ backgroundColor: theme.colors.subtle }}
-                        >
-                            <div className="flex items-center gap-2">
-                                <TrendingUp className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
-                                <span className="text-[13px] font-medium" style={{ color: theme.colors.textSecondary }}>
-                                    Current Rank
-                                </span>
-                            </div>
-                            <div 
-                                className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold"
-                                style={medalStyle(modalData.rank)}
-                            >
-                                {modalData.rank}
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </Modal>
-        </ScreenLayout>
+        </div>
     );
 };

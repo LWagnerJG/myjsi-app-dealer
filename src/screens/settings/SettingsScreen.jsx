@@ -1,41 +1,72 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence, Reorder } from 'framer-motion';
+import { AppScreenLayout } from '../../components/common/AppScreenLayout.jsx';
 import { GlassCard } from '../../components/common/GlassCard.jsx';
-import { User, Bell, Palette, ChevronDown, Check, Navigation, Shield, Camera, Clock, GripVertical, ChevronRight, Timer } from 'lucide-react';
-import { DESIGN_TOKENS, JSI_COLORS, getInputStyles, ScreenLayout } from '../../design-system/index.js';
-import { ALL_NAV_ITEMS } from '../../components/navigation/NavigationShell.jsx';
+import { User, Bell, Palette, ChevronDown, Loader2 } from 'lucide-react';
 import { LEAD_TIMES_DATA } from '../resources/lead-times/data.js';
+import {
+  isDarkTheme,
+  DESIGN_TOKENS,
+  inputSurface,
+  fieldTileSurface,
+  modalCardSurface,
+  FIELD_LABEL_CLASSNAME,
+  SECTION_TITLE_CLASSNAME,
+} from '../../design-system/tokens.js';
+import { hapticLight } from '../../utils/haptics.js';
 
-// Animated Toggle Switch
-const Toggle = ({ checked, onChange, theme }) => (
-  <button
-    onClick={() => onChange(!checked)}
-    className="w-11 h-6 rounded-full relative transition-colors duration-300 focus:outline-none flex-shrink-0"
-    style={{
-      backgroundColor: checked ? theme.colors.accent : theme.colors.border,
-      boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.06)'
-    }}
-  >
-    <motion.div
-      className="w-4.5 h-4.5 bg-white rounded-full shadow-sm absolute top-[3px] left-[3px]"
-      style={{ width: 18, height: 18 }}
-      animate={{ x: checked ? 18 : 0 }}
-      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-    />
-  </button>
-);
+const Toggle = ({ checked, onChange, theme, ariaLabel }) => {
+  const isDark = isDarkTheme(theme);
+  const trackColor = checked
+    ? theme.colors.accent
+    : (isDark ? 'rgba(255,255,255,0.18)' : 'rgba(53,53,53,0.16)');
+  const thumbColor = checked
+    ? (isDark ? '#1D1D1D' : '#FFFFFF')
+    : '#FFFFFF';
 
-// Compact Select for inline use
-const CompactSelect = ({ value, onChange, options, theme }) => {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-label={ariaLabel}
+      aria-checked={checked}
+      onClick={() => {
+        hapticLight();
+        onChange(!checked);
+      }}
+      className="w-12 h-7 rounded-full transition-all duration-200 relative flex-shrink-0"
+      style={{ backgroundColor: trackColor }}
+    >
+      <span
+        className="rounded-full transition-transform duration-200 absolute top-[3px]"
+        style={{
+          width: 22,
+          height: 22,
+          backgroundColor: thumbColor,
+          transform: checked ? 'translateX(24px)' : 'translateX(3px)',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+          left: 0,
+        }}
+      />
+    </button>
+  );
+};
+
+const Select = ({ value, onChange, options, theme, surfaceStyle }) => {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef(null);
+  const portalRef = useRef(null);
   const [rect, setRect] = useState(null);
+  const isDark = isDarkTheme(theme);
+  const popoverSurface = modalCardSurface(theme);
+  const selectedBg = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(53,53,53,0.06)';
+  const hoverBg = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.03)';
 
   useEffect(() => {
     const handleClick = (e) => {
       if (!open) return;
       if (triggerRef.current?.contains(e.target)) return;
+      if (portalRef.current?.contains(e.target)) return;
       setOpen(false);
     };
     document.addEventListener('mousedown', handleClick);
@@ -52,586 +83,352 @@ const CompactSelect = ({ value, onChange, options, theme }) => {
     }
   }, [open]);
 
-  const currentLabel = options.find(o => o.value === value)?.label || value;
+  const current = options.find(o => o.value === value)?.label || 'Select';
 
   return (
     <div className="relative" ref={triggerRef}>
       <button
         type="button"
-        onClick={() => setOpen(!open)}
-        className="px-3 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-all duration-200"
-        style={{
-          backgroundColor: theme.colors.surface,
-          border: `1px solid ${open ? theme.colors.accent : theme.colors.border}`,
-          color: theme.colors.textPrimary,
-        }}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen(o => !o)}
+        className="w-full px-4 h-11 rounded-2xl flex items-center justify-between text-sm font-medium transition-all"
+        style={{ ...inputSurface(theme), ...surfaceStyle }}
       >
-        <span className="font-medium">{currentLabel}</span>
-        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${open ? 'rotate-180' : ''}`} style={{ color: theme.colors.textSecondary }} />
+        <span>{current}</span>
+        <ChevronDown className={`w-4 h-4 transition-transform ${open ? 'rotate-180' : ''}`} style={{ color: theme.colors.textSecondary }} />
       </button>
       {open && rect && createPortal(
-        <AnimatePresence>
-          <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed',
-              top: rect.bottom + 4,
-              left: rect.left,
-              minWidth: rect.width,
-              zIndex: 99999
-            }}
-          >
-            <div
-              className="py-1 overflow-hidden backdrop-blur-xl"
-              style={{
-                backgroundColor: theme.colors.surface,
-                border: `1px solid ${theme.colors.border}`,
-                borderRadius: 12,
-                boxShadow: '0 10px 40px -10px rgba(0,0,0,0.2)'
-              }}
-            >
-              {options.map(o => (
-                <button
-                  key={o.value}
-                  onClick={() => { onChange(o.value); setOpen(false); }}
-                  className="w-full text-left px-3 py-2 text-sm flex items-center justify-between transition-colors hover:bg-black/5"
-                  style={{
-                    color: o.value === value ? theme.colors.accent : theme.colors.textPrimary,
-                    fontWeight: o.value === value ? 600 : 400
-                  }}
-                >
-                  {o.label}
-                  {o.value === value && <Check className="w-3.5 h-3.5" />}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        </AnimatePresence>,
-        document.body
-      )}
+        <div ref={portalRef} style={{ position: 'fixed', top: rect.bottom + 6, left: rect.left, width: rect.width, zIndex: DESIGN_TOKENS.zIndex.popover }}>
+          <div className="py-1.5 rounded-2xl overflow-hidden" style={popoverSurface}>
+            {options.map(o => (
+              <button key={o.value} onClick={() => { onChange(o.value); setOpen(false); }} className="w-full text-left px-4 py-2.5 text-sm font-medium transition-colors active:scale-[0.99]" style={{ color: o.value === value ? theme.colors.accent : theme.colors.textPrimary, backgroundColor: o.value === value ? selectedBg : 'transparent' }}
+                onMouseEnter={e => { if (o.value !== value) e.currentTarget.style.backgroundColor = hoverBg; }}
+                onMouseLeave={e => { if (o.value !== value) e.currentTarget.style.backgroundColor = 'transparent'; }}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </div>, document.body)
+      }
     </div>
   );
 };
 
-export const SettingsScreen = ({ theme, isDarkMode, onToggleTheme, customNavItems = [], onUpdateNavItems }) => {
-const [firstName, setFirstName] = useState('Luke');
-const [lastName, setLastName] = useState('Wagner');
-const [homeAddress, setHomeAddress] = useState('5445 N Deerwood Lake Rd, Jasper, IN 47546');
-const [shirtSize, setShirtSize] = useState('L');
-const [profileImage, setProfileImage] = useState(null);
-const fileInputRef = useRef(null);
-const [notif, setNotif] = useState({
-  newOrder: true,
-  orderUpdate: true,
-  samplesShipped: true,
-  sampleDelivery: true,
-  leadTimeChange: true,
-  productDiscontinuation: true,
-  productLaunch: true,
-  replacementApproved: true
-});
-  
-// Lead time series notification settings
-const [leadTimeNotifyAll, setLeadTimeNotifyAll] = useState(true);
-const [leadTimeSelectedSeries, setLeadTimeSelectedSeries] = useState(new Set());
-const [showLeadTimeSeriesSelector, setShowLeadTimeSeriesSelector] = useState(false);
-  
-// Get unique series from lead times data
-const allSeries = useMemo(() => {
-  const seriesSet = new Set(LEAD_TIMES_DATA.map(item => item.series));
-  return Array.from(seriesSet).sort();
-}, []);
-  
-const toggleLeadTimeSeries = (series) => {
-  setLeadTimeSelectedSeries(prev => {
-    const newSet = new Set(prev);
-    if (newSet.has(series)) {
-      newSet.delete(series);
-    } else {
-      newSet.add(series);
-    }
-    return newSet;
-  });
-};
-  
-// Notification delivery schedule
-const [notifSchedule, setNotifSchedule] = useState('realtime'); // 'realtime', 'daily', 'weekly'
-const [notifTime, setNotifTime] = useState('09:00');
-const [notifDay, setNotifDay] = useState('monday');
-const [showScheduleOptions, setShowScheduleOptions] = useState(false);
-  
-  const [selectedNavItems, setSelectedNavItems] = useState(
-    customNavItems && customNavItems.length > 0 
-      ? customNavItems 
-      : ['home', 'projects', 'orders', 'sales', 'resources/dealer-directory']
-  );
-  
-  // Sync with prop changes
-  useEffect(() => {
-    if (customNavItems && customNavItems.length > 0) {
-      setSelectedNavItems(customNavItems);
-    }
-  }, [customNavItems]);
-  
-  const handleNavItemToggle = (itemId) => {
-    const newItems = selectedNavItems.includes(itemId)
-      ? selectedNavItems.filter(id => id !== itemId)
-      : [...selectedNavItems, itemId];
-    setSelectedNavItems(newItems);
-    onUpdateNavItems?.(newItems);
-  };
-
-  const handleNavReorder = (newOrder) => {
-    setSelectedNavItems(newOrder);
-    onUpdateNavItems?.(newOrder);
-  };
-
-  const handleProfileImageClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setProfileImage(event.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const notifLabels = {
-    newOrder: 'New order placed',
-    orderUpdate: 'Order status update',
-    samplesShipped: 'Samples shipped',
-    sampleDelivery: 'Sample delivery confirmed',
-    leadTimeChange: 'Lead time change',
-    productDiscontinuation: 'Product discontinuation',
-    productLaunch: 'New product launch',
-    replacementApproved: 'Replacement approved'
-  };
-
-  const scheduleOptions = [
-    { value: 'realtime', label: 'Real-time (Instant)' },
-    { value: 'daily', label: 'Daily Digest' },
-    { value: 'weekly', label: 'Weekly Summary' }
-  ];
-
-  const timeOptions = [
-    { value: '07:00', label: '7:00 AM' },
-    { value: '08:00', label: '8:00 AM' },
-    { value: '09:00', label: '9:00 AM' },
-    { value: '12:00', label: '12:00 PM' },
-    { value: '17:00', label: '5:00 PM' },
-    { value: '18:00', label: '6:00 PM' }
-  ];
-
-  const dayOptions = [
-    { value: 'monday', label: 'Monday' },
-    { value: 'tuesday', label: 'Tuesday' },
-    { value: 'wednesday', label: 'Wednesday' },
-    { value: 'thursday', label: 'Thursday' },
-    { value: 'friday', label: 'Friday' }
-  ];
-
-  const header = (
-    <div className="flex items-center gap-4 pt-6 pb-2">
-      <button
-        onClick={handleProfileImageClick}
-        className="relative w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold shadow-lg ring-2 ring-white/20 overflow-hidden group cursor-pointer transition-transform hover:scale-105"
-        style={{ backgroundColor: profileImage ? 'transparent' : theme.colors.accent, color: JSI_COLORS.white }}
-      >
-        {profileImage ? (
-          <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
-        ) : (
-          `${firstName[0]}${lastName[0]}`
-        )}
-        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-          <Camera className="w-5 h-5 text-white" />
-        </div>
-      </button>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleImageChange}
-        className="hidden"
-      />
+const SectionHeader = ({ icon: Icon, title, subtitle, theme }) => (
+  <div className="px-5 pt-4 pb-3">
+    <div className="flex items-start gap-3">
+      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ ...fieldTileSurface(theme), borderRadius: '999px' }}>
+        <Icon className="w-4 h-4" style={{ color: theme.colors.accent }} />
+      </div>
       <div>
-        <h1 className="text-2xl font-bold tracking-tight" style={{ color: theme.colors.textPrimary }}>
-          Settings
-        </h1>
-        <p className="text-sm font-medium" style={{ color: theme.colors.textSecondary }}>
-          MyJSI Preferences
-        </p>
+        <h2 className={SECTION_TITLE_CLASSNAME} style={{ color: theme.colors.textPrimary }}>{title}</h2>
+        {subtitle && <p className="text-[0.75rem] mt-1 leading-relaxed" style={{ color: theme.colors.textSecondary }}>{subtitle}</p>}
       </div>
     </div>
-  );
+  </div>
+);
+
+export const SettingsScreen = ({ theme, isDarkMode, onToggleTheme, userSettings, setUserSettings }) => {
+  const isDark = isDarkTheme(theme);
+  const [firstName, setFirstName] = useState(userSettings?.firstName || 'Luke');
+  const [lastName, setLastName] = useState(userSettings?.lastName || 'Wagner');
+  const [streetAddress, setStreetAddress] = useState(userSettings?.streetAddress || userSettings?.homeAddress || '');
+  const [shirtSize, setShirtSize] = useState(userSettings?.shirtSize || 'L');
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
+  const [addressLoading, setAddressLoading] = useState(false);
+  const addressRequestRef = useRef(null);
+  const addressCacheRef = useRef(new Map());
+  const [notif, setNotif] = useState({ newOrder: true, samplesShipped: true, leadTimeChange: true, communityPost: false, replacementApproved: true, commissionPosted: true, orderUpdate: true });
+  const notifGroups = [
+    { label: 'Orders and shipping', keys: ['newOrder', 'orderUpdate', 'samplesShipped'] },
+    { label: 'Projects and revenue', keys: ['replacementApproved', 'commissionPosted'] },
+    { label: 'Products and community', keys: ['leadTimeChange', 'communityPost'] },
+  ];
+  const notifLabels = { newOrder:'New order placed', orderUpdate:'Order status update', samplesShipped:'Samples shipped', leadTimeChange:'Lead time change', replacementApproved:'Replacement approved', commissionPosted:'Commission posted', communityPost:'New JSI community post' };
+  const [leadTimeFavorites, setLeadTimeFavorites] = useState(() => {
+    try { const raw = localStorage.getItem('leadTimeFavorites'); const parsed = raw ? JSON.parse(raw) : []; return Array.isArray(parsed) ? parsed : []; } catch { return []; }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('leadTimeFavorites', JSON.stringify(leadTimeFavorites));
+    } catch (_storageError) {
+      return;
+    }
+  }, [leadTimeFavorites]);
+  const leadTimeOptions = useMemo(() => {
+    const unique = Array.from(new Set(LEAD_TIMES_DATA.map(item => item.series))).sort();
+    return unique.slice(0, 24);
+  }, []);
+  const fallbackAddressHints = useMemo(() => {
+    const candidates = [
+      userSettings?.streetAddress,
+      userSettings?.homeAddress,
+      '5445 N Deerwood Lake Rd, Jasper, IN 47546',
+      '4102 Meghan Beeler Court, South Bend, IN 46628',
+      '429 N Pennsylvania St, Indianapolis, IN 46204',
+      '201 E Market St, Louisville, KY 40202',
+      '111 W Berry St, Fort Wayne, IN 46802',
+    ];
+    return Array.from(new Set(candidates.filter(Boolean).map((item) => String(item).trim()))).slice(0, 6);
+  }, [userSettings?.homeAddress, userSettings?.streetAddress]);
+  const fieldTile = fieldTileSurface(theme);
+  const rowDivider = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.035)';
+  const groupedTileSurface = {
+    ...fieldTile,
+    backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(240,237,232,0.72)',
+  };
+  const settingsCardStyle = isDark ? {} : { border: 'none' };
+  const settingsInputStyle = {
+    ...inputSurface(theme),
+    backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(246,243,238,0.88)',
+    border: isDark ? '1px solid rgba(255,255,255,0.045)' : 'none',
+  };
+
+  useEffect(() => {
+    setFirstName(userSettings?.firstName || 'Luke');
+    setLastName(userSettings?.lastName || 'Wagner');
+    setStreetAddress(userSettings?.streetAddress || userSettings?.homeAddress || '');
+    setShirtSize(userSettings?.shirtSize || 'L');
+  }, [userSettings?.firstName, userSettings?.lastName, userSettings?.streetAddress, userSettings?.homeAddress, userSettings?.shirtSize]);
+
+  const applyStreetAddress = useCallback((value) => {
+    setStreetAddress(value);
+    setUserSettings?.(prev => ({ ...prev, streetAddress: value, homeAddress: value }));
+  }, [setUserSettings]);
+
+  useEffect(() => {
+    const query = String(streetAddress || '').trim();
+    if (query.length < 3) {
+      setAddressLoading(false);
+      setAddressSuggestions(query ? fallbackAddressHints.filter((hint) => hint.toLowerCase().includes(query.toLowerCase())) : fallbackAddressHints);
+      return;
+    }
+
+    const cacheKey = query.toLowerCase();
+    const cached = addressCacheRef.current.get(cacheKey);
+    if (cached) {
+      setAddressSuggestions(cached);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        if (addressRequestRef.current) addressRequestRef.current.abort();
+        const controller = new AbortController();
+        addressRequestRef.current = controller;
+        setAddressLoading(true);
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&countrycodes=us&q=${encodeURIComponent(query)}`,
+          {
+            signal: controller.signal,
+            headers: {
+              'Accept-Language': 'en-US',
+            },
+          }
+        );
+        if (!response.ok) throw new Error('Address lookup failed');
+        const rows = await response.json();
+        const suggestions = Array.from(new Set((rows || []).map((row) => row?.display_name).filter(Boolean)));
+        addressCacheRef.current.set(cacheKey, suggestions);
+        setAddressSuggestions(suggestions.length ? suggestions : fallbackAddressHints.filter((hint) => hint.toLowerCase().includes(query.toLowerCase())));
+      } catch (error) {
+        if (error?.name !== 'AbortError') {
+          setAddressSuggestions(fallbackAddressHints.filter((hint) => hint.toLowerCase().includes(query.toLowerCase())));
+        }
+      } finally {
+        setAddressLoading(false);
+      }
+    }, 220);
+
+    return () => clearTimeout(timer);
+  }, [streetAddress, fallbackAddressHints]);
 
   return (
-    <ScreenLayout
+    <AppScreenLayout
       theme={theme}
-      header={header}
-      maxWidth="default"
-      padding={true}
-      paddingBottom="8rem"
+      showTitle={false}
+      maxWidthClass="max-w-content"
+      horizontalPaddingClass="px-4 sm:px-6 lg:px-8"
+      contentPaddingBottomClass="pb-24 lg:pb-12"
+      contentClassName="pt-4 space-y-4"
     >
-      <div className="space-y-5 max-w-2xl mx-auto">
-        {/* Account Settings - Condensed */}
-        <GlassCard theme={theme} className="overflow-hidden" variant="elevated">
-          <div className="px-5 py-3.5 border-b flex items-center gap-2.5" style={{ borderColor: theme.colors.subtle }}>
-            <div className="p-1.5 rounded-full bg-black/5 dark:bg-white/10">
-              <User className="w-4 h-4" style={{ color: theme.colors.textPrimary }} />
-            </div>
-            <h2 className="text-base font-bold" style={{ color: theme.colors.textPrimary }}>Account Details</h2>
-          </div>
-          <div className="p-5">
-            <div className="flex items-end gap-3">
-              <div className="flex-1 space-y-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wider pl-0.5" style={{ color: theme.colors.textSecondary }}>First Name</label>
-                <input
-                  value={firstName}
-                  onChange={e => setFirstName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg text-sm transition-shadow focus:ring-2 focus:ring-opacity-50 outline-none"
-                  style={{ ...getInputStyles(theme), boxShadow: 'none' }}
-                />
-              </div>
-              <div className="flex-1 space-y-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wider pl-0.5" style={{ color: theme.colors.textSecondary }}>Last Name</label>
-                <input
-                  value={lastName}
-                  onChange={e => setLastName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg text-sm transition-shadow focus:ring-2 focus:ring-opacity-50 outline-none"
-                  style={{ ...getInputStyles(theme), boxShadow: 'none' }}
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-[10px] font-semibold uppercase tracking-wider pl-0.5" style={{ color: theme.colors.textSecondary }}>T-Shirt</label>
-                <CompactSelect
-                  value={shirtSize}
-                  onChange={setShirtSize}
-                  options={['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map(s => ({ value: s, label: s }))}
-                  theme={theme}
-                />
-              </div>
-            </div>
-            {/* Address field */}
-            <div className="mt-4 space-y-1">
-              <label className="text-[10px] font-semibold uppercase tracking-wider pl-0.5" style={{ color: theme.colors.textSecondary }}>Home Address</label>
+      <GlassCard theme={theme} className="overflow-visible" style={settingsCardStyle}>
+        <SectionHeader icon={User} title="Account" subtitle="Keep your profile details up to date." theme={theme} />
+        <div className="px-5 pb-5 space-y-3.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className={`${FIELD_LABEL_CLASSNAME} block mb-1.5`} style={{ color: theme.colors.textSecondary }}>First name</label>
               <input
-                value={homeAddress}
-                onChange={e => setHomeAddress(e.target.value)}
-                placeholder="Street Address, City, State ZIP"
-                className="w-full px-3 py-2 rounded-lg text-sm transition-shadow focus:ring-2 focus:ring-opacity-50 outline-none"
-                style={{ ...getInputStyles(theme), boxShadow: 'none' }}
+                value={firstName}
+                onChange={e => {
+                  const value = e.target.value;
+                  setFirstName(value);
+                  setUserSettings?.(prev => ({ ...prev, firstName: value }));
+                }}
+                autoComplete="given-name"
+                className="w-full px-4 h-11 rounded-2xl text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-offset-1"
+                style={settingsInputStyle}
+              />
+            </div>
+            <div>
+              <label className={`${FIELD_LABEL_CLASSNAME} block mb-1.5`} style={{ color: theme.colors.textSecondary }}>Last name</label>
+              <input
+                value={lastName}
+                onChange={e => {
+                  const value = e.target.value;
+                  setLastName(value);
+                  setUserSettings?.(prev => ({ ...prev, lastName: value }));
+                }}
+                autoComplete="family-name"
+                className="w-full px-4 h-11 rounded-2xl text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-offset-1"
+                style={settingsInputStyle}
               />
             </div>
           </div>
-        </GlassCard>
-
-        {/* Notifications - Condensed with Schedule Options */}
-        <GlassCard theme={theme} className="overflow-hidden" variant="elevated">
-          <div className="px-5 py-3.5 border-b flex items-center justify-between" style={{ borderColor: theme.colors.subtle }}>
-            <div className="flex items-center gap-2.5">
-              <div className="p-1.5 rounded-full bg-black/5 dark:bg-white/10">
-                <Bell className="w-4 h-4" style={{ color: theme.colors.textPrimary }} />
-              </div>
-              <h2 className="text-base font-bold" style={{ color: theme.colors.textPrimary }}>Notifications</h2>
-            </div>
-            <button
-              onClick={() => setShowScheduleOptions(!showScheduleOptions)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors hover:bg-black/5"
-              style={{ color: theme.colors.textSecondary }}
-            >
-              <Clock className="w-3.5 h-3.5" />
-              <span>{scheduleOptions.find(o => o.value === notifSchedule)?.label}</span>
-              <ChevronRight className={`w-3.5 h-3.5 transition-transform ${showScheduleOptions ? 'rotate-90' : ''}`} />
-            </button>
-          </div>
-          
-          {/* Schedule Options - Collapsible */}
-          <AnimatePresence>
-            {showScheduleOptions && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden border-b"
-                style={{ borderColor: theme.colors.subtle }}
-              >
-                <div className="p-4 space-y-3" style={{ backgroundColor: theme.colors.subtle + '50' }}>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-medium" style={{ color: theme.colors.textSecondary }}>Delivery:</span>
-                    {scheduleOptions.map(opt => (
-                      <button
-                        key={opt.value}
-                        onClick={() => setNotifSchedule(opt.value)}
-                        className="px-3 py-1.5 rounded-full text-xs font-medium transition-all"
-                        style={{
-                          backgroundColor: notifSchedule === opt.value ? theme.colors.accent : theme.colors.surface,
-                          color: notifSchedule === opt.value ? '#fff' : theme.colors.textSecondary,
-                          border: `1px solid ${notifSchedule === opt.value ? theme.colors.accent : theme.colors.border}`
-                        }}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                  {notifSchedule !== 'realtime' && (
-                    <div className="flex items-center gap-3">
-                      {notifSchedule === 'weekly' && (
-                        <CompactSelect
-                          value={notifDay}
-                          onChange={setNotifDay}
-                          options={dayOptions}
-                          theme={theme}
-                        />
-                      )}
-                      <CompactSelect
-                        value={notifTime}
-                        onChange={setNotifTime}
-                        options={timeOptions}
-                        theme={theme}
-                      />
+          <div>
+            <label className={`${FIELD_LABEL_CLASSNAME} block mb-1.5`} style={{ color: theme.colors.textSecondary }}>Street address</label>
+            <div className="relative">
+              <input
+                value={streetAddress}
+                onChange={e => applyStreetAddress(e.target.value)}
+                onFocus={() => setShowAddressSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowAddressSuggestions(false), 120)}
+                autoComplete="street-address"
+                inputMode="text"
+                placeholder="Start typing your address"
+                className="w-full px-4 h-11 rounded-2xl text-sm font-medium outline-none transition-all focus:ring-2 focus:ring-offset-1"
+                style={settingsInputStyle}
+              />
+              {showAddressSuggestions && (
+                <div
+                  className="absolute left-0 right-0 mt-1.5 rounded-2xl overflow-hidden z-20"
+                  style={modalCardSurface(theme)}
+                >
+                  {addressLoading && (
+                    <div className="px-3 py-2.5 text-xs flex items-center gap-2" style={{ color: theme.colors.textSecondary }}>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      Searching addresses...
                     </div>
                   )}
+                  {!addressLoading && addressSuggestions.length === 0 && (
+                    <div className="px-3 py-2.5 text-xs" style={{ color: theme.colors.textSecondary }}>
+                      Keep typing to find your full address.
+                    </div>
+                  )}
+                  {!addressLoading && addressSuggestions.map((address) => (
+                    <button
+                      key={address}
+                      type="button"
+                      onMouseDown={() => applyStreetAddress(address)}
+                      className="w-full text-left px-3 py-2.5 text-xs transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                      style={{ color: theme.colors.textPrimary }}
+                    >
+                      {address}
+                    </button>
+                  ))}
+                  <div className="px-3 py-1.5 text-[0.625rem]" style={{ color: theme.colors.textSecondary, backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.018)' }}>
+                    Powered by OpenStreetMap
+                  </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          <div className="divide-y" style={{ borderColor: theme.colors.subtle }}>
-            {Object.keys(notif).map((key) => (
-              <div key={key} className="flex items-center justify-between px-5 py-3 hover:bg-black/[0.02] transition-colors">
-                <span className="text-sm" style={{ color: theme.colors.textPrimary }}>
-                  {notifLabels[key]}
-                </span>
-                <Toggle
-                  checked={!!notif[key]}
-                  onChange={v => setNotif(p => ({ ...p, [key]: v }))}
-                  theme={theme}
-                />
-              </div>
-            ))}
+              )}
+            </div>
           </div>
-        </GlassCard>
+          <div>
+            <label className={`${FIELD_LABEL_CLASSNAME} block mb-1.5`} style={{ color: theme.colors.textSecondary }}>T-shirt size</label>
+            <Select
+              value={shirtSize}
+              onChange={(s) => {
+                setShirtSize(s);
+                setUserSettings?.(prev => ({ ...prev, shirtSize: s }));
+              }}
+              options={['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(s => ({ value: s, label: s }))}
+              theme={theme}
+              surfaceStyle={settingsInputStyle}
+            />
+          </div>
+        </div>
+      </GlassCard>
 
-        {/* Lead Time Alerts - Series Selection */}
-        {notif.leadTimeChange && (
-          <GlassCard theme={theme} className="overflow-hidden" variant="elevated">
-            <button
-              onClick={() => setShowLeadTimeSeriesSelector(!showLeadTimeSeriesSelector)}
-              className="w-full px-5 py-3.5 flex items-center justify-between hover:bg-black/[0.02] transition-colors"
-            >
-              <div className="flex items-center gap-2.5">
-                <div className="p-1.5 rounded-full" style={{ backgroundColor: `${theme.colors.accent}10` }}>
-                  <Timer className="w-4 h-4" style={{ color: theme.colors.accent }} />
-                </div>
-                <div className="text-left">
-                  <h2 className="text-base font-bold" style={{ color: theme.colors.textPrimary }}>Lead Time Alerts</h2>
-                  <p className="text-[10px] font-medium" style={{ color: theme.colors.textSecondary }}>
-                    {leadTimeNotifyAll 
-                      ? 'All series' 
-                      : leadTimeSelectedSeries.size === 0 
-                        ? 'No series selected'
-                        : `${leadTimeSelectedSeries.size} series selected`
-                    }
-                  </p>
-                </div>
+      <GlassCard theme={theme} className="overflow-hidden" style={settingsCardStyle}>
+        <SectionHeader icon={Bell} title="Push Notifications" subtitle="Only keep alerts that are useful for your day-to-day." theme={theme} />
+        <div className="px-4 pb-4 space-y-4">
+          {notifGroups.map((group) => (
+            <div key={group.label}>
+              <div className="px-2.5 pb-2">
+                <span className={`${FIELD_LABEL_CLASSNAME}`} style={{ color: theme.colors.textSecondary }}>
+                  {group.label}
+                </span>
               </div>
-              <ChevronRight className={`w-4 h-4 transition-transform ${showLeadTimeSeriesSelector ? 'rotate-90' : ''}`} style={{ color: theme.colors.textSecondary }} />
-            </button>
-            
-            <AnimatePresence>
-              {showLeadTimeSeriesSelector && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden border-t"
-                  style={{ borderColor: theme.colors.subtle }}
-                >
-                  <div className="p-4 space-y-3">
-                    {/* All series toggle */}
-                    <div className="flex items-center justify-between py-2">
-                      <span className="text-sm font-medium" style={{ color: theme.colors.textPrimary }}>
-                        Notify for all lead time changes
-                      </span>
+              <div className="rounded-2xl overflow-hidden" style={groupedTileSurface}>
+                {group.keys.map((k, index) => (
+                  <div key={k}>
+                    <div className="flex items-center justify-between px-4 py-3 gap-4">
+                      <span className="text-[0.875rem] font-medium leading-tight" style={{ color: theme.colors.textPrimary }}>{notifLabels[k]}</span>
                       <Toggle
-                        checked={leadTimeNotifyAll}
-                        onChange={(v) => {
-                          setLeadTimeNotifyAll(v);
-                          if (v) setLeadTimeSelectedSeries(new Set());
-                        }}
+                        checked={!!notif[k]}
+                        onChange={v => setNotif(p => ({ ...p, [k]: v }))}
                         theme={theme}
+                        ariaLabel={notifLabels[k]}
                       />
                     </div>
-                    
-                    {/* Series selection - only show if not "all" */}
-                    {!leadTimeNotifyAll && (
-                      <div className="pt-2">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: theme.colors.textSecondary }}>
-                          Select specific series
-                        </p>
-                        <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1">
-                          {allSeries.map(series => {
-                            const isSelected = leadTimeSelectedSeries.has(series);
-                            return (
-                              <button
-                                key={series}
-                                onClick={() => toggleLeadTimeSeries(series)}
-                                className="px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all"
-                                style={{
-                                  backgroundColor: isSelected ? theme.colors.accent : theme.colors.subtle,
-                                  color: isSelected ? '#fff' : theme.colors.textSecondary,
-                                  border: `1px solid ${isSelected ? theme.colors.accent : theme.colors.border}`
-                                }}
-                              >
-                                {series}
-                              </button>
-                            );
-                          })}
+                    {k === 'leadTimeChange' && notif.leadTimeChange && (
+                      <div className="px-4 pb-4">
+                        <div className="rounded-2xl p-3.5" style={{ ...fieldTile, backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(240,237,232,0.92)' }}>
+                          <div className={`${FIELD_LABEL_CLASSNAME} mb-2`} style={{ color: theme.colors.textSecondary }}>
+                            Lead time series alerts
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {leadTimeOptions.map((series) => {
+                              const active = leadTimeFavorites.includes(series);
+                              return (
+                                <button
+                                  key={series}
+                                  type="button"
+                                  onClick={() => setLeadTimeFavorites(prev => (active ? prev.filter(s => s !== series) : [...prev, series]))}
+                                  className="px-3 py-1.5 rounded-full text-xs font-semibold transition-all active:scale-95"
+                                  style={{
+                                    backgroundColor: active ? theme.colors.accent : (isDark ? 'rgba(255,255,255,0.12)' : '#FFFFFF'),
+                                    color: active ? (isDark ? '#1A1A1A' : '#FFFFFF') : theme.colors.textSecondary,
+                                    border: `1px solid ${active ? 'transparent' : theme.colors.border}`
+                                  }}
+                                >
+                                  {series}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <div className="text-[0.6875rem] mt-2" style={{ color: theme.colors.textSecondary }}>
+                            {leadTimeFavorites.length} selected
+                          </div>
                         </div>
                       </div>
                     )}
+                    {index < group.keys.length - 1 && <div className="mx-4" style={{ borderTop: `1px solid ${rowDivider}` }} />}
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </GlassCard>
-        )}
-
-        {/* Navigation - With Drag to Reorder */}
-        <GlassCard theme={theme} className="overflow-hidden" variant="elevated">
-          <div className="px-5 py-3.5 border-b flex items-center gap-2.5" style={{ borderColor: theme.colors.subtle }}>
-            <div className="p-1.5 rounded-full" style={{ backgroundColor: `${theme.colors.accent}10` }}>
-              <Navigation className="w-4 h-4" style={{ color: theme.colors.accent }} />
-            </div>
-            <div>
-              <h2 className="text-base font-bold" style={{ color: theme.colors.textPrimary }}>Bottom Navigation</h2>
-              <p className="text-[10px] font-medium" style={{ color: theme.colors.textSecondary }}>
-                Select up to 5 • Drag to reorder
-              </p>
-            </div>
-          </div>
-          <div className="p-4">
-            {/* Selected Items - Reorderable */}
-            {selectedNavItems.length > 0 && (
-              <div className="mb-3">
-                <p className="text-[10px] font-semibold uppercase tracking-wider mb-2 px-1" style={{ color: theme.colors.textSecondary }}>
-                  Active ({selectedNavItems.length}/5)
-                </p>
-                <Reorder.Group axis="y" values={selectedNavItems} onReorder={handleNavReorder} className="space-y-1.5">
-                  {selectedNavItems.map((itemId) => {
-                    const option = ALL_NAV_ITEMS.find(item => item.id === itemId);
-                    if (!option) return null;
-                    const Icon = option.icon;
-                    return (
-                      <Reorder.Item
-                        key={itemId}
-                        value={itemId}
-                        className="flex items-center justify-between p-3 rounded-xl cursor-grab active:cursor-grabbing"
-                        style={{
-                          backgroundColor: theme.colors.surface,
-                          border: `1.5px solid ${theme.colors.accent}`,
-                          boxShadow: DESIGN_TOKENS.shadows.sm
-                        }}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <GripVertical className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
-                          <div 
-                            className="w-8 h-8 rounded-lg flex items-center justify-center"
-                            style={{ backgroundColor: `${theme.colors.accent}15` }}
-                          >
-                            {Icon && <Icon className="w-4 h-4" style={{ color: theme.colors.accent }} />}
-                          </div>
-                          <span className="text-sm font-semibold" style={{ color: theme.colors.textPrimary }}>
-                            {option.label}
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => handleNavItemToggle(itemId)}
-                          className="w-6 h-6 rounded-full flex items-center justify-center"
-                          style={{ backgroundColor: theme.colors.accent }}
-                        >
-                          <Check className="w-3.5 h-3.5 text-white" />
-                        </button>
-                      </Reorder.Item>
-                    );
-                  })}
-                </Reorder.Group>
-              </div>
-            )}
-            
-            {/* Available Items */}
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wider mb-2 px-1" style={{ color: theme.colors.textSecondary }}>
-                Available
-              </p>
-              <div className="space-y-1.5">
-                {ALL_NAV_ITEMS.filter(option => !selectedNavItems.includes(option.id)).map((option) => {
-                  const isDisabled = selectedNavItems.length >= 5;
-                  const Icon = option.icon;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => !isDisabled && handleNavItemToggle(option.id)}
-                      disabled={isDisabled}
-                      className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${
-                        isDisabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-black/[0.02]'
-                      }`}
-                      style={{
-                        backgroundColor: theme.colors.subtle,
-                        border: `1px solid ${theme.colors.border}`,
-                      }}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <div 
-                          className="w-8 h-8 rounded-lg flex items-center justify-center"
-                          style={{ backgroundColor: `${theme.colors.accent}08` }}
-                        >
-                          {Icon && <Icon className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />}
-                        </div>
-                        <span className="text-sm font-medium" style={{ color: theme.colors.textSecondary }}>
-                          {option.label}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
+                ))}
               </div>
             </div>
-          </div>
-        </GlassCard>
-
-        {/* Appearance */}
-        <GlassCard theme={theme} className="overflow-hidden" variant="elevated">
-          <div className="px-5 py-3.5 border-b flex items-center gap-2.5" style={{ borderColor: theme.colors.subtle }}>
-            <div className="p-1.5 rounded-full bg-black/5 dark:bg-white/10">
-              <Palette className="w-4 h-4" style={{ color: theme.colors.textPrimary }} />
-            </div>
-            <h2 className="text-base font-bold" style={{ color: theme.colors.textPrimary }}>Appearance</h2>
-          </div>
-          <div className="px-5 py-4 flex items-center justify-between">
-            <span className="text-sm" style={{ color: theme.colors.textPrimary }}>Dark Mode</span>
-            <Toggle checked={isDarkMode} onChange={onToggleTheme} theme={theme} />
-          </div>
-        </GlassCard>
-
-        <div className="pt-2 pb-8 flex flex-col items-center justify-center space-y-1.5 opacity-50">
-          <Shield className="w-5 h-5 mb-0.5" style={{ color: theme.colors.textSecondary }} />
-          <p className="text-[10px] font-medium" style={{ color: theme.colors.textSecondary }}>
-            Version 0.9.4 (Build 2024.12)
-          </p>
-          <p className="text-[9px]" style={{ color: theme.colors.textSecondary }}>
-            © 2024 JSI Furniture. All rights reserved.
-          </p>
+          ))}
         </div>
-      </div>
-    </ScreenLayout>
+      </GlassCard>
+
+      <GlassCard theme={theme} className="overflow-hidden" style={settingsCardStyle}>
+        <SectionHeader icon={Palette} title="Appearance" theme={theme} />
+        <div className="px-5 pb-5">
+          <div className="rounded-2xl px-4 py-3.5 flex items-center justify-between gap-4" style={groupedTileSurface}>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: theme.colors.textPrimary }}>Dark mode</p>
+              <p className="text-xs mt-0.5" style={{ color: theme.colors.textSecondary }}>Use a lower-glare theme throughout the app.</p>
+            </div>
+            <Toggle checked={isDarkMode} onChange={onToggleTheme} theme={theme} ariaLabel="Dark mode" />
+          </div>
+        </div>
+      </GlassCard>
+
+      <div className="pt-1 pb-4 text-center text-[0.6875rem] font-medium" style={{ color: theme.colors.textSecondary }}>v0.9.4</div>
+    </AppScreenLayout>
   );
 };

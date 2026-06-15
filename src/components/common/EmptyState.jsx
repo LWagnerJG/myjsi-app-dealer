@@ -1,79 +1,96 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { radius } from '../../design-system/tokens.js';
+import { Users, Briefcase, Package, Search as SearchIcon } from 'lucide-react';
+import { DESIGN_TOKENS } from '../../design-system/tokens.js';
+import { MOTION_EASINGS, toFramerSeconds, MOTION_DURATIONS_MS } from '../../design-system/motion.js';
 
-export const EmptyState = ({ 
-  icon: Icon, 
-  title, 
-  description, 
+/**
+ * EmptyState Component
+ *
+ * Displays an engaging empty state with icon, title, description, and optional action
+ * Features smooth animations for delightful user experience
+ *
+ * @param {Component} icon - Lucide icon component to display
+ * @param {string} title - Bold title text
+ * @param {string} description - Descriptive text explaining the empty state
+ * @param {object} action - Optional action button { label, onClick }
+ * @param {ReactNode} illustration - Custom illustration (overrides icon)
+ * @param {object} theme - Theme object for styling
+ */
+export const EmptyState = ({
+  icon: Icon,
+  title,
+  description,
   action,
   illustration,
-  theme 
+  theme
 }) => {
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: toFramerSeconds(MOTION_DURATIONS_MS.slow), ease: MOTION_EASINGS.standard }}
       className="flex flex-col items-center justify-center py-16 px-4 text-center"
     >
       {/* Icon or Illustration */}
       {illustration ? (
         <div className="mb-6">{illustration}</div>
       ) : Icon && (
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.8 }}
           animate={{ scale: 1 }}
-          transition={{ 
-            duration: 0.5, 
+          transition={{
+            duration: 0.5,
             delay: 0.1,
             type: 'spring',
             stiffness: 200,
             damping: 15
           }}
           className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
-          style={{ 
+          style={{
             backgroundColor: `${theme.colors.accent}15`,
-            borderRadius: radius('full')
+            borderRadius: DESIGN_TOKENS.borderRadius.full
           }}
         >
           <Icon className="w-10 h-10" style={{ color: theme.colors.accent }} />
         </motion.div>
       )}
-      
+
       {/* Title */}
-      <motion.h3 
+      <motion.h3
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="font-bold text-xl mb-2" 
+        className="font-bold text-[1.375rem] mb-2"
         style={{ color: theme.colors.textPrimary }}
       >
         {title}
       </motion.h3>
-      
+
       {/* Description */}
-      <motion.p 
+      <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="text-sm mb-8 max-w-sm leading-relaxed" 
+        className="text-[0.8125rem] mb-8 max-w-sm leading-relaxed"
         style={{ color: theme.colors.textSecondary }}
       >
         {description}
       </motion.p>
-      
+
       {/* Action Button */}
       {action && (
         <motion.button
+          type="button"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           onClick={action.onClick}
-          className="px-6 py-3 rounded-full font-semibold text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
-          style={{ 
+          className="px-6 py-3 rounded-full font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
+          style={{
             backgroundColor: theme.colors.accent,
-            borderRadius: radius('full')
+            color: theme.colors.accentText,
+            borderRadius: DESIGN_TOKENS.borderRadius.pill
           }}
         >
           {action.label}
@@ -86,10 +103,10 @@ export const EmptyState = ({
 // Predefined empty states for common scenarios
 export const NoCustomersEmptyState = ({ theme, onAddCustomer }) => (
   <EmptyState
-    icon={require('lucide-react').Users}
+    icon={Users}
     title="No customers yet"
     description="Start building relationships by adding your first customer. You'll be able to track projects, orders, and communications all in one place."
-    action={{
+    action={onAddCustomer && {
       label: "Add First Customer",
       onClick: onAddCustomer
     }}
@@ -99,10 +116,10 @@ export const NoCustomersEmptyState = ({ theme, onAddCustomer }) => (
 
 export const NoProjectsEmptyState = ({ theme, onCreateProject }) => (
   <EmptyState
-    icon={require('lucide-react').Briefcase}
+    icon={Briefcase}
     title="No projects found"
     description="Create your first project to start tracking opportunities, timelines, and progress toward your sales goals."
-    action={{
+    action={onCreateProject && {
       label: "Create Project",
       onClick: onCreateProject
     }}
@@ -112,7 +129,7 @@ export const NoProjectsEmptyState = ({ theme, onCreateProject }) => (
 
 export const NoOrdersEmptyState = ({ theme }) => (
   <EmptyState
-    icon={require('lucide-react').Package}
+    icon={Package}
     title="No orders yet"
     description="Orders will appear here once customers place them. Check back soon or create a new project to get started."
     theme={theme}
@@ -121,7 +138,7 @@ export const NoOrdersEmptyState = ({ theme }) => (
 
 export const SearchEmptyState = ({ theme, searchTerm }) => (
   <EmptyState
-    icon={require('lucide-react').Search}
+    icon={SearchIcon}
     title="No results found"
     description={`We couldn't find anything matching "${searchTerm}". Try adjusting your search or filters.`}
     theme={theme}

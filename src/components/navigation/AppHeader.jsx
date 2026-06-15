@@ -1,10 +1,8 @@
-/* eslint-disable react/prop-types */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowLeft, User } from 'lucide-react';
-import { logoLight } from '../../data.jsx'; // checking import path
-import { DESIGN_TOKENS } from '../../design-system/tokens.js';
-import { useModalState } from '../../hooks/useModalState.js';
-import { motion, AnimatePresence } from 'framer-motion';
+import { logoLight } from '../../data/theme/themeData.js';
+import { getHomeChromeIconButtonStyles, getHomeChromePillStyles, HOME_CHROME_PILL_HEIGHT } from '../../design-system/homeChrome.js';
+import { isDarkTheme } from '../../design-system/tokens.js';
 
 export const AppHeader = React.memo(({
     onHomeClick,
@@ -13,100 +11,222 @@ export const AppHeader = React.memo(({
     onProfileClick,
     handleBack,
     showBack,
-    userName
+    userName,
+    profileBtnRef
 }) => {
-    const { isModalOpen } = useModalState();
     const filterStyle = isDarkMode ? 'brightness(0) invert(1)' : 'none';
     const isHome = !showBack;
+    const dark = isDarkMode || isDarkTheme(theme);
+    const [scrollDepth, setScrollDepth] = useState(0);
+    const homeChromePillStyles = getHomeChromePillStyles(dark);
+    const homeChromeIconButtonStyles = getHomeChromeIconButtonStyles(dark);
 
-    // Shadow logic - COMPLETELY REMOVED to solve "horizontal line" issue
-    const pillShadow = 'none';
+    const bgR = dark ? '26,26,26' : '240,237,232';
+    const homeScrimHeight = 'calc(env(safe-area-inset-top, 0px) + 88px)';
+    const innerScrimHeight = 'calc(env(safe-area-inset-top, 0px) + 68px)';
+    const scrimProgress = isHome ? Math.min(Math.max((scrollDepth - 2) / 36, 0), 1) : 0;
+    const scrimOpacity = scrimProgress * 0.78;
+    const gradientOpacity = scrimProgress * 0.64;
+
+    useEffect(() => {
+        if (!isHome) {
+            setScrollDepth(0);
+            return undefined;
+        }
+
+        let removeListener = () => {};
+        let rafId = 0;
+        let attachFrame = 0;
+        let observer = null;
+
+        const attachScrollListener = () => {
+            // The actual scroll happens in .panel-content (AnimatedScreenWrapper).
+            // data-home-scroll-container is only a marker to confirm the home screen is mounted.
+            const marker = document.querySelector('[data-home-scroll-container="true"]');
+            if (!marker) return false;
+            // Walk up to the nearest .panel-content ancestor which is the real scroll container.
+            const scrollContainer = marker.closest('.panel-content') || marker;
+
+            const getScrollTop = () => scrollContainer.scrollTop;
+            const onScroll = () => {
+                const nextDepth = getScrollTop();
+                if (rafId) window.cancelAnimationFrame(rafId);
+                rafId = window.requestAnimationFrame(() => setScrollDepth(nextDepth));
+            };
+
+            onScroll();
+            scrollContainer.addEventListener('scroll', onScroll, { passive: true });
+            removeListener = () => scrollContainer.removeEventListener('scroll', onScroll);
+            return true;
+        };
+
+        const startListening = () => {
+            if (attachScrollListener()) return;
+
+            observer = new MutationObserver(() => {
+                if (!attachScrollListener()) return;
+                observer?.disconnect();
+                observer = null;
+            });
+
+            if (document.body) {
+                observer.observe(document.body, { childList: true, subtree: true });
+            }
+        };
+
+        attachFrame = window.requestAnimationFrame(startListening);
+
+        return () => {
+            window.cancelAnimationFrame(attachFrame);
+            if (rafId) window.cancelAnimationFrame(rafId);
+            observer?.disconnect();
+            removeListener();
+        };
+    }, [isHome]);
+
+    const getTimeGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Good Morning';
+        if (hour < 17) return 'Good Afternoon';
+        return 'Good Evening';
+    };
 
     return (
-        <div
-            className="pt-4 pb-1 fixed top-0 left-0 right-0 pointer-events-none"
-            style={{ zIndex: DESIGN_TOKENS.zIndex.header }}
-        >
-            <div className="mx-auto w-full px-4 lg:px-6" style={{ maxWidth: DESIGN_TOKENS.maxWidth.content }}>
-                <motion.div
-                    className="w-full flex items-center justify-between px-5 pointer-events-auto bg-white dark:bg-[#353535]"
-                    initial={false}
-                    animate={{
-                        backgroundColor: theme.colors.surface,
-                        boxShadow: pillShadow
-                    }}
-                    transition={{ duration: 0.3 }}
+        <>
+            {isHome && scrimProgress > 0.02 && (
+                <>
+                    <div
+                        data-app-header-scrim
+                        aria-hidden="true"
+                        className="fixed top-0 left-0 right-0 pointer-events-none transition-opacity duration-200 ease-out"
+                        style={{
+                            height: homeScrimHeight,
+                            zIndex: 29,
+                            opacity: scrimOpacity,
+                            backdropFilter: 'blur(16px) saturate(1.6)',
+                            WebkitBackdropFilter: 'blur(16px) saturate(1.6)',
+                            maskImage: 'linear-gradient(to bottom, black 0%, black 58%, rgba(0,0,0,0.42) 74%, transparent 100%)',
+                            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 58%, rgba(0,0,0,0.42) 74%, transparent 100%)',
+                        }}
+                    />
+
+                    <div
+                        data-app-header-scrim
+                        aria-hidden="true"
+                        className="fixed top-0 left-0 right-0 pointer-events-none transition-opacity duration-200 ease-out"
+                        style={{
+                            height: homeScrimHeight,
+                            zIndex: 29,
+                            opacity: gradientOpacity,
+                            background: `linear-gradient(to bottom,
+                                rgba(${bgR},0.22) 0%,
+                                rgba(${bgR},0.14) 32%,
+                                rgba(${bgR},0.06) 58%,
+                                rgba(${bgR},0.015) 78%,
+                                rgba(${bgR},0) 100%)`,
+                        }}
+                    />
+                </>
+            )}
+
+            {!isHome && (
+                <>
+                    {/* Inner-page scrim — covers only the header pill, no bleed below */}
+                    <div
+                        data-app-header-scrim
+                        aria-hidden="true"
+                        className="fixed top-0 left-0 right-0 pointer-events-none"
+                        style={{
+                            height: innerScrimHeight,
+                            zIndex: 29,
+                            backdropFilter: 'blur(16px) saturate(1.6)',
+                            WebkitBackdropFilter: 'blur(16px) saturate(1.6)',
+                            background: `linear-gradient(to bottom,
+                                rgba(${bgR},0.56) 0%,
+                                rgba(${bgR},0.34) 46%,
+                                rgba(${bgR},0.10) 76%,
+                                rgba(${bgR},0) 100%)`,
+                            maskImage: 'linear-gradient(to bottom, black 0%, black 76%, transparent 100%)',
+                            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 76%, transparent 100%)',
+                        }}
+                    />
+                </>
+            )}
+
+            {/* ── Universal top-blur backing — stops at pill edge, no bleed ── */}
+            <div
+                data-app-header-scrim
+                aria-hidden="true"
+                className="fixed top-0 left-0 right-0 pointer-events-none"
+                style={{
+                    height: 'calc(env(safe-area-inset-top, 0px) + 68px)',
+                    zIndex: 27,
+                    backdropFilter: 'blur(16px) saturate(1.55)',
+                    WebkitBackdropFilter: 'blur(16px) saturate(1.55)',
+                    maskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
+                    WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 70%, transparent 100%)',
+                }}
+            />
+
+            <div className="px-4 sm:px-5 pb-1 fixed top-0 left-0 right-0 z-30 pointer-events-none bg-transparent" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}>
+                <div
+                    className="max-w-content mx-auto w-full flex items-center justify-between px-4 sm:px-6 lg:px-8 pointer-events-auto overflow-hidden"
                     style={{
-                        borderRadius: 9999,
-                        height: 56,
-                        border: 'none', // Explicitly remove border
+                        transition: 'border-radius 200ms ease',
+                        ...homeChromePillStyles,
                     }}
                 >
-                    <div className="flex items-center gap-1 overflow-hidden">
-                        <AnimatePresence initial={false} mode="popLayout">
-                            {showBack && (
-                                <motion.button
-                                    key="back-btn"
-                                    layout
-                                    initial={{ opacity: 0, x: -20, width: 0 }}
-                                    animate={{ opacity: 1, x: 0, width: 'auto' }}
-                                    exit={{ opacity: 0, x: -20, width: 0 }}
-                                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
-                                    aria-label="Go back"
-                                    onClick={handleBack}
-                                    className="p-2 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors -ml-2 mr-1"
-                                >
-                                    <ArrowLeft className="w-5 h-5 flex-shrink-0" style={{ color: theme.colors.textSecondary }} />
-                                </motion.button>
-                            )}
-                        </AnimatePresence>
+                    <div className="flex items-center">
+                        <button
+                            type="button"
+                            aria-label="Go back"
+                            aria-hidden={!showBack}
+                            onClick={handleBack}
+                            className={`transition-all duration-300 overflow-hidden flex items-center justify-center rounded-full ${dark ? 'hover:bg-white/10' : 'hover:bg-black/5 dark:hover:bg-white/5'} active:scale-90 ${showBack ? 'w-12 h-12 -ml-3 mr-1 opacity-100' : 'w-0 h-12 ml-0 mr-0 opacity-0 pointer-events-none'}`}
+                            disabled={!showBack}
+                            tabIndex={showBack ? 0 : -1}
+                            style={{ WebkitTapHighlightColor: 'transparent' }}
+                        >
+                            <ArrowLeft className="w-5 h-5 flex-shrink-0" style={{ color: theme.colors.textPrimary }} />
+                        </button>
 
-                        <motion.button
-                            layout
+                        <button
+                            type="button"
                             aria-label="Go to homepage"
                             onClick={onHomeClick}
-                            className="hover:opacity-90 transition-opacity flex items-center"
-                            transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                            className="hover:opacity-60 transition-all active:scale-95"
                         >
-                            <motion.img
-                                layoutId="app-logo"
-                                src={logoLight}
-                                alt="MyJSI Logo"
-                                className="h-8 w-auto"
-                                style={{ filter: filterStyle }}
-                            />
-                        </motion.button>
+                            <img src={logoLight} alt="MyJSI Logo" className="h-7 w-auto" style={{ filter: filterStyle }} />
+                        </button>
                     </div>
 
-                    <div className="flex items-center space-x-2">
-                        <AnimatePresence>
-                            {isHome && (
-                                <motion.div
-                                    key="greeting"
-                                    initial={{ opacity: 0, width: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, width: 'auto', scale: 1 }}
-                                    exit={{ opacity: 0, width: 0, scale: 0.95 }}
-                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                                    className="text-[15px] leading-tight whitespace-nowrap overflow-hidden origin-right"
-                                    style={{ color: theme.colors.textPrimary }}
-                                >
-                                    Hello, {userName}!
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-
-                        <motion.button
-                            layout
-                            aria-label="Open profile menu"
-                            onClick={onProfileClick}
-                            className="w-9 h-9 rounded-full flex items-center justify-center transition-colors hover:bg-black/5 dark:hover:bg:white/5"
-                            style={{ backgroundColor: theme.colors.surface, boxShadow: 'none' }}
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <div
+                            data-greeting-anchor
+                            className={`flex items-baseline justify-end transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden ${isHome ? 'max-w-[250px] opacity-100 mr-1' : 'max-w-0 opacity-0'}`}
+                            style={{ color: theme.colors.textPrimary }}
                         >
-                            <User className="w-5 h-5" style={{ color: theme.colors.textPrimary }} strokeWidth={2} />
-                        </motion.button>
+                            <span className="text-[0.9375rem] font-medium">{getTimeGreeting()},</span>
+                            <span className="text-[0.9375rem] font-medium ml-1 md:ml-1.5">{userName}</span>
+                        </div>
+
+                        <button
+                        ref={profileBtnRef}
+                        type="button"
+                        aria-label="Open profile menu"
+                        onClick={onProfileClick}
+                        className="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all hover:opacity-90 active:scale-90"
+                        style={{
+                            ...homeChromeIconButtonStyles,
+                            color: theme.colors.textPrimary,
+                        }}
+                    >
+                        <User className="w-5 h-5" style={{ color: theme.colors.textPrimary }} />
+                    </button>
                     </div>
-                </motion.div>
+                </div>
             </div>
-        </div>
+        </>
     );
 });
+

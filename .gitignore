@@ -1,7 +1,6 @@
 # ===================================================================
 # A clean and comprehensive .gitignore for a modern web project
 # ===================================================================
-
 # Logs
 # ---------------------------------
 logs
@@ -10,14 +9,12 @@ npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 lerna-debug.log*
-
 # Dependencies
 # ---------------------------------
 # These can be reinstalled from package.json, so we don't track them
 /node_modules
 /.pnp
 .pnp.js
-
 # Build & Test Output
 # ---------------------------------
 # This is generated code, not source code
@@ -25,7 +22,6 @@ lerna-debug.log*
 /dist
 /dist-ssr
 /coverage
-
 # Environment Variables
 # ---------------------------------
 # NEVER commit secret keys or local environment variables
@@ -34,7 +30,6 @@ lerna-debug.log*
 .env.development.local
 .env.test.local
 .env.production.local
-
 # Editor & IDE Directories
 # ---------------------------------
 # Your personal editor settings don't belong in the project
@@ -47,8 +42,13 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
-
 # OS-specific files
 # ---------------------------------
 .DS_Store
 Thumbs.db
+# Temp files
+tmpclaude-*
+# Visual Studio build artifacts
+obj/
+.claude/worktrees/
+.claude/

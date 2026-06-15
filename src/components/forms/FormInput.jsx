@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { inputSurface, isDarkTheme, subtleBorder } from '../../design-system/tokens.js';
 
 export const FormInput = React.memo(({
     label,
@@ -16,28 +17,32 @@ export const FormInput = React.memo(({
     surfaceBg = false, // when true uses surface (lighter) instead of subtle
 }) => {
     const controlledValue = value === undefined || value === null ? '' : value;
+    const dark = isDarkTheme(theme);
 
     const textSizeClass = size === 'sm' ? 'text-sm' : 'text-base';
-    const inputClass = `w-full px-4 py-3 border rounded-full focus:ring-2 outline-none ${textSizeClass} ${icon ? 'pr-10' : ''} ${className}`;
+    const paddingClass = size === 'sm' ? 'px-4' : 'px-4 py-3';
+    const dateDarkClass = type === 'date' && dark ? 'jsi-date-dark' : '';
+    const inputClass = `w-full ${paddingClass} border rounded-full focus:outline-none focus:ring-0 ${textSizeClass} ${dateDarkClass} ${icon ? 'pr-10' : ''} ${className}`;
 
-    const backgroundColor = surfaceBg ? theme.colors.surface : theme.colors.subtle;
+    // On dark: always use background color so inputs appear as inset wells below the card surface
+    const sharedInputSurface = inputSurface(theme);
+    const backgroundColor = dark
+        ? theme.colors.background
+        : (surfaceBg ? sharedInputSurface.backgroundColor : theme.colors.subtle);
 
     const styles = {
         backgroundColor,
-        borderColor: theme.colors.border,
+        borderColor: subtleBorder(theme).replace('1px solid ', ''),
         color: readOnly && !controlledValue ? theme.colors.textSecondary : theme.colors.textPrimary,
-        ringColor: theme.colors.accent,
+        ...(size === 'sm' ? { height: 40 } : {}),
     };
 
-    // inject placeholder color class once (theme dependent best-effort)
+    // Set placeholder color via a CSS custom property — never writes raw values into innerHTML.
     useEffect(() => {
-        const id = 'form-input-placeholder-style';
-        if (!document.getElementById(id)) {
-            const style = document.createElement('style');
-            style.id = id;
-            style.innerHTML = `.placeholder-theme-secondary::placeholder{color:${theme.colors.textSecondary}!important;opacity:1;}`;
-            document.head.appendChild(style);
-        }
+        document.documentElement.style.setProperty(
+            '--placeholder-theme-secondary',
+            theme.colors.textSecondary
+        );
     }, [theme.colors.textSecondary]);
 
     const formatCurrency = (val) => {
@@ -91,8 +96,8 @@ export const FormInput = React.memo(({
                     <textarea
                         {...baseProps}
                         rows="4"
-                        className={`w-full px-4 py-3 border rounded-3xl focus:ring-2 outline-none ${textSizeClass} placeholder-theme-secondary ${className}`}
-                        style={{ ...styles, resize: 'none' }}
+                        className={`w-full ${size === 'sm' ? 'px-4 py-2.5' : 'px-4 py-3'} border rounded-2xl focus:outline-none focus:ring-0 ${textSizeClass} placeholder-theme-secondary ${className}`}
+                        style={{ ...styles, resize: 'none', height: 'auto' }}
                     />
                 ) : (
                     <input

@@ -1,25 +1,34 @@
-// Core screen component imports (eager)
-import { SalesScreen, CustomerRankingScreen, IncentiveRewardsScreen } from '../screens/sales/index.js';
-import { OrdersScreen } from '../screens/orders/index.js';
-import { ProductsScreen, ProductComparisonScreen, CompetitiveAnalysisScreen } from '../screens/products/index.js';
-import { ResourcesScreen } from '../screens/resources/ResourcesScreen.jsx'; // ResourcesScreen expects homeApps prop (forwarded from App screenProps) to render Core Apps section.
-import { ProjectsScreen, NewLeadScreen, AddNewInstallScreen } from '../screens/projects/index.js';
-import { CommunityScreen, CreateContentModal } from '../screens/community/index.js';
-import { ReplacementsScreen } from '../screens/replacements/ReplacementsScreen.jsx';
-import { SamplesScreen } from '../screens/samples/index.js';
-import { FeedbackScreen } from '../screens/feedback/index.js';
-import { MembersScreen } from '../screens/members/index.js';
-import { HelpScreen } from '../screens/help/HelpScreen.jsx';
-import { LogoutScreen } from '../screens/logout/LogoutScreen.jsx';
-import { HomeScreen } from '../screens/home/HomeScreen.jsx';
-import { SettingsScreen } from '../screens/settings/index.js';
-import { ResourceDetailScreen } from '../screens/utility/UtilityScreens.jsx';
-import { CommunityLibraryLayout } from '../screens/home/CommunityLibraryLayout.jsx';
+import React from 'react';
 
-// NOTE:
-// Feature resource detail routes (e.g. 'lead-times', 'customer-directory', 'contracts', etc.) are now handled lazily
-// in App.jsx and intentionally omitted here to allow code splitting. Keeping them out of SCREEN_MAP
-// prevents accidental static inclusion in the main bundle.
+// Core screen component imports (eager - always needed)
+import { HomeScreen } from '../screens/home/HomeScreen.jsx';
+import { ResourcesScreen } from '../screens/resources/ResourcesScreen.jsx';
+import { NewLeadScreen } from '../screens/projects/NewLeadScreen.jsx';
+import { AddNewInstallScreen } from '../screens/projects/AddNewInstallScreen.jsx';
+
+const SalesScreen = React.lazy(() => import('../screens/sales/index.js').then(m => ({ default: m.SalesScreen })));
+const CustomerRankingScreen = React.lazy(() => import('../screens/sales/index.js').then(m => ({ default: m.CustomerRankingScreen })));
+const IncentiveRewardsScreen = React.lazy(() => import('../screens/sales/index.js').then(m => ({ default: m.IncentiveRewardsScreen })));
+const CommissionsScreen = React.lazy(() => import('../screens/sales/index.js').then(m => ({ default: m.CommissionsScreen })));
+const OrdersScreen = React.lazy(() => import('../screens/orders/index.js').then(m => ({ default: m.OrdersScreen })));
+const ProductsScreen = React.lazy(() => import('../screens/products/index.js').then(m => ({ default: m.ProductsScreen })));
+const ProductComparisonScreen = React.lazy(() => import('../screens/products/index.js').then(m => ({ default: m.ProductComparisonScreen })));
+const CompetitiveAnalysisScreen = React.lazy(() => import('../screens/products/index.js').then(m => ({ default: m.CompetitiveAnalysisScreen })));
+const CommunityLibraryLayout = React.lazy(() => import('../screens/home/CommunityLibraryLayout.jsx').then(m => ({ default: m.CommunityLibraryLayout })));
+const ReplacementsScreen = React.lazy(() => import('../screens/replacements/ReplacementsScreen.jsx').then(m => ({ default: m.ReplacementsScreen })));
+const FeedbackScreen = React.lazy(() => import('../screens/feedback/index.js').then(m => ({ default: m.FeedbackScreen })));
+const MembersScreen = React.lazy(() => import('../screens/members/index.js').then(m => ({ default: m.MembersScreen })));
+const HelpScreen = React.lazy(() => import('../screens/help/HelpScreen.jsx').then(m => ({ default: m.HelpScreen })));
+const LogoutScreen = React.lazy(() => import('../screens/logout/LogoutScreen.jsx').then(m => ({ default: m.LogoutScreen })));
+const SettingsScreen = React.lazy(() => import('../screens/settings/index.js').then(m => ({ default: m.SettingsScreen })));
+const SamplesScreen = React.lazy(() => import('../screens/samples/index.js').then(m => ({ default: m.SamplesScreen })));
+const MarketplaceScreen = React.lazy(() => import('../screens/marketplace/index.js').then(m => ({ default: m.MarketplaceScreen })));
+const PresentationsScreen = React.lazy(() => import('../screens/resources/presentations/index.js').then(m => ({ default: m.PresentationsScreen })));
+const GoodBetterBestScreen = React.lazy(() => import('../screens/resources/presentations/GoodBetterBestScreen.jsx').then(m => ({ default: m.GoodBetterBestScreen })));
+const RfpResponderScreen = React.lazy(() => import('../screens/rfp/RfpResponderScreen.jsx').then(m => ({ default: m.default })));
+
+// Resource feature routes (lead-times, commission-rates, etc.) are handled lazily in App.jsx
+// and intentionally omitted here — including them here would pull them into the main bundle.
 
 export const SCREEN_MAP = {
   'home': HomeScreen,
@@ -27,12 +36,11 @@ export const SCREEN_MAP = {
   'sales': SalesScreen,
   'products': ProductsScreen,
   'resources': ResourcesScreen,
-  'projects': ProjectsScreen,
-  'community': CommunityLibraryLayout, // swapped to new layout providing Community + Library toggle
+  'community': CommunityLibraryLayout,
   'replacements': ReplacementsScreen,
-  'samples': SamplesScreen,
   'incentive-rewards': IncentiveRewardsScreen,
   'customer-rank': CustomerRankingScreen,
+  'commissions': CommissionsScreen,
   'settings': SettingsScreen,
   'members': MembersScreen,
   'help': HelpScreen,
@@ -42,20 +50,48 @@ export const SCREEN_MAP = {
   'add-new-install': AddNewInstallScreen,
   'product-comparison': ProductComparisonScreen,
   'competitive-analysis': CompetitiveAnalysisScreen,
+  'marketplace': MarketplaceScreen,
+  'presentations': PresentationsScreen,
+  'good-better-best': GoodBetterBestScreen,
+  'rfp-responder': RfpResponderScreen,
+  // 'new-dealer-signup' is lazy-loaded in App.jsx
 };
 
 export {
-  ResourceDetailScreen,
   ProductComparisonScreen,
   CompetitiveAnalysisScreen,
-  AddNewInstallScreen,
-  SettingsScreen,
-  NewLeadScreen,
-  MembersScreen,
   SalesScreen,
-  CustomerRankingScreen,
-  IncentiveRewardsScreen,
-  CommunityScreen,
-  CreateContentModal,
   SamplesScreen,
 };
+
+const canWarmPreload = () => {
+  if (typeof navigator === 'undefined') return false;
+
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (conn?.saveData) return false;
+
+  const effectiveType = String(conn?.effectiveType || '').toLowerCase();
+  if (effectiveType.includes('2g')) return false;
+
+  if (typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 2) {
+    return false;
+  }
+
+  return true;
+};
+
+// Warm only the highest-frequency destinations and skip on constrained devices.
+const preloadMainScreens = () => {
+  import('../screens/sales/index.js');
+  import('../screens/orders/index.js');
+  import('../screens/products/index.js');
+  import('../screens/home/CommunityLibraryLayout.jsx');
+};
+
+if (typeof window !== 'undefined' && canWarmPreload()) {
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(preloadMainScreens, { timeout: 4000 });
+  } else {
+    setTimeout(preloadMainScreens, 2000);
+  }
+}

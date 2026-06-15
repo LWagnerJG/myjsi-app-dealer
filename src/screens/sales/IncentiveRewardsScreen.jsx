@@ -1,248 +1,115 @@
-import { useMemo, useState, useCallback } from 'react';
-import { GlassCard, ScreenLayout } from '../../design-system/index.js';
+import { useMemo, useState } from 'react';
 import { PortalNativeSelect } from '../../components/forms/PortalNativeSelect';
+import { formatCurrency } from '../../utils/format.js';
 import { INCENTIVE_REWARDS_DATA } from './data.js';
-import { DollarSign, Users } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { JSI_COLORS } from '../../design-system/tokens.js';
+import { isDarkTheme } from '../../design-system/tokens.js';
 
-export const IncentiveRewardsScreen = ({ theme, onNavigate }) => {
-    const generateTimePeriods = useCallback(() => {
-        const periods = [];
-        const now = new Date();
-        const currentYear = now.getFullYear();
-        const currentQuarter = Math.floor(now.getMonth() / 3) + 1;
+const parseQuarterKey = (key = '') => {
+    const match = key.match(/^(\d{4})-Q(\d)$/);
+    if (!match) return { year: 0, quarter: 0 };
+    return { year: Number(match[1]), quarter: Number(match[2]) };
+};
 
-        for (let year = currentYear; year >= currentYear - 2; year--) {
-            const isCurrentYear = year === currentYear;
-            const quartersInYear = isCurrentYear ? currentQuarter : 4;
+const buildTimePeriods = (rewardData) => {
+    const quarterKeys = Object.keys(rewardData || {}).filter((key) => /^\d{4}-Q\d$/.test(key));
+    const years = [...new Set(quarterKeys.map((key) => parseQuarterKey(key).year))].sort((a, b) => b - a);
+    return years.flatMap((year) => {
+        const quarters = quarterKeys
+            .filter((key) => parseQuarterKey(key).year === year)
+            .sort((a, b) => parseQuarterKey(b).quarter - parseQuarterKey(a).quarter)
+            .map((key) => ({ value: key, label: `Q${parseQuarterKey(key).quarter} ${year}` }));
+        return [...quarters, { value: String(year), label: `${year} Annual` }];
+    });
+};
 
-            for (let q = quartersInYear; q >= 1; q--) {
-                periods.push({ value: `${year}-Q${q}`, label: `Q${q} ${year}` });
-            }
-            periods.push({ value: `${year}`, label: `${year} Annual` });
-        }
-        return periods;
-    }, []);
+const aggregate = (data, year) => {
+    const salesMap = new Map();
+    const designersMap = new Map();
+    Object.entries(data)
+        .filter(([key]) => key.startsWith(`${year}-Q`))
+        .forEach(([, d]) => {
+            d.sales?.forEach((p) => salesMap.set(p.name, (salesMap.get(p.name) || 0) + p.amount));
+            d.designers?.forEach((p) => designersMap.set(p.name, (designersMap.get(p.name) || 0) + p.amount));
+        });
+    const sales = [];
+    const designers = [];
+    salesMap.forEach((amount, name) => sales.push({ name, amount }));
+    designersMap.forEach((amount, name) => designers.push({ name, amount }));
+    return { sales, designers };
+};
 
-    const timePeriods = useMemo(generateTimePeriods, [generateTimePeriods]);
-    const [selectedPeriod, setSelectedPeriod] = useState(timePeriods[0]?.value || new Date().getFullYear().toString());
-    const [viewFilter, setViewFilter] = useState('all');
+const Row = ({ rank, name, amount, theme }) => {
+    const isDark = isDarkTheme(theme);
+    return (
+    <div className="flex items-center justify-between py-2">
+        <div className="min-w-0 flex items-center gap-2.5">
+            <span
+                className="w-6 h-6 rounded-full text-xs font-semibold flex items-center justify-center shrink-0"
+                style={{ color: theme.colors.textSecondary, backgroundColor: isDark ? 'rgba(255,255,255,0.085)' : theme.colors.border }}
+            >
+                {rank}
+            </span>
+            <span className="text-sm font-medium truncate" style={{ color: theme.colors.textPrimary }}>{name}</span>
+        </div>
+        <span className="text-sm font-semibold tabular-nums ml-3" style={{ color: theme.colors.textPrimary }}>
+            {formatCurrency(amount)}
+        </span>
+    </div>
+    );
+};
+
+const Leaderboard = ({ title, people, emptyLabel, theme }) => {
+    const isDark = isDarkTheme(theme);
+    const bdr = isDark ? 'rgba(255,255,255,0.065)' : 'rgba(0,0,0,0.06)';
+    return (
+        <div className="rounded-[22px] overflow-hidden p-5" style={{ backgroundColor: theme.colors.surface, border: `1px solid ${bdr}` }}>
+            <p className="text-[0.6875rem] font-bold uppercase tracking-[0.07em] opacity-55 mb-1" style={{ color: theme.colors.textSecondary }}>{title}</p>
+            {people.length > 0 ? (
+                <div className="divide-y" style={{ borderColor: bdr }}>
+                    {people.map((p, i) => <Row key={p.name} rank={i + 1} name={p.name} amount={p.amount} theme={theme} />)}
+                </div>
+            ) : (
+                <p className="text-sm py-3" style={{ color: theme.colors.textSecondary }}>{emptyLabel}</p>
+            )}
+        </div>
+    );
+};
+
+export const IncentiveRewardsScreen = ({ theme }) => {
+    const timePeriods = useMemo(() => buildTimePeriods(INCENTIVE_REWARDS_DATA), []);
+    const [selectedPeriod, setSelectedPeriod] = useState(timePeriods[0]?.value || '');
 
     const rewardsData = useMemo(() => {
         if (!selectedPeriod) return { sales: [], designers: [] };
-
-        const isAnnual = !selectedPeriod.includes('Q');
-        if (isAnnual) {
-            const year = selectedPeriod;
-            const salesMap = new Map();
-            const designersMap = new Map();
-
-            for (let q = 1; q <= 4; q++) {
-                const periodKey = `${year}-Q${q}`;
-                const periodData = INCENTIVE_REWARDS_DATA[periodKey];
-                if (periodData) {
-                    periodData.sales?.forEach(person => {
-                        salesMap.set(person.name, (salesMap.get(person.name) || 0) + person.amount);
-                    });
-                    periodData.designers?.forEach(person => {
-                        designersMap.set(person.name, (designersMap.get(person.name) || 0) + person.amount);
-                    });
-                }
-            }
-            const cumulativeData = { sales: [], designers: [] };
-            salesMap.forEach((amount, name) => cumulativeData.sales.push({ name, amount }));
-            designersMap.forEach((amount, name) => cumulativeData.designers.push({ name, amount }));
-            return cumulativeData;
-        }
+        if (!selectedPeriod.includes('Q')) return aggregate(INCENTIVE_REWARDS_DATA, selectedPeriod);
         return INCENTIVE_REWARDS_DATA[selectedPeriod] || { sales: [], designers: [] };
     }, [selectedPeriod]);
 
     const sortedSales = useMemo(() => [...(rewardsData.sales || [])].sort((a, b) => b.amount - a.amount), [rewardsData.sales]);
     const sortedDesigners = useMemo(() => [...(rewardsData.designers || [])].sort((a, b) => b.amount - a.amount), [rewardsData.designers]);
 
-    const totalSalesRewards = sortedSales.reduce((sum, p) => sum + p.amount, 0);
-    const totalDesignerRewards = sortedDesigners.reduce((sum, p) => sum + p.amount, 0);
-
-    const RewardRow = ({ person, index, total }) => {
-        const pct = total > 0 ? (person.amount / total) * 100 : 0;
-        
-        return (
-            <motion.div
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: index * 0.02 }}
-                className="flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all hover:bg-black/[0.02]"
-            >
-                <div 
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
-                    style={{ 
-                        backgroundColor: index === 0 ? `${JSI_COLORS.gold}20` : theme.colors.subtle,
-                        color: index === 0 ? JSI_COLORS.gold : theme.colors.textSecondary,
-                    }}
-                >
-                    {index + 1}
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                    <p className="font-medium text-[13px] truncate" style={{ color: theme.colors.textPrimary }}>
-                        {person.name}
-                    </p>
-                    <div className="mt-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: theme.colors.subtle }}>
-                        <motion.div 
-                            className="h-full rounded-full" 
-                            initial={{ width: 0 }}
-                            animate={{ width: `${pct}%` }}
-                            transition={{ duration: 0.35, delay: index * 0.02 }}
-                            style={{ backgroundColor: theme.colors.accent }} 
+    return (
+        <div className="min-h-full app-header-offset" style={{ backgroundColor: theme.colors.background }}>
+            <div className="px-4 sm:px-6 lg:px-8 pt-4 sm:pt-5 pb-6 max-w-content mx-auto w-full space-y-4">
+                <div className="flex items-center gap-3">
+                    <p className="text-sm font-semibold" style={{ color: theme.colors.textPrimary }}>Dealer Rewards</p>
+                    <div className="w-40">
+                        <PortalNativeSelect
+                            value={selectedPeriod}
+                            onChange={(e) => setSelectedPeriod(e.target.value)}
+                            options={timePeriods}
+                            theme={theme}
+                            size="sm"
+                            align="right"
                         />
                     </div>
                 </div>
-                
-                <span className="font-semibold text-[13px] tabular-nums flex-shrink-0" style={{ color: theme.colors.accent }}>
-                    ${person.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </span>
-            </motion.div>
-        );
-    };
 
-    const EmptyState = ({ type }) => (
-        <div className="py-8 text-center">
-            <p className="text-[13px]" style={{ color: theme.colors.textSecondary }}>
-                No {type} rewards for this period
-            </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Leaderboard title="Sales" people={sortedSales} emptyLabel="No sales rewards this period." theme={theme} />
+                    <Leaderboard title="Design" people={sortedDesigners} emptyLabel="No design rewards this period." theme={theme} />
+                </div>
+            </div>
         </div>
-    );
-
-    return (
-        <ScreenLayout
-            theme={theme}
-            maxWidth="default"
-            padding={true}
-            paddingBottom="8rem"
-            gap="0.75rem"
-        >
-            {/* Controls */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="w-36">
-                    <PortalNativeSelect
-                        value={selectedPeriod}
-                        onChange={e => setSelectedPeriod(e.target.value)}
-                        options={timePeriods}
-                        theme={theme}
-                    />
-                </div>
-                
-                <div 
-                    className="flex items-center rounded-full p-0.5" 
-                    style={{ backgroundColor: theme.colors.subtle }}
-                >
-                    <button
-                        onClick={() => setViewFilter('all')}
-                        className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
-                        style={{
-                            backgroundColor: viewFilter === 'all' ? '#FFF' : 'transparent',
-                            color: viewFilter === 'all' ? theme.colors.textPrimary : theme.colors.textSecondary,
-                            boxShadow: viewFilter === 'all' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-                        }}
-                    >
-                        All
-                    </button>
-                    <button
-                        onClick={() => setViewFilter('sales')}
-                        className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
-                        style={{
-                            backgroundColor: viewFilter === 'sales' ? '#FFF' : 'transparent',
-                            color: viewFilter === 'sales' ? theme.colors.textPrimary : theme.colors.textSecondary,
-                            boxShadow: viewFilter === 'sales' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-                        }}
-                    >
-                        Sales
-                    </button>
-                    <button
-                        onClick={() => setViewFilter('designers')}
-                        className="px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all"
-                        style={{
-                            backgroundColor: viewFilter === 'designers' ? '#FFF' : 'transparent',
-                            color: viewFilter === 'designers' ? theme.colors.textPrimary : theme.colors.textSecondary,
-                            boxShadow: viewFilter === 'designers' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-                        }}
-                    >
-                        Design
-                    </button>
-                </div>
-            </div>
-
-            {/* Summary Cards */}
-            <div className="grid grid-cols-2 gap-3">
-                <GlassCard theme={theme} className="p-3">
-                    <div className="flex items-center gap-1.5 mb-1">
-                        <DollarSign className="w-3.5 h-3.5" style={{ color: theme.colors.accent }} />
-                        <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: theme.colors.textSecondary }}>
-                            Sales
-                        </span>
-                    </div>
-                    <p className="text-lg font-bold tabular-nums" style={{ color: theme.colors.accent }}>
-                        ${totalSalesRewards.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    </p>
-                </GlassCard>
-                
-                <GlassCard theme={theme} className="p-3">
-                    <div className="flex items-center gap-1.5 mb-1">
-                        <Users className="w-3.5 h-3.5" style={{ color: theme.colors.textSecondary }} />
-                        <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: theme.colors.textSecondary }}>
-                            Design
-                        </span>
-                    </div>
-                    <p className="text-lg font-bold tabular-nums" style={{ color: theme.colors.textPrimary }}>
-                        ${totalDesignerRewards.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    </p>
-                </GlassCard>
-            </div>
-
-            {/* Sales Rewards */}
-            {(viewFilter === 'all' || viewFilter === 'sales') && (
-                <GlassCard theme={theme} className="p-3" variant="elevated">
-                    <div className="flex items-center gap-2 px-2 mb-2">
-                        <DollarSign className="w-4 h-4" style={{ color: theme.colors.accent }} />
-                        <h3 className="font-semibold text-[14px]" style={{ color: theme.colors.textPrimary }}>
-                            Sales Rewards
-                        </h3>
-                        <span className="text-[11px] ml-auto" style={{ color: theme.colors.textSecondary }}>
-                            {sortedSales.length} {sortedSales.length === 1 ? 'person' : 'people'}
-                        </span>
-                    </div>
-                    
-                    {sortedSales.length > 0 
-                        ? sortedSales.map((person, i) => (
-                            <RewardRow key={person.name} person={person} index={i} total={totalSalesRewards} />
-                        ))
-                        : <EmptyState type="sales" />
-                    }
-                </GlassCard>
-            )}
-
-            {/* Designer Rewards */}
-            {(viewFilter === 'all' || viewFilter === 'designers') && (
-                <GlassCard theme={theme} className="p-3" variant="elevated">
-                    <div className="flex items-center gap-2 px-2 mb-2">
-                        <Users className="w-4 h-4" style={{ color: theme.colors.textSecondary }} />
-                        <h3 className="font-semibold text-[14px]" style={{ color: theme.colors.textPrimary }}>
-                            Designer Rewards
-                        </h3>
-                        <span className="text-[11px] ml-auto" style={{ color: theme.colors.textSecondary }}>
-                            {sortedDesigners.length} {sortedDesigners.length === 1 ? 'person' : 'people'}
-                        </span>
-                    </div>
-                    
-                    {sortedDesigners.length > 0 
-                        ? sortedDesigners.map((person, i) => (
-                            <RewardRow key={person.name} person={person} index={i} total={totalDesignerRewards} />
-                        ))
-                        : <EmptyState type="designer" />
-                    }
-                </GlassCard>
-            )}
-        </ScreenLayout>
     );
 };

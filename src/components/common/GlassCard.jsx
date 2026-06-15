@@ -1,14 +1,14 @@
 import React from 'react';
 import { DESIGN_TOKENS, JSI_COLORS, isDarkTheme } from '../../design-system/tokens.js';
 
-// JSI Card Component
-// Clean white backgrounds with 24px corner radius and subtle drop shadows
-// Hover state reveals dark overlay with action buttons
+// JSI GlassCard Component
+// Frosted-glass cards with subtle transparency, backdrop blur, and refined shadows
+// Uses DESIGN_TOKENS.frost presets for consistent glassmorphism across the app
 // Variants:
-//  - elevated: JSI signature soft shadow
-//  - minimal: lighter shadow
-//  - interactive: hover effects with overlay capability
-//  - outlined: subtle border, no shadow
+//  - elevated: Frosted glass with blur + soft shadow (default)
+//  - minimal: Lighter frost, subtler shadow
+//  - interactive: hover effects with lift + enhanced frost
+//  - outlined: Subtle border + light frost, no shadow
 export const GlassCard = React.memo(
   React.forwardRef(function GlassCard(
     {
@@ -17,7 +17,6 @@ export const GlassCard = React.memo(
       theme,
       variant = 'elevated',
       interactive = false,
-      hoverOverlay = false,  // JSI: Enable dark overlay on hover
       style = {},
       as: Component = 'div',
       ...props
@@ -25,35 +24,52 @@ export const GlassCard = React.memo(
     ref
   ) {
     const isDark = isDarkTheme(theme);
-    const shadows = isDark ? DESIGN_TOKENS.shadowsDark : DESIGN_TOKENS.shadows;
-
-    let boxShadow = shadows.none;
-    if (variant === 'elevated' || variant === 'interactive') boxShadow = shadows.card;
-    else if (variant === 'minimal') boxShadow = shadows.md;
-
-    const borderColor = theme?.colors?.border || JSI_COLORS.stone;
     const radius = DESIGN_TOKENS.borderRadius.xl; // 24px for JSI
 
-    // Interactive classes with hover shadow lift
-    const interactiveClasses = interactive || variant === 'interactive'
-      ? 'cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-[0.985] active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#353535]/10'
+    // Match the frosted-glass header pill in dark mode; solid white in light
+    const cardBg = isDark
+      ? 'rgba(255,255,255,0.065)'
+      : (theme?.colors?.surface || '#FFFFFF');
+
+    // Subtle border for edge definition
+    const cardBorder = isDark
+      ? '1px solid rgba(255, 255, 255, 0.055)'
+      : '1px solid rgba(0, 0, 0, 0.06)';
+
+    const borderColor = theme?.colors?.border || JSI_COLORS.stone;
+
+    const isInteractive = interactive || variant === 'interactive';
+
+    // Interactive classes
+    const interactiveClasses = isInteractive
+      ? 'cursor-pointer motion-card motion-tap hover:-translate-y-0.5 active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#353535]/10'
       : '';
 
-    const outlinedStyles = variant === 'outlined'
-      ? { border: `1.5px solid ${borderColor}` }
-      : { border: 'none' };
+    const outlinedBorder = variant === 'outlined'
+      ? `1.5px solid ${borderColor}`
+      : cardBorder;
+
+    // Keyboard support for interactive cards
+    const handleKeyDown = isInteractive ? (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        props.onClick?.(e);
+      }
+    } : undefined;
 
     return (
       <Component
         ref={ref}
-        className={`bg-clip-padding ${interactiveClasses} ${className}`}
+        className={`${interactiveClasses} ${className}`}
         style={{
-          backgroundColor: theme?.colors?.surface || JSI_COLORS.white,
-          boxShadow,
+          backgroundColor: cardBg,
+          color: theme?.colors?.textPrimary,
+          boxShadow: 'none',
           borderRadius: radius,
-          ...outlinedStyles,
+          border: outlinedBorder,
           ...style
         }}
+        {...(isInteractive && { role: 'button', tabIndex: 0, onKeyDown: handleKeyDown })}
         {...props}
       >
         {children}
@@ -79,7 +95,7 @@ export const ProductCard = React.memo(
     },
     ref
   ) {
-    const [isHovered, setIsHovered] = React.useState(false);
+    const [isActive, setIsActive] = React.useState(false);
 
     return (
       <div
@@ -91,8 +107,17 @@ export const ProductCard = React.memo(
           boxShadow: DESIGN_TOKENS.shadows.card,
           ...style,
         }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={() => setIsActive(true)}
+        onMouseLeave={() => setIsActive(false)}
+        onFocus={() => setIsActive(true)}
+        onBlur={(e) => {
+          // Keep overlay visible while focus is within the card
+          if (!e.currentTarget.contains(e.relatedTarget)) {
+            setIsActive(false);
+          }
+        }}
+        role="group"
+        aria-label={`${familyName || ''} ${subCategoryTitle || ''}`.trim()}
         {...props}
       >
         {/* Image */}
@@ -100,7 +125,7 @@ export const ProductCard = React.memo(
           <div className="aspect-[4/3] overflow-hidden">
             <img
               src={image}
-              alt={subCategoryTitle}
+              alt={`${familyName || ''} ${subCategoryTitle || ''}`.trim()}
               loading="lazy"
               width="400"
               height="300"
@@ -130,23 +155,20 @@ export const ProductCard = React.memo(
           {children}
         </div>
 
-        {/* JSI Dark Overlay on Hover */}
+        {/* JSI Dark Overlay on Hover/Focus */}
         <div
           className="absolute inset-0 flex items-center justify-center gap-3 transition-all duration-300"
           style={{
-            backgroundColor: isHovered ? 'rgba(53,53,53,0.85)' : 'rgba(53,53,53,0)',
-            opacity: isHovered ? 1 : 0,
-            pointerEvents: isHovered ? 'auto' : 'none',
+            backgroundColor: isActive ? 'rgba(53,53,53,0.85)' : 'rgba(53,53,53,0)',
+            opacity: isActive ? 1 : 0,
+            pointerEvents: isActive ? 'auto' : 'none',
           }}
         >
           {onLearnClick && (
             <button
               onClick={(e) => { e.stopPropagation(); onLearnClick(); }}
-              className="px-5 py-2.5 rounded-full font-semibold text-sm transition-all hover:scale-105 active:scale-95"
-              style={{
-                backgroundColor: JSI_COLORS.white,
-                color: JSI_COLORS.charcoal,
-              }}
+              className="px-5 py-2.5 rounded-full font-semibold text-sm transition-all motion-tap hover:scale-[1.03] active:scale-[0.98]"
+              style={DESIGN_TOKENS.frost.button.overlayLearn}
             >
               Learn
             </button>
@@ -154,12 +176,8 @@ export const ProductCard = React.memo(
           {onProductsClick && (
             <button
               onClick={(e) => { e.stopPropagation(); onProductsClick(); }}
-              className="px-5 py-2.5 rounded-full font-semibold text-sm transition-all hover:scale-105 active:scale-95"
-              style={{
-                backgroundColor: 'transparent',
-                color: JSI_COLORS.white,
-                border: `1.5px solid ${JSI_COLORS.white}`,
-              }}
+              className="px-5 py-2.5 rounded-full font-semibold text-sm transition-all motion-tap hover:scale-[1.03] active:scale-[0.98]"
+              style={DESIGN_TOKENS.frost.button.overlayGhost}
             >
               Products
             </button>

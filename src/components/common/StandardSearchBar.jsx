@@ -2,20 +2,12 @@ import React from 'react';
 import { SearchInput } from './SearchInput.jsx';
 
 // Standardized 56px pill search used across feature screens (matches Orders / AppHeader styling)
-// Props: value, onChange (event or value), placeholder, theme, className, onVoiceClick, id
-export const StandardSearchBar = ({ value, onChange, placeholder='Search...', theme, className='', onVoiceClick, id }) => {
-  const handleChange = (val) => {
-    // SearchInput passes the value directly (not an event)
-    // Accept both value and event handlers for flexibility
-    if (onChange) {
-      if (typeof val === 'string') {
-        onChange(val);
-      } else if (val?.target) {
-        onChange(val.target.value);
-      } else {
-        onChange(val);
-      }
-    }
+// Props: value, onChange (event or value), placeholder, theme, className, id
+export const StandardSearchBar = ({ value, onChange, placeholder='Search...', theme, className='', id, autoFocus = false, inputRef, style, inputClassName = '' }) => {
+  const handleChange = (e) => {
+    // Accept both synthetic event and raw value handlers
+    const val = e?.target ? e.target.value : e;
+    if (onChange) onChange(val);
   };
   return (
     <SearchInput
@@ -24,9 +16,11 @@ export const StandardSearchBar = ({ value, onChange, placeholder='Search...', th
       onChange={handleChange}
       placeholder={placeholder}
       theme={theme}
-      variant="header"
       className={className}
-      inputClassName=""
+      inputClassName={inputClassName}
+      autoFocus={autoFocus}
+      inputRef={inputRef}
+      style={style}
     />
   );
 };

@@ -1,10 +1,12 @@
 // Orders feature specific data
+// Sample ACK PDF should be placed in /public/JSI-ACK-sample.pdf
 export const ORDER_DATA = [
     {
         date: '2025-06-10T11:20:00Z',
         company: 'BUSINESS FURNISHINGS',
         details: 'MONREAU SEMINARY',
         orderNumber: '450080-00',
+        vertical: 'Education',
         po: 'S65474-2',
         net: 112000.00,
         shipDate: '2025-09-15T12:00:00Z',
@@ -12,8 +14,7 @@ export const ORDER_DATA = [
         shipTo: 'BUSINESS FURNISHINGS LLC\n4102 MEGHAN BEELER COURT\nSOUTH BEND, IN 46628',
         discount: '18.40%',
         ackDate: '2025-06-12T11:20:00Z',
-        ackUrl: 'https://webresources.jsifurniture.com/production/uploads/documents/JSI-BrandDoc-COMCOLOrderForm-0321.pdf',
-        customerId: 'cust-001', // Acme Corp HQ
+        ackUrl: '/JSI-ACK-sample.pdf',
         lineItems: [
             { line: '001', name: 'VISION CONFERENCE TABLE', model: 'VCT12048', quantity: 5, net: 8000.00, extNet: 40000.00, specs: [{ label: 'FINISH', value: 'MOCHA LAMINATE' }, { label: 'BASE', value: 'TRUSS LEG - BLACK' }] },
             { line: '002', name: 'ARWYN SWIVEL CHAIR', model: 'AW6007C', quantity: 40, net: 1800.00, extNet: 72000.00, specs: [{ label: 'UPHOLSTERY', value: 'MAHARAM, MODE, GLACIER' }] }
@@ -24,6 +25,7 @@ export const ORDER_DATA = [
         company: 'BUSINESS FURNISHINGS',
         details: 'MONREAU SEMINARY - PHASE 2',
         orderNumber: '450080-01',
+        vertical: 'Education',
         po: 'S65474-3',
         net: 55000.00,
         shipDate: '2025-09-15T12:00:00Z',
@@ -42,6 +44,7 @@ export const ORDER_DATA = [
         company: 'ONE ELEVEN DESIGN',
         details: 'CENTLIVRE, LLC',
         orderNumber: '449645-00',
+        vertical: 'Corporate',
         po: 'S65474-1',
         net: 2800.00,
         shipDate: '2025-09-05T12:00:00Z',
@@ -59,6 +62,7 @@ export const ORDER_DATA = [
         company: 'ONE ELEVEN DESIGN',
         details: 'CENTLIVRE, LLC - LOBBY',
         orderNumber: '449645-01',
+        vertical: 'Corporate',
         po: 'S65474-4',
         net: 4250.00,
         shipDate: '2025-09-05T12:00:00Z',
@@ -77,6 +81,7 @@ export const ORDER_DATA = [
         company: 'CORPORATE DESIGN INC',
         details: 'ONE MAIN FINANCIAL',
         orderNumber: '449518-00',
+        vertical: 'Corporate',
         po: 'S65473-9',
         net: 500.00,
         shipDate: '2025-09-02T12:00:00Z',
@@ -85,7 +90,6 @@ export const ORDER_DATA = [
         discount: '22.34%',
         ackDate: '2025-06-13T16:45:00Z',
         ackUrl: 'https://webresources.jsifurniture.com/production/uploads/documents/JSI-BrandDoc-COMCOLOrderForm-0321.pdf',
-        customerId: 'cust-001', // Acme Corp HQ
         lineItems: [
             { line: '001', name: 'WINK GUEST CHAIR', model: 'WK4501A', quantity: 1, net: 500.00, extNet: 500.00, specs: [{ label: 'SHELL', value: 'KIWI GREEN' }] }
         ]
@@ -95,6 +99,7 @@ export const ORDER_DATA = [
         company: 'CORPORATE DESIGN INC',
         details: 'ONEMAIN FINANCIAL',
         orderNumber: '442365-00',
+        vertical: 'Corporate',
         po: 'S65473-8',
         net: 950.00,
         shipDate: '2025-08-28T12:00:00Z',
@@ -103,7 +108,6 @@ export const ORDER_DATA = [
         discount: '24.03%',
         ackDate: '2025-06-14T10:15:00Z',
         ackUrl: 'https://webresources.jsifurniture.com/production/uploads/documents/JSI-BrandDoc-COMCOLOrderForm-0321.pdf',
-        customerId: 'cust-001', // Acme Corp HQ
         lineItems: [
             { line: '001', name: 'SIDE TABLE', model: 'SIDETBL-SM', quantity: 2, net: 475.00, extNet: 950.00, specs: [] }
         ]
@@ -113,6 +117,7 @@ export const ORDER_DATA = [
         company: 'BUSINESS FURNITURE LLC',
         details: 'MSD of Lawrence Township - LECC',
         orderNumber: '444353-00',
+        vertical: 'Education',
         po: 'S65473-7',
         net: 31250.00,
         shipDate: '2025-08-25T12:00:00Z',
@@ -121,23 +126,21 @@ export const ORDER_DATA = [
         discount: '61.20%',
         ackDate: '2025-06-14T14:30:00Z',
         ackUrl: 'https://webresources.jsifurniture.com/production/uploads/documents/JSI-BrandDoc-COMCOLOrderForm-0321.pdf',
-        customerId: 'cust-001', // Acme Corp HQ
         lineItems: [
             { line: '001', name: 'CROSSOVER SWIVEL CONFERENCE', model: 'AW6007C', quantity: 8, net: 902.10, extNet: 7216.80, specs: [{ label: 'MIDBACK-SWIVELBASE', value: 'ARWYNSERIES-MODELAW6007C' }] }
         ]
     },
 ];
 
-// JSI Neutral Status Colors - Earth-toned palette matching design system
 export const STATUS_COLORS = {
-    'Discovery': '#5C5C5C',        // Neutral gray
-    'Specifying': '#5C5C5C',       // Neutral gray
-    'Decision/Bidding': '#5C5C5C', // Neutral gray
-    'PO Expected': '#5C5C5C',      // Neutral gray
-    'Won': '#4A7C59',              // Earthy green (from JSI_COLORS.success)
-    'Lost': '#B85C5C',             // Muted red (from JSI_COLORS.error)
-    'Order Entry': '#6B7280',      // Neutral gray
-    'Acknowledged': '#6B7280',     // Neutral gray
-    'In Production': '#5C5C5C',    // Neutral gray
-    'Shipping': '#4A7C59',          // Earthy green (subtle success indicator)
+    'Discovery': '#5B7B8C',
+    'Specifying': '#4A7C59',
+    'Decision/Bidding': '#C4956A',
+    'PO Expected': '#5B7B8C',
+    'Won': '#4A7C59',
+    'Lost': '#B85C5C',
+    'Order Entry': '#8B8680',
+    'Acknowledged': '#A1845C',
+    'In Production': '#5B7B8C',
+    'Shipping': '#4A7C59',
 };

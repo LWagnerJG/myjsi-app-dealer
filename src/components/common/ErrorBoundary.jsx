@@ -1,12 +1,28 @@
-// Error Boundary Component
-// Catches JavaScript errors in child component tree and displays fallback UI
 import React from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { JSIWebButton } from './JSIButtons.jsx';
 
+/**
+ * Error Boundary Component
+ * 
+ * Catches JavaScript errors anywhere in child component tree,
+ * logs errors, and displays a fallback UI.
+ */
 export class ErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { hasError: false, error: null, errorInfo: null };
+        this.state = { hasError: false, error: null, errorInfo: null, lastScreenKey: props.screenKey };
+    }
+
+    // Reset the error boundary when the screen changes (without remounting the component)
+    static getDerivedStateFromProps(props, state) {
+        if (state.hasError && props.screenKey !== state.lastScreenKey) {
+            return { hasError: false, error: null, errorInfo: null, lastScreenKey: props.screenKey };
+        }
+        if (props.screenKey !== state.lastScreenKey) {
+            return { lastScreenKey: props.screenKey };
+        }
+        return null;
     }
 
     static getDerivedStateFromError(error) {
@@ -15,97 +31,109 @@ export class ErrorBoundary extends React.Component {
 
     componentDidCatch(error, errorInfo) {
         this.setState({ errorInfo });
-        // Log to error reporting service
-        console.error('ErrorBoundary caught:', error, errorInfo);
+        // Log to console in development
+        if (import.meta.env.DEV) {
+            console.error('ErrorBoundary caught an error:', error, errorInfo);
+        }
+        // Could send to error reporting service here
     }
 
     handleRetry = () => {
         this.setState({ hasError: false, error: null, errorInfo: null });
     };
 
+    handleGoHome = () => {
+        this.setState({ hasError: false, error: null, errorInfo: null });
+        window.location.href = '/';
+    };
+
     render() {
-        if (this.state.hasError) {
-            const { theme, fallback } = this.props;
-            
-            // Custom fallback component
+        const { hasError, error } = this.state;
+        const { children, theme, fallback } = this.props;
+
+        if (hasError) {
+            // Custom fallback provided
             if (fallback) {
-                return typeof fallback === 'function' 
-                    ? fallback({ error: this.state.error, retry: this.handleRetry })
-                    : fallback;
+                return fallback({ error, retry: this.handleRetry });
             }
-            
-            // Default error UI
+
+            // Default fallback UI
+            const colors = {
+                background: theme?.colors?.background || '#F0EDE8',
+                surface: theme?.colors?.surface || '#FFFFFF',
+                textPrimary: theme?.colors?.textPrimary || '#353535',
+                textSecondary: theme?.colors?.textSecondary || '#666666',
+                accent: theme?.colors?.accent || '#353535',
+                border: theme?.colors?.border || '#E3E0D8',
+                error: '#B85C5C'
+            };
+
             return (
                 <div 
-                    className="flex flex-col items-center justify-center min-h-[200px] p-6 text-center"
-                    style={{ backgroundColor: theme?.colors?.background || '#f8f8f8' }}
+                    className="flex flex-col items-center justify-center min-h-[60vh] px-6 text-center"
+                    style={{ backgroundColor: colors.background }}
                 >
                     <div 
-                        className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-                        style={{ backgroundColor: '#FEE2E220' }}
+                        className="w-16 h-16 rounded-full flex items-center justify-center mb-6"
+                        style={{ backgroundColor: `${colors.error}15` }}
                     >
-                        <AlertTriangle className="w-7 h-7 text-red-500" />
+                        <AlertTriangle className="w-8 h-8" style={{ color: colors.error }} />
                     </div>
-                    <h3 
-                        className="text-base font-semibold mb-1"
-                        style={{ color: theme?.colors?.textPrimary || '#111' }}
+
+                    <h2 
+                        className="text-xl font-bold mb-2"
+                        style={{ color: colors.textPrimary }}
                     >
                         Something went wrong
-                    </h3>
+                    </h2>
+
                     <p 
-                        className="text-sm mb-4 max-w-xs"
-                        style={{ color: theme?.colors?.textSecondary || '#666' }}
+                        className="text-sm mb-6 max-w-sm"
+                        style={{ color: colors.textSecondary }}
                     >
-                        We're sorry, but something unexpected happened. Please try again.
+                        We encountered an unexpected error. Please try again or return to the home screen.
                     </p>
-                    <button
-                        onClick={this.handleRetry}
-                        className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold transition-all active:scale-95"
-                        style={{
-                            backgroundColor: theme?.colors?.accent || '#AD8A77',
-                            color: '#FFFFFF',
-                        }}
-                    >
-                        <RefreshCw className="w-4 h-4" />
-                        Try Again
-                    </button>
-                    {process.env.NODE_ENV === 'development' && this.state.error && (
-                        <details className="mt-4 text-left w-full max-w-md">
-                            <summary 
-                                className="text-xs cursor-pointer"
-                                style={{ color: theme?.colors?.textSecondary || '#666' }}
-                            >
-                                Error details
-                            </summary>
-                            <pre 
-                                className="mt-2 p-3 rounded-lg text-xs overflow-auto max-h-32"
-                                style={{ 
-                                    backgroundColor: theme?.colors?.subtle || '#f0f0f0',
-                                    color: theme?.colors?.textSecondary || '#666',
-                                }}
-                            >
-                                {this.state.error.toString()}
-                                {this.state.errorInfo?.componentStack}
-                            </pre>
-                        </details>
+
+                    {import.meta.env.DEV && error && (
+                        <pre 
+                            className="text-xs p-3 rounded-xl mb-6 max-w-md overflow-auto text-left"
+                            style={{ 
+                                backgroundColor: colors.surface, 
+                                color: colors.error,
+                                border: `1px solid ${colors.border}`
+                            }}
+                        >
+                            {error.toString()}
+                        </pre>
                     )}
+
+                    <div className="flex gap-3">
+                        <JSIWebButton
+                            onClick={this.handleRetry}
+                            theme={this.props.theme}
+                            variant="filled"
+                            size="medium"
+                            icon={<RefreshCw className="w-4 h-4" />}
+                        >
+                            Try Again
+                        </JSIWebButton>
+
+                        <JSIWebButton
+                            onClick={this.handleGoHome}
+                            theme={this.props.theme}
+                            variant="soft"
+                            size="medium"
+                            icon={<Home className="w-4 h-4" />}
+                        >
+                            Go Home
+                        </JSIWebButton>
+                    </div>
                 </div>
             );
         }
 
-        return this.props.children;
+        return children;
     }
 }
-
-// Higher-order component for wrapping with error boundary
-export const withErrorBoundary = (Component, fallback) => {
-    return function WrappedComponent(props) {
-        return (
-            <ErrorBoundary theme={props.theme} fallback={fallback}>
-                <Component {...props} />
-            </ErrorBoundary>
-        );
-    };
-};
 
 export default ErrorBoundary;

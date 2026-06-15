@@ -1,547 +1,585 @@
-/* eslint-disable react/prop-types */
-// @ts-nocheck
 // src/screens/samples/SamplesScreen.jsx
-import React, { useState, useMemo, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import {
-    Plus, Minus, ChevronDown, X, Search, ChevronRight, Trash2, Check, ShoppingCart, Package, User
-} from 'lucide-react';
-import { SAMPLE_PRODUCTS, SAMPLE_CATEGORIES, FINISH_CATEGORIES, FINISH_SAMPLES, TEXTILE_SAMPLES } from './data.js';
-import { MOCK_CUSTOMERS } from '../../data/mockCustomers.js';
-import { getSampleProduct } from './sampleIndex.js';
+import React, { useState, useMemo, useCallback, useEffect, useRef, memo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    FilterChips, 
-    Button, 
-    DESIGN_TOKENS, 
-    getCardShadow, 
-    getDrawerShadow,
-    STATUS_STYLES
-} from '../../design-system/index.js';
-import { GlassCard } from '../../components/common/GlassCard.jsx';
-import { useIsDesktop } from '../../hooks/useResponsive.js';
-
-// Max content width for consistency with Dashboard ("wide" = 896px)
-const MAX_CONTENT_WIDTH = 896;
+import { isDarkTheme } from '../../design-system/tokens.js';
+import { Plus, Trash2, Minus, CheckCircle, Layers, ShoppingCart } from 'lucide-react';
+import { hapticMedium } from '../../utils/haptics.js';
+import { SAMPLE_PRODUCTS, SAMPLE_CATEGORIES, FINISH_CATEGORIES, FINISH_SAMPLES } from './data.js';
+import { CartDrawer } from './components/CartDrawer.jsx';
+import { ScreenTopChrome } from '../../components/common/ScreenTopChrome.jsx';
 
 const idOf = (x) => String(x);
+const cleanName = (name) => String(name || '').split('|')[0].trim();
 
-/* ====================== Directory Modal (no extra blur - overlays existing modal) ====================== */
-const DirectoryModal = ({ show, onClose, onSelect, theme, customers = [] }) => {
-    const [q, setQ] = useState('');
-    
-    // Use MOCK_CUSTOMERS data with proper address formatting
-    const items = useMemo(() => {
-        const customerList = customers.length > 0 ? customers : MOCK_CUSTOMERS;
-        const normalized = customerList.map((c, idx) => ({
-            key: c.id || `customer-${idx}`,
-            name: c.name,
-            address: c.location ? `${c.location.city}, ${c.location.state}` : '',
-            vertical: c.vertical
-        }));
-        const k = q.trim().toLowerCase();
-        return k ? normalized.filter((i) => i.name.toLowerCase().includes(k)) : normalized;
-    }, [q, customers]);
+/* ── Animation presets ── */
+const badgeSpring = { type: 'spring', stiffness: 500, damping: 25, mass: 0.8 };
+const stepperSpring = { type: 'spring', stiffness: 420, damping: 28 };
+const iconSwap = { duration: 0.12, ease: 'easeOut' };
 
-    if (!show) return null;
+/* ── Memoised product tile — only re-renders when its own qty or theme changes ── */
+const ProductTile = memo(({ product, qty, theme, isDark, onAdd, onRemove }) => {
+    const hasImage = !!product.image;
+    const bg = hasImage ? theme.colors.subtle : (product.color || theme.colors.subtle);
 
-    // No backdrop blur here - just an overlay modal on top of existing cart modal
+    const handleAdd = useCallback((e) => {
+        e?.stopPropagation();
+        hapticMedium();
+        onAdd(product);
+    }, [product, onAdd]);
+
+    const handleRemove = useCallback((e) => {
+        e?.stopPropagation();
+        hapticMedium();
+        onRemove(product);
+    }, [product, onRemove]);
+
     return (
-        <div 
-            className="fixed inset-0 flex items-center justify-center p-4"
-            style={{ zIndex: DESIGN_TOKENS.zIndex.modal + 100 }}
-            onClick={onClose}
+        <div
+            className="relative rounded-xl overflow-hidden"
+            style={{
+                backgroundColor: theme.colors.surface,
+                boxShadow: qty > 0
+                    ? `0 0 0 2.5px ${theme.colors.accent}`
+                    : `0 0 0 1px ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                transition: 'box-shadow 0.2s ease',
+            }}
         >
-            <motion.div 
-                initial={{ opacity: 0, scale: 0.95, y: 10 }} 
-                animate={{ opacity: 1, scale: 1, y: 0 }} 
-                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                transition={{ type: 'spring', duration: 0.3 }}
-                className="w-full max-w-[420px] bg-white rounded-2xl overflow-hidden shadow-2xl border border-gray-200" 
-                style={{ maxHeight: '60vh' }}
-                onClick={e => e.stopPropagation()}
-            >
-                <div className="p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-base text-[#353535]">Select Customer</h3>
-                        <button onClick={onClose} className="p-1.5 cursor-pointer bg-gray-100 rounded-full hover:bg-gray-200 transition"><X className="w-4 h-4" /></button>
-                    </div>
-                    <div className="relative">
-                        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search customers..." className="w-full rounded-xl pl-9 pr-4 py-2.5 text-sm outline-none border focus:ring-2 focus:ring-[#353535]/10 bg-gray-50 text-[#353535] border-gray-200" />
-                        <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 opacity-40 text-[#353535]" />
-                    </div>
-                    <div className="overflow-y-auto -mx-1 px-1" style={{ maxHeight: '35vh' }}>
-                        {items.length === 0 ? (
-                            <p className="text-center text-sm text-gray-400 py-4">No customers found</p>
-                        ) : items.map((it) => (
-                            <button key={it.key} onClick={() => { onSelect({ name: it.name, address1: it.address || '' }); onClose(); }} className="w-full text-left px-3 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-3 group">
-                                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 group-hover:bg-gray-200 transition">
-                                    <span className="text-xs font-bold text-gray-500">{it.name.substring(0, 2).toUpperCase()}</span>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="font-semibold text-sm text-[#353535] truncate">{it.name}</div>
-                                    {it.address && <div className="text-xs text-gray-400">{it.address}</div>}
-                                </div>
-                                {it.vertical && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">{it.vertical}</span>}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </motion.div>
-        </div>
-    );
-};
-
-/* ====================== Success Modal ====================== */
-const SuccessModal = ({ isOpen }) => {
-    if (!isOpen) return null;
-    return (
-        <div className="absolute inset-0 z-[6000] flex items-center justify-center pointer-events-none">
-            <motion.div
-                initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
-                className="bg-white/95 backdrop-blur-xl p-8 rounded-3xl shadow-2xl flex flex-col items-center justify-center gap-4 border border-black/5"
-            >
-                <div className="w-16 h-16 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
-                    <Check className="w-8 h-8" strokeWidth={3} />
-                </div>
-                <div className="text-center">
-                    <h3 className="text-xl font-bold text-[#353535]">Request Sent!</h3>
-                    <p className="text-gray-500 text-sm">Your samples are on the way.</p>
-                </div>
-            </motion.div>
-        </div>
-    );
-};
-
-/* ====================== Cart Logic & Components ====================== */
-
-const CartDrawer = ({ cart, onUpdateCart, theme, userSettings, customers = [], isOpen, onClose, onNavigate, isDesktop = false }) => {
-    const [showDir, setShowDir] = useState(false);
-    // Default to user's name and address from settings
-    const [shipToName, setShipToName] = useState(userSettings?.firstName && userSettings?.lastName ? `${userSettings.firstName} ${userSettings.lastName}` : '');
-    const [address1, setAddress1] = useState(userSettings?.homeAddress || '');
-    const [isSuccess, setIsSuccess] = useState(false);
-
-    const cartItems = useMemo(() => Object.entries(cart).map(([rawId, quantity]) => {
-        const id = idOf(rawId);
-        if (id === 'full-jsi-set') return { id, name: 'Full JSI Sample Set', quantity, isSet: true };
-        if (id.startsWith('set-')) { 
-            const categoryId = id.replace('set-', ''); 
-            const categoryName = FINISH_CATEGORIES.find((c) => c.id === categoryId)?.name || SAMPLE_CATEGORIES.find((c) => c.id === categoryId)?.name || categoryId; 
-            return { id, name: `Complete ${categoryName} Set`, quantity, isSet: true }; 
-        }
-        const product = getSampleProduct(id); 
-        return product ? { ...product, id, quantity, isSet: false } : null;
-    }).filter(Boolean), [cart]);
-
-    const totalCartItems = useMemo(() => Object.values(cart).reduce((s, q) => s + q, 0), [cart]);
-    const canSubmit = totalCartItems > 0 && shipToName.trim() && address1.trim();
-
-    const handleSubmit = () => {
-        setIsSuccess(true);
-        setTimeout(() => {
-            setIsSuccess(false);
-            onClose();
-            Object.keys(cart).forEach(k => onUpdateCart({ id: idOf(k) }, -999));
-            if (onNavigate) onNavigate('home');
-        }, 2000);
-    };
-
-    // Don't render anything if modal is closed
-    if (!isOpen) return null;
-
-    return (
-        <>
-            {createPortal(
-                <>
-                    <motion.div 
-                        key="cart-backdrop"
-                        initial={{ opacity: 0 }} 
-                        animate={{ opacity: 1 }} 
-                        exit={{ opacity: 0 }} 
-                        className="fixed inset-0 transition-opacity duration-300"
-                        style={{ 
-                            backgroundColor: 'rgba(0,0,0,0.6)',
-                            backdropFilter: 'blur(8px)',
-                            WebkitBackdropFilter: 'blur(8px)',
-                            zIndex: DESIGN_TOKENS.zIndex.overlay
-                        }}
-                        onClick={onClose} 
-                    />
+            {/* Quantity badge */}
+            <AnimatePresence>
+                {qty > 0 && (
                     <motion.div
-                        key="cart-modal"
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }} 
-                        animate={{ opacity: 1, scale: 1, y: 0 }} 
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        transition={{ type: 'spring', duration: 0.4 }}
-                        className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none"
-                        style={{ zIndex: DESIGN_TOKENS.zIndex.modal }}
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={badgeSpring}
+                        className="absolute top-2 left-2 z-10 min-w-[28px] h-[28px] px-1.5 rounded-full text-[0.8125rem] font-bold flex items-center justify-center"
+                        style={{ backgroundColor: theme.colors.accent, color: '#fff', boxShadow: '0 2px 6px rgba(0,0,0,0.15)' }}
                     >
-                        <div 
-                            className="bg-white rounded-3xl overflow-hidden flex flex-col shadow-2xl w-full max-w-[500px] max-h-[85vh] pointer-events-auto"
-                            onClick={e => e.stopPropagation()}
-                        >
-                                    <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-white">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${theme.colors.accent}10` }}>
-                                                <ShoppingCart className="w-6 h-6" style={{ color: theme.colors.accent }} />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold text-lg tracking-tight text-[#353535]">Sample Cart</h3>
-                                                <p className="text-xs text-gray-500 font-medium">{totalCartItems} items selected</p>
-                                            </div>
-                                        </div>
-                                        <button onClick={onClose} className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center active:scale-90 transition hover:bg-gray-200">
-                                            <X className="w-5 h-5 text-gray-600" />
-                                        </button>
-                                    </div>
+                        <AnimatePresence mode="popLayout" initial={false}>
+                            <motion.span
+                                key={qty}
+                                initial={{ y: -8, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                exit={{ y: 8, opacity: 0 }}
+                                transition={{ duration: 0.15, ease: 'easeOut' }}
+                            >
+                                {qty}
+                            </motion.span>
+                        </AnimatePresence>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-                                    {isSuccess ? (
-                                        <div className="h-80 flex items-center justify-center relative">
-                                            <SuccessModal isOpen={true} />
-                                        </div>
-                                    ) : (
-                                        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white scrollbar-hide">
-                                            <div className="space-y-4">
-                                                {cartItems.map((item) => (
-                                                    <div key={item.id} className="flex items-center gap-4 group">
-                                                        <div className="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center overflow-hidden flex-shrink-0 border border-black/5 shadow-sm">
-                                                            {item.isSet ? (
-                                                                <Package className="w-8 h-8 opacity-20" />
-                                                            ) : item.image ? (
-                                                                <img src={item.image} className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                <div className="w-full h-full" style={{ background: item.color }} />
-                                                            )}
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <div className="font-bold text-[15px] text-[#353535] leading-tight">{item.name}</div>
-                                                            {item.code && <div className="text-[11px] text-gray-400 font-bold uppercase tracking-wider mt-1">{item.code}</div>}
-                                                        </div>
-                                                        <div className="flex items-center bg-gray-50 rounded-full p-1.5 gap-3 border border-gray-100 shadow-inner">
-                                                            <button onClick={() => onUpdateCart(item, -1)} className="w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-[#353535] transition-all hover:scale-105 active:scale-90 border border-gray-100">
-                                                                {item.quantity === 1 ? <Trash2 className="w-4 h-4 text-[#B85C5C]" /> : <Minus className="w-4 h-4" />}
-                                                            </button>
-                                                            <span className="font-bold text-sm w-5 text-center text-[#353535]">{item.quantity}</span>
-                                                            <button onClick={() => onUpdateCart(item, 1)} className="w-8 h-8 flex items-center justify-center rounded-full bg-[#353535] text-white shadow-sm transition-all hover:scale-105 active:scale-90 border border-[#353535]/5"><Plus className="w-4 h-4" /></button>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
+            {/* Swatch image area */}
+            <div
+                role="button"
+                tabIndex={0}
+                onClick={handleAdd}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleAdd(e); } }}
+                className="aspect-[4/3] flex items-center justify-center overflow-hidden cursor-pointer"
+                style={{ backgroundColor: bg }}
+            >
+                {hasImage && (
+                    <img loading="lazy" width="600" height="600" src={product.image} alt={product.name}
+                        className="object-cover w-full h-full select-none pointer-events-none" draggable={false} />
+                )}
+            </div>
 
-                                            <div className="space-y-4 bg-[#F8F9FA] p-5 rounded-[24px] border border-gray-100">
-                                                <div className="flex items-center justify-between">
-                                                    <h4 className="text-[11px] font-black uppercase tracking-[0.08em] text-gray-400">Ship To</h4>
-                                                </div>
-                                                
-                                                {/* Prominent address selection buttons */}
-                                                <div className="grid grid-cols-2 gap-2">
-                                                    <button 
-                                                        onClick={() => { 
-                                                            setShipToName(userSettings?.firstName && userSettings?.lastName ? `${userSettings.firstName} ${userSettings.lastName}` : 'Luke Wagner'); 
-                                                            setAddress1(userSettings?.homeAddress || '5445 N Deerwood Lake Rd, Jasper, IN 47546'); 
-                                                        }} 
-                                                        className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold text-sm transition-all active:scale-95 hover:shadow-md"
-                                                        style={{ 
-                                                            backgroundColor: theme.colors.surface,
-                                                            border: `1.5px solid ${theme.colors.border}`,
-                                                            color: theme.colors.textPrimary
-                                                        }}
-                                                    >
-                                                        <User className="w-4 h-4" style={{ color: theme.colors.accent }} />
-                                                        My Address
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => setShowDir(true)} 
-                                                        className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-semibold text-sm transition-all active:scale-95 hover:shadow-md"
-                                                        style={{ 
-                                                            backgroundColor: theme.colors.surface,
-                                                            border: `1.5px solid ${theme.colors.border}`,
-                                                            color: theme.colors.textPrimary
-                                                        }}
-                                                    >
-                                                        <Search className="w-4 h-4" style={{ color: theme.colors.accent }} />
-                                                        Customer
-                                                    </button>
-                                                </div>
-                                                
-                                                <div className="space-y-3">
-                                                    <input value={shipToName} onChange={e => setShipToName(e.target.value)} placeholder="Full Name / Company" className="w-full bg-white rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all focus:ring-2 ring-[#353535]/5 text-[#353535] border border-gray-200 shadow-sm placeholder:text-gray-300" />
-                                                    <input value={address1} onChange={e => setAddress1(e.target.value)} placeholder="Street Address" className="w-full bg-white rounded-xl px-4 py-3 text-sm font-semibold outline-none transition-all focus:ring-2 ring-[#353535]/5 text-[#353535] border border-gray-200 shadow-sm placeholder:text-gray-300" />
-                                                </div>
-                                            </div>
-
-                                            {/* Only show submit button when form is complete */}
-                                            {canSubmit && (
-                                                <button
-                                                    onClick={handleSubmit}
-                                                    className="w-full py-4 rounded-full font-bold text-white shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3 text-[15px]"
-                                                    style={{ 
-                                                        backgroundColor: theme.colors.accent,
-                                                        boxShadow: `0 8px 32px ${theme.colors.accent}40`
-                                                    }}
-                                                >
-                                                    <span>Submit Sample Request</span>
-                                                    <ChevronRight className="w-5 h-5" />
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
-                                    </div>
-                                </motion.div>
-                            </>,
-                            document.body
-                        )}
-            <DirectoryModal show={showDir} onClose={() => setShowDir(false)} onSelect={({ name, address1: addr }) => { setShipToName(name); setAddress1(addr); }} theme={theme} customers={customers} />
-        </>
-    );
-};
-
-export const SamplesScreen = ({ theme, onNavigate, cart: cartProp, onUpdateCart: onUpdateCartProp, userSettings, initialCartOpen = false }) => {
-    const isDesktop = useIsDesktop();
-    const [cartInternal, setCartInternal] = useState({});
-    const [isCartOpen, setIsCartOpen] = useState(initialCartOpen);
-    const cart = cartProp ?? cartInternal;
-    const onUpdateCart = onUpdateCartProp ?? useCallback((item, delta) => { setCartInternal((prev) => { const id = idOf(item.id); const current = prev[id] || 0; if (delta === -999) { const n = { ...prev }; delete n[id]; return n; } const quantity = Math.max(0, current + delta); const next = { ...prev }; if (quantity === 0) delete next[id]; else next[id] = quantity; return next; }); }, []);
-
-    const [selectedCategory, setSelectedCategory] = useState('tfl');
-    const categories = useMemo(() => {
-        return [...FINISH_CATEGORIES, ...SAMPLE_CATEGORIES.filter(c => c.id !== 'finishes' && c.id !== 'textiles')].map(c => ({ 
-            key: c.id, 
-            label: c.name 
-        }));
-    }, []);
-
-    // Calculate total cart items for inline display
-    const totalCartItems = useMemo(() => Object.values(cart).reduce((s, q) => s + q, 0), [cart]);
-
-    // Check if full set or category set is in cart
-    const fullSetInCart = cart['full-jsi-set'] > 0;
-    const categorySetInCart = cart[`set-${selectedCategory}`] > 0;
-
-    const filteredProducts = useMemo(() => {
-        const isFinish = FINISH_CATEGORIES.some(c => c.id === selectedCategory);
-        
-        // Handle textiles category specially
-        if (selectedCategory === 'textiles') {
-            return TEXTILE_SAMPLES;
-        }
-        
-        let list = isFinish ? FINISH_SAMPLES.filter(s => s.category === selectedCategory) : SAMPLE_PRODUCTS.filter(p => p.category === selectedCategory && !p.subcategory);
-        if (selectedCategory === 'tfl') {
-            const order = ['woodgrain', 'stone', 'metallic', 'solid'];
-            list = [...list].sort((a, b) => (order.indexOf(a.finishType || 'solid') - order.indexOf(b.finishType || 'solid')) || a.name.localeCompare(b.name));
-        }
-        return list;
-    }, [selectedCategory]);
-
-    const SampleCard = ({ product }) => {
-        const id = idOf(product.id);
-        const qty = cart[id] || 0;
-        const add = (e) => { e?.stopPropagation(); onUpdateCart({ ...product, id }, 1); };
-        const remove = (e) => { e?.stopPropagation(); onUpdateCart({ ...product, id }, -1); };
-
-        return (
-            <div className="w-full group">
-                <div 
-                    onClick={add} 
-                    className="relative w-full aspect-square rounded-[24px] overflow-hidden cursor-pointer transition-all duration-300 border-[1.5px]"
-                    style={{
-                        backgroundColor: theme.colors.surface,
-                        borderColor: qty > 0 ? theme.colors.accent : 'transparent',
-                        boxShadow: qty > 0 ? `0 8px 24px ${theme.colors.accent}20` : getCardShadow('elevated', theme),
-                        transform: qty > 0 ? 'scale(0.96)' : 'scale(1)'
-                    }}
-                >
-                    {product.image ? (
-                        <img 
-                            src={product.image} 
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                            alt={product.name}
-                        />
-                    ) : (
-                        <div className="w-full h-full" style={{ backgroundColor: product.color || theme.colors.subtle }} />
-                    )}
-
-                    <AnimatePresence>
+            {/* Footer: name + actions */}
+            <div className="px-2.5 py-2 flex items-center gap-1.5">
+                <p className="text-[0.875rem] truncate flex-1 leading-tight"
+                    style={{ color: theme.colors.textPrimary }}>
+                    {cleanName(product.name)}
+                </p>
+                <div className="flex items-center flex-shrink-0">
+                    <AnimatePresence initial={false}>
                         {qty > 0 && (
                             <motion.div
-                                initial={{ opacity: 0, y: 10 }} 
-                                animate={{ opacity: 1, y: 0 }} 
-                                exit={{ opacity: 0, y: 10 }}
-                                onClick={(e) => e.stopPropagation()}
-                                className="absolute bottom-3 left-3 right-3 z-10"
+                                key="remove-slot"
+                                initial={{ width: 0, opacity: 0, marginRight: 0 }}
+                                animate={{ width: 32, opacity: 1, marginRight: 4 }}
+                                exit={{ width: 0, opacity: 0, marginRight: 0 }}
+                                transition={stepperSpring}
+                                style={{ overflow: 'hidden', flexShrink: 0 }}
                             >
-                                <div className="flex items-center justify-between bg-white/90 backdrop-blur-md rounded-full shadow-lg border border-white/20 p-1 h-10">
-                                    <button
-                                        onClick={remove}
-                                        className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-all active:scale-90"
-                                    >
-                                        {qty === 1 ? <Trash2 className="w-4 h-4 text-[#B85C5C]" /> : <Minus className="w-4 h-4 text-[#353535]" />}
-                                    </button>
-
-                                    <span className="font-bold text-sm text-[#353535]">{qty}</span>
-
-                                    <button
-                                        onClick={add}
-                                        className="w-8 h-8 rounded-full bg-[#353535] text-white flex items-center justify-center hover:bg-[#353535]/80 transition-all active:scale-90"
-                                    >
-                                        <Plus className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </motion.div>
-                        )}
-                        {qty === 0 && (
-                            <motion.div 
-                                initial={{ opacity: 0 }}
-                                whileHover={{ opacity: 1 }}
-                                className="absolute inset-0 bg-[#353535]/5 flex items-center justify-center pointer-events-none"
-                            >
-                                <div className="w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm shadow-sm flex items-center justify-center">
-                                    <Plus className="w-5 h-5 text-[#353535]" />
-                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleRemove}
+                                    className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-transform"
+                                    style={{ backgroundColor: isDark ? 'rgba(255,100,100,0.15)' : 'rgba(184,92,92,0.10)' }}
+                                    aria-label={qty === 1 ? `Remove ${product.name}` : `Decrease ${product.name} quantity`}
+                                >
+                                    <AnimatePresence mode="wait" initial={false}>
+                                        {qty === 1 ? (
+                                            <motion.span key="trash" className="flex items-center justify-center"
+                                                initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                                                exit={{ scale: 0.5, opacity: 0 }} transition={iconSwap}>
+                                                <Trash2 className="w-4 h-4" style={{ color: theme.colors.error || '#B85C5C' }} />
+                                            </motion.span>
+                                        ) : (
+                                            <motion.span key="minus" className="flex items-center justify-center"
+                                                initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                                                exit={{ scale: 0.5, opacity: 0 }} transition={iconSwap}>
+                                                <Minus className="w-4 h-4" style={{ color: theme.colors.error || '#B85C5C' }} />
+                                            </motion.span>
+                                        )}
+                                    </AnimatePresence>
+                                </button>
                             </motion.div>
                         )}
                     </AnimatePresence>
+                    <button
+                        type="button"
+                        onClick={handleAdd}
+                        className="w-8 h-8 rounded-full flex items-center justify-center active:scale-90 transition-transform flex-shrink-0"
+                        style={{
+                            backgroundColor: qty > 0
+                                ? (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(53,53,53,0.06)')
+                                : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(53,53,53,0.05)'),
+                            transition: 'background-color 0.15s ease',
+                        }}
+                        aria-label={qty > 0 ? `Add another ${product.name}` : `Add ${product.name}`}
+                    >
+                        <Plus className="w-4 h-4" style={{
+                            color: qty > 0 ? theme.colors.textPrimary : theme.colors.textSecondary,
+                            opacity: qty > 0 ? 0.7 : 0.6,
+                            transition: 'color 0.15s ease, opacity 0.15s ease',
+                        }} />
+                    </button>
                 </div>
-                <div className="mt-3 text-center">
-                    <div className="text-[12px] font-bold text-[#353535] line-clamp-1 px-1">{product.name}</div>
-                    {product.code && <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{product.code}</div>}
-                    {product.collection && <div className="text-[9px] font-medium text-gray-400 mt-0.5">{product.collection}</div>}
-                    {product.grade && <div className="text-[9px] font-semibold text-gray-500 mt-0.5">Grade {product.grade}</div>}
-                </div>
+            </div>
+        </div>
+    );
+});
+ProductTile.displayName = 'ProductTile';
+
+export const SamplesScreen = ({ theme, onNavigate, cart: cartProp, onUpdateCart: onUpdateCartProp, userSettings, dealerDirectory, designFirms, onSubmitSampleOrder, initialCartOpen = false }) => {
+    const [cartInternal, setCartInternal] = useState({});
+    const cart = cartProp ?? cartInternal;
+    const isDark = isDarkTheme(theme);
+    const bgRgb = isDark ? '26,26,26' : '240,237,232';
+    const categoryScrollRef = useRef(null);
+    const fallbackUpdateCart = useCallback((item, delta) => {
+        setCartInternal((prev) => {
+            const id = idOf(item.id);
+            const current = prev[id] || 0;
+            const quantity = Math.max(0, current + delta);
+            const next = { ...prev };
+            if (quantity === 0) delete next[id]; else next[id] = quantity;
+            return next;
+        });
+    }, []);
+    const onUpdateCart = onUpdateCartProp ?? fallbackUpdateCart;
+
+    const handleAddProduct = useCallback((product) => {
+        onUpdateCart({ ...product, id: idOf(product.id) }, 1);
+    }, [onUpdateCart]);
+
+    const handleRemoveProduct = useCallback((product) => {
+        onUpdateCart({ ...product, id: idOf(product.id) }, -1);
+    }, [onUpdateCart]);
+
+    const [selectedCategory, setSelectedCategory] = useState('tfl');
+    const [cartOpen, setCartOpen] = useState(initialCartOpen);
+    const [chipEdgeFade, setChipEdgeFade] = useState({ left: false, right: false });
+    const totalCartItems = useMemo(() => Object.values(cart).reduce((s, q) => s + q, 0), [cart]);
+
+    const isFinishCategory = useMemo(
+        () => FINISH_CATEGORIES.some((cat) => cat.id === selectedCategory),
+        [selectedCategory]
+    );
+
+    const filteredProducts = useMemo(() => {
+        const base = isFinishCategory
+            ? FINISH_SAMPLES.filter((s) => s.category === selectedCategory)
+            : SAMPLE_PRODUCTS.filter((p) => p.category === selectedCategory && !p.subcategory);
+        if (selectedCategory === 'tfl') {
+            const order = ['woodgrain', 'stone', 'metallic', 'solid'];
+            return base.sort((a, b) => (order.indexOf(a.finishType || 'solid') - order.indexOf(b.finishType || 'solid')) || a.name.localeCompare(b.name));
+        }
+        return base;
+    }, [selectedCategory, isFinishCategory]);
+
+    const currentCategoryName = FINISH_CATEGORIES.find((c) => c.id === selectedCategory)?.name || SAMPLE_CATEGORIES.find((c) => c.id === selectedCategory)?.name || 'Unknown';
+    const allCategories = [...FINISH_CATEGORIES, ...SAMPLE_CATEGORIES.filter((cat) => cat.id !== 'finishes')];
+    const categoryItemLabel = isFinishCategory ? 'finishes' : 'samples';
+
+    const totalFinishCount = FINISH_SAMPLES.length;
+    const hasCartShortcut = totalCartItems > 0;
+
+    const chipFadeProfile = hasCartShortcut
+        ? {
+            leftWidth: 56,
+            rightWidth: 94,
+            leftGradient: `linear-gradient(to right,
+                rgba(${bgRgb},0.80) 0%,
+                rgba(${bgRgb},0.66) 22%,
+                rgba(${bgRgb},0.42) 50%,
+                rgba(${bgRgb},0.20) 74%,
+                rgba(${bgRgb},0.08) 88%,
+                rgba(${bgRgb},0) 100%)`,
+            rightGradient: `linear-gradient(to left,
+                rgba(${bgRgb},0.80) 0%,
+                rgba(${bgRgb},0.66) 18%,
+                rgba(${bgRgb},0.42) 44%,
+                rgba(${bgRgb},0.20) 68%,
+                rgba(${bgRgb},0.08) 86%,
+                rgba(${bgRgb},0) 100%)`,
+        }
+        : {
+            leftWidth: 50,
+            rightWidth: 76,
+            leftGradient: `linear-gradient(to right,
+                rgba(${bgRgb},0.84) 0%,
+                rgba(${bgRgb},0.70) 24%,
+                rgba(${bgRgb},0.44) 54%,
+                rgba(${bgRgb},0.20) 78%,
+                rgba(${bgRgb},0.07) 90%,
+                rgba(${bgRgb},0) 100%)`,
+            rightGradient: `linear-gradient(to left,
+                rgba(${bgRgb},0.86) 0%,
+                rgba(${bgRgb},0.74) 20%,
+                rgba(${bgRgb},0.48) 46%,
+                rgba(${bgRgb},0.24) 70%,
+                rgba(${bgRgb},0.09) 88%,
+                rgba(${bgRgb},0) 100%)`,
+        };
+
+    const updateChipEdgeFade = useCallback(() => {
+        const viewport = categoryScrollRef.current;
+        if (!viewport) return;
+
+        const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+        const hasOverflow = maxScrollLeft > 2;
+        const leftVisible = hasOverflow && viewport.scrollLeft > 4;
+        const rightVisible = hasOverflow && viewport.scrollLeft < maxScrollLeft - 4;
+
+        setChipEdgeFade((prev) => {
+            if (prev.left === leftVisible && prev.right === rightVisible) return prev;
+            return { left: leftVisible, right: rightVisible };
+        });
+    }, []);
+
+    const alignSelectedCategoryChip = useCallback(() => {
+        const viewport = categoryScrollRef.current;
+        if (!viewport) return;
+
+        const activeButton = viewport.querySelector(`[data-category-chip="${selectedCategory}"]`);
+        if (!(activeButton instanceof HTMLElement)) return;
+
+        const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+        if (maxScrollLeft <= 0) return;
+
+        const viewportRect = viewport.getBoundingClientRect();
+        const buttonRect = activeButton.getBoundingClientRect();
+        const buttonLeft = buttonRect.left - viewportRect.left;
+        const buttonRight = buttonRect.right - viewportRect.left;
+        const buttonCenter = buttonLeft + (buttonRect.width / 2);
+
+        const leftComfort = Math.min(Math.max(18, chipFadeProfile.leftWidth * 0.52), viewport.clientWidth * 0.22);
+        const rightComfort = Math.min(Math.max(28, chipFadeProfile.rightWidth * 0.58), viewport.clientWidth * 0.34);
+        const needsAdjustment = buttonLeft < leftComfort || buttonRight > viewport.clientWidth - rightComfort;
+
+        if (!needsAdjustment) return;
+
+        const desiredCenter = Math.min(
+            viewport.clientWidth - rightComfort - (buttonRect.width / 2),
+            Math.max(leftComfort + (buttonRect.width / 2), viewport.clientWidth * 0.34)
+        );
+
+        const nextScrollLeft = Math.min(
+            maxScrollLeft,
+            Math.max(0, viewport.scrollLeft + buttonCenter - desiredCenter)
+        );
+
+        if (Math.abs(nextScrollLeft - viewport.scrollLeft) < 2) return;
+
+        const prefersReducedMotion = typeof window !== 'undefined'
+            && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+        viewport.scrollTo({
+            left: nextScrollLeft,
+            behavior: prefersReducedMotion ? 'auto' : 'smooth',
+        });
+    }, [selectedCategory, chipFadeProfile.leftWidth, chipFadeProfile.rightWidth]);
+
+    useEffect(() => {
+        const viewport = categoryScrollRef.current;
+        if (!viewport) return undefined;
+
+        updateChipEdgeFade();
+
+        const onScroll = () => updateChipEdgeFade();
+        viewport.addEventListener('scroll', onScroll, { passive: true });
+
+        const resizeObserver = typeof ResizeObserver !== 'undefined'
+            ? new ResizeObserver(() => updateChipEdgeFade())
+            : null;
+
+        resizeObserver?.observe(viewport);
+        if (viewport.firstElementChild) resizeObserver?.observe(viewport.firstElementChild);
+
+        window.addEventListener('resize', updateChipEdgeFade);
+
+        return () => {
+            viewport.removeEventListener('scroll', onScroll);
+            resizeObserver?.disconnect();
+            window.removeEventListener('resize', updateChipEdgeFade);
+        };
+    }, [updateChipEdgeFade, totalCartItems]);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return undefined;
+
+        const frameId = window.requestAnimationFrame(() => {
+            alignSelectedCategoryChip();
+        });
+
+        return () => window.cancelAnimationFrame(frameId);
+    }, [alignSelectedCategoryChip, selectedCategory, totalCartItems]);
+
+    /* Full JSI Set — lives above the grid, always visible regardless of category */
+    const fullId = idOf('full-jsi-set');
+    const fullQty = cart[fullId] || 0;
+    const toggleFull = () => { hapticMedium(); onUpdateCart({ id: fullId, name: 'Full JSI Sample Set', isSet: true }, fullQty > 0 ? -fullQty : 1); };
+
+    const renderProductGrid = (products) => {
+        const setId = idOf(`set-${selectedCategory}`);
+        const setQty = cart[setId] || 0;
+        const toggleSet = () => { hapticMedium(); onUpdateCart({ id: setId, name: `All ${currentCategoryName} Finishes`, isSet: true }, setQty > 0 ? -setQty : 1); };
+
+        return (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pb-4">
+                {/* ── Category Set Tile ── */}
+                <button
+                    onClick={toggleSet}
+                    className="relative rounded-xl overflow-hidden text-left active:scale-[0.97]"
+                    style={{
+                        backgroundColor: setQty > 0 ? theme.colors.accent : (isDark ? 'rgba(255,255,255,0.06)' : theme.colors.surface),
+                        boxShadow: setQty > 0
+                            ? `0 0 0 2.5px ${theme.colors.accent}`
+                            : `0 0 0 1px ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                        transition: 'background-color 0.25s ease, box-shadow 0.25s ease',
+                    }}
+                >
+                    <div className="aspect-[4/3] flex flex-col items-center justify-center p-3"
+                        style={{
+                            backgroundColor: setQty > 0 ? theme.colors.accent : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(53,53,53,0.03)'),
+                            transition: 'background-color 0.25s ease',
+                        }}>
+                        <AnimatePresence mode="wait" initial={false}>
+                            {setQty > 0 ? (
+                                <motion.span key="check"
+                                    initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 90 }}
+                                    transition={badgeSpring}>
+                                    <CheckCircle className="w-6 h-6" style={{ color: '#fff' }} />
+                                </motion.span>
+                            ) : (
+                                <motion.span key="layers"
+                                    initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}
+                                    transition={iconSwap}>
+                                    <Layers className="w-6 h-6" style={{ color: theme.colors.textSecondary, opacity: 0.3 }} />
+                                </motion.span>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                    <div className="px-2.5 py-2">
+                        <p className="text-[0.875rem] font-bold truncate"
+                            style={{ color: setQty > 0 ? '#fff' : theme.colors.textPrimary, transition: 'color 0.25s ease' }}>
+                            All {currentCategoryName}
+                        </p>
+                        <p className="text-[0.6875rem] mt-0.5"
+                            style={{ color: setQty > 0 ? 'rgba(255,255,255,0.7)' : theme.colors.textSecondary, opacity: setQty > 0 ? 1 : 0.5, transition: 'color 0.25s ease, opacity 0.25s ease' }}>
+                            {products.length} {categoryItemLabel}
+                        </p>
+                    </div>
+                </button>
+
+                {/* ── Individual product tiles ── */}
+                {products.map(product => (
+                    <ProductTile
+                        key={idOf(product.id)}
+                        product={product}
+                        qty={cart[idOf(product.id)] || 0}
+                        theme={theme}
+                        isDark={isDark}
+                        onAdd={handleAddProduct}
+                        onRemove={handleRemoveProduct}
+                    />
+                ))}
             </div>
         );
     };
 
     return (
-        <div className="flex flex-col h-full relative" style={{ backgroundColor: theme.colors.background }}>
-            <div className="flex-1 overflow-y-auto scrollbar-hide">
-                {/* Sticky header with consistent max-width */}
-                <div className="sticky top-0 z-40 pb-4 pt-2 transition-all bg-opacity-95 backdrop-blur-sm"
-                    style={{ backgroundColor: theme.colors.background }}>
-                    
-                    {/* Material category tabs - constrained width */}
-                    <div className="mx-auto" style={{ maxWidth: MAX_CONTENT_WIDTH, paddingLeft: isDesktop ? 24 : 16, paddingRight: isDesktop ? 24 : 16 }}>
-                        <FilterChips 
-                            options={categories} 
-                            value={selectedCategory} 
-                            onChange={setSelectedCategory} 
-                            theme={theme}
+        <div className="flex flex-col h-full app-header-offset" style={{ backgroundColor: theme.colors.background, color: theme.colors.textPrimary }}>
+            {/* Category chips — scrollable pills with Orders CTA */}
+            <ScreenTopChrome theme={theme} horizontalPaddingClass="px-0" contentClassName="pt-2.5 pb-2" fade={false}>
+                <div className="flex items-center gap-2 px-4">
+                    <div className="relative flex-1 min-w-0">
+                        <div
+                            data-category-scroll
+                            ref={categoryScrollRef}
+                            className="flex overflow-x-auto scrollbar-hide no-scrollbar gap-2"
+                            style={{ paddingRight: hasCartShortcut ? 10 : 2 }}
+                        >
+                            {allCategories.map((cat) => {
+                                const isActive = selectedCategory === cat.id;
+                                return (
+                                    <button
+                                        key={cat.id}
+                                        onClick={() => setSelectedCategory(cat.id)}
+                                        data-category-chip={cat.id}
+                                        aria-pressed={isActive}
+                                        className="px-3.5 py-2 rounded-full text-[0.8125rem] font-semibold whitespace-nowrap transition-all duration-150 active:scale-95 flex-shrink-0"
+                                        style={{
+                                            backgroundColor: isActive
+                                                ? (isDark ? 'rgba(255,255,255,0.16)' : theme.colors.textPrimary)
+                                                : 'transparent',
+                                            color: isActive
+                                                ? (isDark ? '#fff' : '#fff')
+                                                : theme.colors.textSecondary,
+                                            opacity: isActive ? 1 : 0.7,
+                                        }}
+                                    >
+                                        {cat.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div
+                            data-edge-fade="left"
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-y-0 left-0"
+                            style={{
+                                width: `${chipFadeProfile.leftWidth + 2}px`,
+                                opacity: chipEdgeFade.left ? 1 : 0,
+                                transform: 'translateX(-1px)',
+                                transition: 'opacity 220ms ease, width 240ms ease',
+                                background: chipFadeProfile.leftGradient,
+                            }}
+                        />
+
+                        <div
+                            data-edge-fade="right"
+                            aria-hidden="true"
+                            className="pointer-events-none absolute inset-y-0 right-0"
+                            style={{
+                                width: `${chipFadeProfile.rightWidth + 2}px`,
+                                opacity: chipEdgeFade.right ? 1 : 0,
+                                transform: 'translateX(1px)',
+                                transition: 'opacity 220ms ease, width 240ms ease',
+                                background: chipFadeProfile.rightGradient,
+                            }}
                         />
                     </div>
+                    {/* Cart icon — only visible when cart has items */}
+                    <AnimatePresence>
+                        {totalCartItems > 0 && (
+                            <motion.button
+                                key="cart-btn"
+                                initial={{ scale: 0.6, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.6, opacity: 0 }}
+                                transition={badgeSpring}
+                                onClick={() => setCartOpen(true)}
+                                className="relative w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 active:scale-90"
+                                style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(53,53,53,0.07)' }}
+                                aria-label={`Cart (${totalCartItems})`}
+                            >
+                                <ShoppingCart className="w-[18px] h-[18px]" style={{ color: theme.colors.textPrimary }} />
+                                <motion.span
+                                    key={totalCartItems}
+                                    initial={{ scale: 0.5, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={badgeSpring}
+                                    className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full text-[0.6875rem] font-bold flex items-center justify-center"
+                                    style={{ backgroundColor: theme.colors.accent, color: '#fff' }}
+                                >
+                                    {totalCartItems}
+                                </motion.span>
+                            </motion.button>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </ScreenTopChrome>
 
-                    {/* Set buttons - constrained width */}
-                    <div className="mt-4 flex items-center justify-center gap-3 mx-auto" style={{ maxWidth: MAX_CONTENT_WIDTH, paddingLeft: isDesktop ? 24 : 16, paddingRight: isDesktop ? 24 : 16 }}>
-                        {/* Full Set Button/Stepper */}
-                        {fullSetInCart ? (
-                            <div 
-                                className="relative flex-1 max-w-[180px] h-11 rounded-full flex items-center justify-between px-1"
-                                style={{ 
-                                    backgroundColor: theme.colors.surface,
-                                    border: `1.5px solid ${theme.colors.accent}`,
-                                }}
-                            >
-                                <button 
-                                    onClick={(e) => { e.stopPropagation(); onUpdateCart({ id: 'full-jsi-set' }, -1); }}
-                                    className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:bg-gray-100 active:scale-90"
-                                >
-                                    {cart['full-jsi-set'] === 1 ? <Trash2 className="w-4 h-4 text-[#B85C5C]" /> : <Minus className="w-4 h-4 text-[#353535]" />}
-                                </button>
-                                <span className="text-[11px] font-black tracking-widest uppercase" style={{ color: theme.colors.accent }}>
-                                    Full Set · {cart['full-jsi-set']}
-                                </span>
-                                <button 
-                                    onClick={(e) => { e.stopPropagation(); onUpdateCart({ id: 'full-jsi-set', name: 'Full JSI Set' }, 1); }}
-                                    className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:bg-gray-100 active:scale-90"
-                                >
-                                    <Plus className="w-4 h-4 text-[#353535]" />
-                                </button>
-                            </div>
-                        ) : (
-                            <button 
-                                onClick={() => onUpdateCart({ id: 'full-jsi-set', name: 'Full JSI Set' }, 1)}
-                                className="relative flex-1 max-w-[180px] h-11 rounded-full text-[11px] font-black tracking-widest uppercase transition-all active:scale-95 flex items-center justify-center gap-2"
-                                style={{ 
-                                    backgroundColor: theme.colors.surface,
-                                    color: '#353535',
-                                    border: `1.5px solid ${theme.colors.border}`,
-                                }}
-                            >
-                                <Plus className="w-3.5 h-3.5" />
-                                Full Set
-                            </button>
-                        )}
-                        
-                        {/* Category Set Button/Stepper */}
-                        {categorySetInCart ? (
-                            <div 
-                                className="relative flex-1 max-w-[180px] h-11 rounded-full flex items-center justify-between px-1"
-                                style={{ 
-                                    backgroundColor: theme.colors.surface,
-                                    border: `1.5px solid ${theme.colors.accent}`,
-                                }}
-                            >
-                                <button 
-                                    onClick={(e) => { e.stopPropagation(); onUpdateCart({ id: `set-${selectedCategory}` }, -1); }}
-                                    className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:bg-gray-100 active:scale-90"
-                                >
-                                    {cart[`set-${selectedCategory}`] === 1 ? <Trash2 className="w-4 h-4 text-[#B85C5C]" /> : <Minus className="w-4 h-4 text-[#353535]" />}
-                                </button>
-                                <span className="text-[11px] font-black tracking-widest uppercase" style={{ color: theme.colors.accent }}>
-                                    All {categories.find(c => c.key === selectedCategory)?.label} · {cart[`set-${selectedCategory}`]}
-                                </span>
-                                <button 
-                                    onClick={(e) => { e.stopPropagation(); onUpdateCart({ id: `set-${selectedCategory}`, name: `Complete ${selectedCategory} Set` }, 1); }}
-                                    className="w-9 h-9 rounded-full flex items-center justify-center transition-all hover:bg-gray-100 active:scale-90"
-                                >
-                                    <Plus className="w-4 h-4 text-[#353535]" />
-                                </button>
-                            </div>
-                        ) : (
-                            <button 
-                                onClick={() => onUpdateCart({ id: `set-${selectedCategory}`, name: `Complete ${selectedCategory} Set` }, 1)}
-                                className="relative flex-1 max-w-[180px] h-11 rounded-full text-[11px] font-black tracking-widest uppercase transition-all active:scale-95 flex items-center justify-center gap-2"
-                                style={{ 
-                                    backgroundColor: theme.colors.surface,
-                                    color: '#353535',
-                                    border: `1.5px solid ${theme.colors.border}`,
-                                }}
-                            >
-                                <Plus className="w-3.5 h-3.5" />
-                                All {categories.find(c => c.key === selectedCategory)?.label}
-                            </button>
-                        )}
-                        
-                        {/* Cart Button - always visible */}
-                        <button 
-                            onClick={() => setIsCartOpen(true)}
-                            className="h-11 px-4 rounded-full text-[11px] font-black tracking-widest uppercase transition-all active:scale-95 flex items-center justify-center gap-2 shadow-lg"
-                            style={{ 
-                                backgroundColor: totalCartItems > 0 ? theme.colors.accent : theme.colors.surface,
-                                color: totalCartItems > 0 ? '#fff' : '#353535',
-                                border: `1.5px solid ${totalCartItems > 0 ? theme.colors.accent : theme.colors.border}`,
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto scrollbar-hide" style={{ backgroundColor: theme.colors.background }}>
+                <div className="px-4 pt-2 pb-6">
+                    <div className="max-w-content mx-auto w-full space-y-3">
+
+                        {/* ── Full JSI Set — prominent banner ── */}
+                        <button
+                            onClick={toggleFull}
+                            className="w-full rounded-2xl active:scale-[0.98] overflow-hidden"
+                            style={{
+                                backgroundColor: fullQty > 0
+                                    ? theme.colors.accent
+                                    : (isDark ? 'rgba(255,255,255,0.06)' : theme.colors.surface),
+                                boxShadow: fullQty > 0
+                                    ? '0 4px 16px rgba(53,53,53,0.12)'
+                                    : (isDark ? 'none' : '0 1px 4px rgba(0,0,0,0.06)'),
+                                transition: 'background-color 0.3s ease, box-shadow 0.3s ease',
                             }}
                         >
-                            <ShoppingCart className="w-4 h-4" />
-                            {totalCartItems > 0 ? (
-                                <span>Cart ({totalCartItems})</span>
-                            ) : (
-                                <span>Cart</span>
-                            )}
+                            <div className="flex items-center gap-3.5 px-4 py-3.5">
+                                <div
+                                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                                    style={{
+                                        backgroundColor: fullQty > 0
+                                            ? 'rgba(255,255,255,0.15)'
+                                            : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(53,53,53,0.05)'),
+                                        transition: 'background-color 0.3s ease',
+                                    }}
+                                >
+                                    <Layers className="w-5 h-5" style={{
+                                        color: fullQty > 0 ? '#fff' : theme.colors.textSecondary,
+                                        opacity: fullQty > 0 ? 1 : 0.45,
+                                        transition: 'color 0.3s ease, opacity 0.3s ease',
+                                    }} />
+                                </div>
+                                <div className="flex-1 text-left min-w-0">
+                                    <p className="text-[0.8125rem] font-bold truncate" style={{
+                                        color: fullQty > 0 ? '#fff' : theme.colors.textPrimary,
+                                        transition: 'color 0.3s ease',
+                                    }}>
+                                        Full JSI Sample Set
+                                    </p>
+                                    <p className="text-[0.6875rem] mt-0.5" style={{
+                                        color: fullQty > 0 ? 'rgba(255,255,255,0.65)' : theme.colors.textSecondary,
+                                        opacity: fullQty > 0 ? 1 : 0.55,
+                                        transition: 'color 0.3s ease, opacity 0.3s ease',
+                                    }}>
+                                        Every finish across all categories · {totalFinishCount} samples
+                                    </p>
+                                </div>
+                                <AnimatePresence mode="wait" initial={false}>
+                                    {fullQty > 0 ? (
+                                        <motion.span key="check-full" className="flex-shrink-0"
+                                            initial={{ scale: 0, rotate: -90 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: 90 }}
+                                            transition={badgeSpring}>
+                                            <CheckCircle className="w-5 h-5" style={{ color: '#fff' }} />
+                                        </motion.span>
+                                    ) : (
+                                        <motion.span key="plus-full" className="flex-shrink-0"
+                                            initial={{ scale: 0, rotate: 90 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0, rotate: -90 }}
+                                            transition={badgeSpring}>
+                                            <Plus className="w-5 h-5" style={{ color: theme.colors.textSecondary, opacity: 0.4 }} />
+                                        </motion.span>
+                                    )}
+                                </AnimatePresence>
+                            </div>
                         </button>
+
+                        {/* Product grid */}
+                        {renderProductGrid(filteredProducts)}
                     </div>
                 </div>
-
-                {/* Product grid - constrained width */}
-                <div 
-                    className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 lg:gap-6 pb-24 mx-auto"
-                    style={{ maxWidth: MAX_CONTENT_WIDTH, paddingLeft: isDesktop ? 24 : 16, paddingRight: isDesktop ? 24 : 16, paddingTop: 16 }}
-                >
-                    {filteredProducts.map(p => <SampleCard key={p.id} product={p} />)}
-                </div>
             </div>
-            <CartDrawer cart={cart} onUpdateCart={onUpdateCart} theme={theme} userSettings={userSettings} customers={MOCK_CUSTOMERS} isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} onNavigate={onNavigate} isDesktop={isDesktop} />
+            <CartDrawer cart={cart} onUpdateCart={onUpdateCart} theme={theme} userSettings={userSettings} dealers={dealerDirectory} designFirms={designFirms} open={cartOpen} onOpenChange={setCartOpen} onNavigate={onNavigate} onSubmitOrder={onSubmitSampleOrder} />
         </div>
     );
 };
+

@@ -1,47 +1,55 @@
-// Sample Discounts specific data - Dealer version
-// Renamed from "Sample Discounts" to "Discounts" for dealer view
+// Sample Policies — SSA reference data
+// Effective May 1, 2021
 
-// Dealer-specific discount categories (3 cards only for dealers)
-export const DEALER_DISCOUNT_DATA = [
-    {
-        id: 'DR-240101',
-        Title: 'Showroom Samples',
-        category: 'showroom',
-        Discount: 60,
-        SSANumber: 'SSA DR-240101',
-        description: 'Samples for your dealer showroom display. Standard finishes and popular configurations available at showroom pricing.'
-    },
-    {
-        id: 'WE-240215',
-        Title: 'A&D Samples',
-        category: 'ad-samples',
-        Discount: 55,
-        SSANumber: 'SSA WE-240215',
-        description: 'Samples for architects and designers. Finish chips, fabric swatches, and small-scale models for specification support.'
-    },
-    {
-        id: 'DF-240320',
-        Title: 'Personal Use Samples',
-        category: 'personal-use',
-        Discount: 50,
-        SSANumber: 'SSA DF-240320',
-        description: 'Samples for dealer personal use. Limited to one per item per year.'
-    }
+export const SAMPLE_POLICIES = [
+  {
+    id: 'dealer-project',
+    title: 'Dealer Project Samples',
+    ssa: 'DR-228919',
+    discount: 75,
+    notes: [
+      'Max qty (1) per model number',
+      'Commission is not paid',
+    ],
+  },
+  {
+    id: 'rep-showroom',
+    title: 'Rep Showroom & Rep Samples',
+    ssa: 'RT-711576',
+    discount: 85,
+    notes: [
+      'Max qty (1) per model number',
+      'Commission is not paid',
+    ],
+  },
+  {
+    id: 'dealer-showroom',
+    title: 'Dealer Showroom Samples',
+    ssa: 'DR-996860',
+    discount: 75,
+    notes: [
+      'Treated as a standard order',
+      'Commission is not paid',
+    ],
+  },
+  {
+    id: 'personal-use',
+    title: 'Personal Use',
+    subtitle: 'Reps, Dealers, Designers & Internal Employees',
+    ssa: 'DF-022745',
+    discount: 75,
+    notes: [
+      'Commission is not paid',
+    ],
+  },
+  {
+    id: 'design-firms',
+    title: 'Design Firms',
+    ssa: 'WE-304039',
+    discount: 75,
+    notes: [
+      'Commission is not paid',
+    ],
+  },
 ];
 
-// Legacy data for backward compatibility
-export const SAMPLE_DISCOUNTS_DATA = DEALER_DISCOUNT_DATA;
-
-export const DISCOUNT_CATEGORIES = [
-    'all',
-    'showroom',
-    'ad-samples',
-    'personal-use'
-];
-
-export const SAMPLE_DISCOUNT_RANGES = [
-    { min: 0, max: 20, label: 'Up to 20%' },
-    { min: 21, max: 30, label: '21-30%' },
-    { min: 31, max: 40, label: '31-40%' },
-    { min: 41, max: 100, label: '40%+' }
-];

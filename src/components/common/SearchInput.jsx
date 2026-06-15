@@ -1,156 +1,99 @@
-import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { Search, Mic, Plus } from 'lucide-react';
-import { DESIGN_TOKENS } from '../../design-system/tokens.js';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import { Search, Mic, X } from 'lucide-react';
+import { getHomeChromeIconButtonStyles } from '../../design-system/homeChrome.js';
+import { isDarkTheme } from '../../design-system/tokens.js';
 
-// Constants moved outside component to prevent recreation
-const PHRASES = [
-    'Ask me anything...',
-    'Find install guides...',
-    'Compare product specs...',
-    'Start sample order...',
-    'Check lead times...',
-    'Create social posts...',
-    'Show commission rates...',
-    'Price out package...',
-    'Search dealer directory...',
-    'Summarize a contract...',
-    'Suggest finish pairings...',
-    'Write customer email...',
-    'Draft install checklist...',
-    'Analyze win chances...',
-    'Plan design days...',
-];
-
-const DISPLAY_MS = 8200;
-const FADE_MS = 1500;
-const FADE_IN_DELAY = 360;
-const INPUT_HEIGHT = 56;
-
-// Memoized style objects to prevent recreation on every render
-const createInputStyles = (theme) => ({
-    color: theme.colors.textPrimary,
-    height: INPUT_HEIGHT,
-    lineHeight: `${INPUT_HEIGHT}px`,
-    fontWeight: 400,
-    WebkitFontSmoothing: 'antialiased',
-});
-
-const createIconWrapperStyles = () => ({
-    width: 24,
-    height: 24,
-});
-
-const createPlaceholderStyles = (theme, animation, delay = 0, shouldPulse = false) => ({
-    zIndex: animation.includes('FadeIn') ? 1 : 0,
-    color: theme.colors.textSecondary,
-    opacity: 0.52,
-    animation: shouldPulse 
-        ? `${animation} ${FADE_MS}ms ${delay}ms ease both, siPulseSlow 2600ms ease-in-out infinite`
-        : `${animation} ${FADE_MS}ms ${delay}ms ease both`,
-    transformOrigin: 'center',
-    fontWeight: 400,
-});
-
-// HomeSearchInput - Optimized with useCallback and memoized styles
+// HomeSearchInput — lives inside the home screen search pill (56px pill, animated placeholder)
 export const HomeSearchInput = React.memo(function HomeSearchInput({
     theme,
     value = '',
     onChange,
     onSubmit,
     onVoiceClick,
-    onFileAdd,
-    attachedFiles = [],
     className = '',
     onFocus,
     onBlur,
+    onKeyDown,
+    ariaExpanded,
+    ariaActiveDescendant,
+    ariaControls,
 }) {
     const [focused, setFocused] = useState(false);
     const [tick, setTick] = useState(0);
     const [prevText, setPrevText] = useState(null);
-    const fileInputRef = useRef(null);
-    
-    const phraseFor = useCallback((i) => PHRASES[i % PHRASES.length], []);
-    
+    const phrases = useMemo(() => [
+        'Search apps or ask Elliott...',
+        'Lead times for Motif',
+        'Compare Jasper and Motif specs',
+        'Start a sample order',
+        'Check commission rates',
+        'Draft a customer email',
+    ], []);
+    const HINT_OPACITY = 0.62;
+    const DISPLAY_MS = 8200;
+    const FADE_MS = 1500;
+    const FADE_IN_DELAY = 360;
+    const phraseFor = useCallback((i) => phrases[i % phrases.length], [phrases]);
+    const isInitialPhrase = tick === 0;
     useEffect(() => {
         const id = setInterval(() => setTick(p => p + 1), DISPLAY_MS);
         return () => clearInterval(id);
-    }, []);
-    
+    }, [DISPLAY_MS]);
     useEffect(() => {
         if (tick === 0) return;
         setPrevText(phraseFor(tick - 1));
         const t = setTimeout(() => setPrevText(null), FADE_MS + 120);
         return () => clearTimeout(t);
     }, [tick, phraseFor]);
-    
-    const currentText = useMemo(() => phraseFor(tick), [tick, phraseFor]);
-    const isAskCycle = currentText === 'Ask me anything...';
-    const shouldPulse = isAskCycle && tick !== 0;
+    const currentText = phraseFor(tick);
     const showHint = !value && !focused;
-    
-    const handleFocus = useCallback((e) => {
-        setFocused(true);
-        onFocus?.(e);
-    }, [onFocus]);
-    
-    const handleBlur = useCallback((e) => {
-        setFocused(false);
-        onBlur?.(e);
-    }, [onBlur]);
-    
-    const handleSubmit = useCallback((e) => {
-        e.preventDefault();
-        onSubmit?.(value);
-    }, [onSubmit, value]);
-    
-    const handleChange = useCallback((e) => {
-        onChange?.(e.target.value);
-    }, [onChange]);
-    
-    const handleFileClick = useCallback(() => {
-        fileInputRef.current?.click();
-    }, []);
-    
-    const handleFileChange = useCallback((e) => {
-        const files = Array.from(e.target.files || []);
-        if (files.length > 0 && onFileAdd) {
-            onFileAdd(files);
-        }
-        // Reset input so same file can be selected again
-        e.target.value = '';
-    }, [onFileAdd]);
-    
-    // Memoize style objects
-    const inputStyles = useMemo(() => createInputStyles(theme), [theme.colors.textPrimary]);
-    const iconWrapperStyles = useMemo(() => createIconWrapperStyles(), []);
-    const iconColor = useMemo(() => theme.colors.textSecondary, [theme.colors.textSecondary]);
-    
+    const isDark = isDarkTheme(theme);
+    const iconButtonStyles = getHomeChromeIconButtonStyles(isDark);
+    const handleFocus = (e) => { setFocused(true); onFocus && onFocus(e); };
+    const handleBlur = (e) => { setFocused(false); onBlur && onBlur(e); };
     return (
         <form
-            onSubmit={handleSubmit}
+            onSubmit={(e) => {
+                e.preventDefault();
+                onSubmit && onSubmit(value);
+            }}
             className={`flex items-center flex-1 ${className}`}
             autoComplete="off"
         >
             <style>{`
-                @keyframes siFadeIn { from { opacity: 0 } to { opacity: .52 } }
-                @keyframes siFadeOut { from { opacity: .52 } to { opacity: 0 } }
-                @keyframes siPulseSlow { 0% { transform: scale(1) } 50% { transform: scale(1.01) } 100% { transform: scale(1) } }
-            `}</style>
+                @keyframes siFadeIn { from { opacity: 0 } to { opacity: .62 } }
+                @keyframes siFadeOut { from { opacity: .62 } to { opacity: 0 } }
+      `}</style>
 
-            <div className="flex items-center justify-center mr-3" style={iconWrapperStyles}>
-                <Search className="w-5 h-5" style={{ color: iconColor }} />
+            <div className="flex items-center justify-center mr-3" style={{ width: 20, height: 20 }}>
+                <Search style={{ width: 18, height: 18, color: theme.colors.textSecondary }} />
             </div>
 
             <div className="flex-1 relative">
                 <input
                     value={value}
-                    onChange={handleChange}
+                    onChange={(e) => onChange && onChange(e.target.value)}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
+                    onKeyDown={onKeyDown}
                     placeholder=""
-                    className="w-full bg-transparent outline-none text-[15px]"
-                    style={inputStyles}
-                    aria-label="Search"
+                    className="w-full bg-transparent outline-none"
+                    style={{
+                        color: theme.colors.textPrimary,
+                        fontSize: "1.0625rem",
+                        height: 56,
+                        lineHeight: '56px',
+                        fontWeight: 400,
+                        WebkitFontSmoothing: 'antialiased',
+                    }}
+                    role="combobox"
+                    aria-label="Search or ask Elliott"
+                    aria-autocomplete="list"
+                    aria-haspopup="listbox"
+                    aria-expanded={ariaExpanded}
+                    aria-activedescendant={ariaActiveDescendant}
+                    aria-controls={ariaControls}
+                    autoComplete="off"
                 />
 
                 {showHint && (
@@ -161,7 +104,13 @@ export const HomeSearchInput = React.memo(function HomeSearchInput({
                         {prevText && (
                             <span
                                 className="absolute w-full truncate"
-                                style={createPlaceholderStyles(theme, 'siFadeOut')}
+                                style={{
+                                    zIndex: 0,
+                                    color: theme.colors.textSecondary,
+                                    opacity: HINT_OPACITY,
+                                    animation: `siFadeOut ${FADE_MS}ms ease both`,
+                                    fontWeight: 400,
+                                }}
                             >
                                 {prevText}
                             </span>
@@ -169,7 +118,13 @@ export const HomeSearchInput = React.memo(function HomeSearchInput({
                         <span
                             key={tick}
                             className="absolute w-full truncate"
-                            style={createPlaceholderStyles(theme, 'siFadeIn', FADE_IN_DELAY, shouldPulse)}
+                            style={{
+                                zIndex: 1,
+                                color: theme.colors.textSecondary,
+                                opacity: HINT_OPACITY,
+                                animation: isInitialPhrase ? 'none' : `siFadeIn ${FADE_MS}ms ${FADE_IN_DELAY}ms ease both`,
+                                fontWeight: 400,
+                            }}
                         >
                             {currentText}
                         </span>
@@ -177,60 +132,21 @@ export const HomeSearchInput = React.memo(function HomeSearchInput({
                 )}
             </div>
 
-            {/* Hidden file input */}
-            <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg"
-                onChange={handleFileChange}
-                className="hidden"
-            />
-
-            {/* File attachment button */}
-            <button
-                type="button"
-                onClick={handleFileClick}
-                className="ml-2 w-10 h-10 rounded-full flex items-center justify-center transition-all hover:bg-black/5 dark:hover:bg-white/5 active:scale-95"
-                style={{ 
-                    color: attachedFiles.length > 0 ? theme.colors.accent : iconColor,
-                    backgroundColor: attachedFiles.length > 0 ? `${theme.colors.accent}15` : 'transparent'
-                }}
-                aria-label="Attach files"
-            >
-                <Plus className="w-5 h-5" />
-                {attachedFiles.length > 0 && (
-                    <span 
-                        className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center"
-                        style={{ backgroundColor: theme.colors.accent, color: '#fff' }}
-                    >
-                        {attachedFiles.length}
-                    </span>
-                )}
-            </button>
-
             <button
                 type="button"
                 onClick={onVoiceClick}
-                className="ml-1 w-10 h-10 rounded-full flex items-center justify-center transition-colors hover:bg-black/5 dark:hover:bg-white/5"
-                style={{ color: iconColor }}
+                className="ml-2 rounded-full flex items-center justify-center transition-colors hover:opacity-90"
+                style={{ ...iconButtonStyles, width: 36, height: 36, color: theme.colors.textSecondary }}
                 aria-label="Voice input"
             >
-                <Mic className="w-5 h-5" />
+                <Mic style={{ width: 16, height: 16 }} />
             </button>
         </form>
     );
-}, (prevProps, nextProps) => {
-    // Custom comparison for better memoization
-    return (
-        prevProps.value === nextProps.value &&
-        prevProps.theme === nextProps.theme &&
-        prevProps.className === nextProps.className &&
-        prevProps.attachedFiles?.length === nextProps.attachedFiles?.length
-    );
 });
 
-// Standard search input with header variant - Optimized with design tokens
+// SearchInput — universal search pill used across all non-home screens.
+// Uses the same frosted-glass language as the home screen pill and app header.
 export const SearchInput = React.memo(function SearchInput({
     id,
     value = '',
@@ -239,69 +155,65 @@ export const SearchInput = React.memo(function SearchInput({
     theme,
     className = '',
     style = {},
-    variant = 'default', // 'default' | 'header'
-    inputClassName = ''
+    inputClassName = '',
+    autoFocus = false,
+    inputRef,
 }) {
-    const isHeader = variant === 'header';
-
-    // Use design tokens for consistent styling - memoized to prevent recreation
-    const pill = useMemo(() => isHeader ? {
-        height: 56,
-        backgroundColor: theme?.colors?.surface,
-        border: 'none',
-        boxShadow: DESIGN_TOKENS.shadows.lg,
-        borderRadius: DESIGN_TOKENS.borderRadius.pill,
-        paddingLeft: 20,
-        paddingRight: 20,
-        transition: DESIGN_TOKENS.transitions.fast
-    } : {
-        height: 44,
-        backgroundColor: theme?.colors?.surface,
-        border: 'none',
-        boxShadow: DESIGN_TOKENS.shadows.md,
-        borderRadius: DESIGN_TOKENS.borderRadius.pill,
-        paddingLeft: 16,
-        paddingRight: 16,
-        transition: DESIGN_TOKENS.transitions.fast
-    }, [isHeader, theme?.colors?.surface]);
-
-    const iconColor = useMemo(() => theme?.colors?.textSecondary || '#666', [theme?.colors?.textSecondary]);
-    const textColor = useMemo(() => theme?.colors?.textPrimary || '#111', [theme?.colors?.textPrimary]);
-    
-    const handleChange = useCallback((e) => {
-        onChange?.(e.target.value);
-    }, [onChange]);
+    const dark = isDarkTheme(theme);
+    // Match homeChrome primary palette — frosted glass pill
+    const bg  = dark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.72)';
+    const bdr = dark ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(255,255,255,0.80)';
+    const shadow = dark
+      ? '0 2px 10px rgba(0,0,0,0.25)'
+      : '0 2px 10px rgba(53,53,53,0.08)';
+    const iconColor = theme?.colors?.textSecondary || '#666';
 
     return (
-        <div id={id} className={`flex items-center flex-1 gap-2 ${className}`}
-             style={{ ...pill, ...style }}>
-            <Search className="w-5 h-5" style={{ color: iconColor }} />
-            <input
-                type="text"
-                value={value}
-                onChange={handleChange}
-                placeholder={placeholder}
-                className={`flex-1 h-full bg-transparent outline-none text-[15px] placeholder:opacity-70 ${inputClassName}`}
-                style={{ 
-                    color: textColor,
-                    border: 'none',
-                    boxShadow: 'none',
-                }}
-                onFocus={(e) => {
-                    e.target.style.outline = 'none';
-                    e.target.style.border = 'none';
-                    e.target.style.boxShadow = 'none';
-                }}
-                aria-label={placeholder}
+        <div
+            id={id}
+            className={`flex items-center gap-2.5 ${className}`}
+            role="search"
+            style={{
+                height: 56,
+                borderRadius: 9999,
+                backgroundColor: bg,
+                border: bdr,
+                boxShadow: shadow,
+                backdropFilter: 'blur(12px) saturate(1.4)',
+                WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+                paddingLeft: 14,
+                paddingRight: value ? 8 : 14,
+                transition: 'border-color 150ms ease, box-shadow 150ms ease',
+                ...style,
+            }}
+        >
+            <Search
+                aria-hidden="true"
+                style={{ width: 18, height: 18, color: iconColor, opacity: 0.6, flexShrink: 0 }}
             />
+            <input
+                type="search"
+                value={value}
+                onChange={(e) => onChange && onChange(e.target.value)}
+                placeholder={placeholder}
+                className={`flex-1 h-full bg-transparent outline-none ${inputClassName}`}
+                style={{ color: theme?.colors?.textPrimary || '#111', fontSize: "1rem" }}
+                aria-label={placeholder}
+                autoComplete="off"
+                autoFocus={autoFocus}
+                ref={inputRef}
+            />
+            {value && onChange && (
+                <button
+                    type="button"
+                    onClick={() => onChange('')}
+                    className="flex-shrink-0 w-[22px] h-[22px] rounded-full flex items-center justify-center transition-opacity hover:opacity-80 active:scale-90"
+                    style={{ backgroundColor: dark ? 'rgba(255,255,255,0.13)' : 'rgba(0,0,0,0.10)' }}
+                    aria-label="Clear search"
+                >
+                    <X style={{ width: 11, height: 11, color: iconColor }} />
+                </button>
+            )}
         </div>
-    );
-}, (prevProps, nextProps) => {
-    return (
-        prevProps.value === nextProps.value &&
-        prevProps.theme === nextProps.theme &&
-        prevProps.placeholder === nextProps.placeholder &&
-        prevProps.variant === nextProps.variant &&
-        prevProps.className === nextProps.className
     );
 });

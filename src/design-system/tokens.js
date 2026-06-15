@@ -4,9 +4,7 @@
 // Typography: Neue Haas Grotesk Display Pro
 // Color Approach: Earth-toned, warm, grounded (NO pure black)
 
-// ============================================
 // JSI BRAND COLOR PALETTE
-// ============================================
 export const JSI_COLORS = {
   // Primary Colors
   charcoal: '#353535',        // Primary text & action color (replaces pure black)
@@ -25,15 +23,13 @@ export const JSI_COLORS = {
   info: '#5B7B8C',            // Slate blue
 };
 
-// ============================================
 // TYPOGRAPHY - Neue Haas Grotesk Display Pro
-// ============================================
 // Based on JSI Digital Style Guide 1.0 Typography & Styles
-// Heading levels from style guide: H1 Grotesk 185, H2 Grotesk 132, H3 Grotesk 110, 
+// Heading levels from style guide: H1 Grotesk 185, H2 Grotesk 132, H3 Grotesk 110,
 // H4 Grotesk 72, H5 Grotesk 58, H6 Grotesk 44, H7 Grotesk 26, H8 Grotesk 18/16
 // Converting design system scale to responsive rem units
 export const JSI_TYPOGRAPHY = {
-  fontFamily: '"Neue Haas Grotesk Display Pro", "Helvetica Neue", Helvetica, Arial, sans-serif',
+  fontFamily: '"Neue Haas Grotesk Display Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
 
   // Primary Heading Levels from Style Guide (H1-H8)
   // Style guide scale: H1=185, H2=132, H3=110, H4=72, H5=58, H6=44, H7=26, H8=18/16
@@ -49,13 +45,17 @@ export const JSI_TYPOGRAPHY = {
     h8: { size: '1rem', mobileSize: '0.875rem', weight: 500, lineHeight: 1.4, letterSpacing: '0' },           // 16px / 14px (Grotesk 18/16 scale)
   },
 
-  // Body text with weight variations
+  // Body text scale (standardized across app)
+  // 10px micro → 11px caption → 12px small → 13px compact → 14px body → 15px large → 16px+ headings
   body: {
-    large: { size: '1.125rem', weight: 400, lineHeight: 1.6 },    // 18px - Light/Regular
-    default: { size: '1rem', weight: 400, lineHeight: 1.6 },      // 16px - Regular
-    small: { size: '0.875rem', weight: 400, lineHeight: 1.5 },    // 14px - Regular
-    tiny: { size: '0.75rem', weight: 500, lineHeight: 1.4 },      // 12px - Medium
-    micro: { size: '0.625rem', weight: 500, lineHeight: 1.3 },    // 10px - Medium (labels)
+    large: { size: '1.125rem', weight: 400, lineHeight: 1.6 },    // 18px - text-lg
+    default: { size: '1rem', weight: 400, lineHeight: 1.6 },      // 16px - text-base
+    bodyLarge: { size: '0.9375rem', weight: 400, lineHeight: 1.5 }, // 15px - card titles
+    body: { size: '0.875rem', weight: 400, lineHeight: 1.5 },     // 14px - text-sm (standard body)
+    compact: { size: '0.8125rem', weight: 400, lineHeight: 1.5 }, // 13px - body compact
+    small: { size: '0.75rem', weight: 500, lineHeight: 1.4 },     // 12px - text-xs (form labels)
+    caption: { size: '0.6875rem', weight: 500, lineHeight: 1.3 }, // 11px - captions, meta
+    micro: { size: '0.625rem', weight: 600, lineHeight: 1.3 },    // 10px - badges, tracking text
   },
 
   // Font weights
@@ -68,9 +68,7 @@ export const JSI_TYPOGRAPHY = {
   },
 };
 
-// ============================================
-// DESIGN TOKENS (Updated for JSI)
-// ============================================
+// DESIGN TOKENS
 export const DESIGN_TOKENS = {
   // Spacing scale
   spacing: {
@@ -113,36 +111,36 @@ export const DESIGN_TOKENS = {
     micro: { size: '0.625rem', weight: 500, lineHeight: 1.3 },
   },
 
-  // Shadows - softer, more refined for JSI aesthetic
+  // Shadows - minimal, clean
   shadows: {
     none: 'none',
-    sm: '0 1px 3px rgba(53,53,53,0.04)',
-    md: '0 2px 8px rgba(53,53,53,0.06), 0 1px 3px rgba(53,53,53,0.04)',
-    lg: '0 4px 16px rgba(53,53,53,0.08), 0 2px 6px rgba(53,53,53,0.04)',
-    xl: '0 8px 28px rgba(53,53,53,0.1), 0 4px 10px rgba(53,53,53,0.06)',
-    '2xl': '0 16px 48px rgba(53,53,53,0.12), 0 8px 16px rgba(53,53,53,0.06)',
-    card: '0 4px 20px rgba(53,53,53,0.07), 0 2px 6px rgba(53,53,53,0.03)',
-    cardHover: '0 8px 32px rgba(53,53,53,0.12), 0 4px 12px rgba(53,53,53,0.06)',
-    button: '0 2px 8px rgba(53,53,53,0.1), 0 1px 3px rgba(53,53,53,0.06)',
-    buttonHover: '0 4px 12px rgba(53,53,53,0.15), 0 2px 4px rgba(53,53,53,0.08)',
-    modal: '0 24px 64px rgba(53,53,53,0.18), 0 12px 28px rgba(53,53,53,0.1)',
-    drawer: '0 -8px 32px rgba(53,53,53,0.12), 0 -2px 8px rgba(53,53,53,0.06)',
+    sm: '0 1px 2px rgba(0,0,0,0.04)',
+    md: '0 1px 4px rgba(0,0,0,0.05)',
+    lg: '0 2px 8px rgba(0,0,0,0.06)',
+    xl: '0 4px 16px rgba(0,0,0,0.08)',
+    '2xl': '0 8px 32px rgba(0,0,0,0.1)',
+    card: 'none',
+    cardHover: '0 4px 16px rgba(0,0,0,0.08)',
+    button: 'none',
+    buttonHover: '0 2px 8px rgba(0,0,0,0.08)',
+    modal: '0 16px 48px rgba(0,0,0,0.12)',
+    drawer: '0 -4px 16px rgba(0,0,0,0.08)',
   },
 
-  // Dark mode shadows (adjusted for JSI)
+  // Dark mode shadows - lighter than before
   shadowsDark: {
     none: 'none',
-    sm: '0 1px 3px rgba(0,0,0,0.2)',
-    md: '0 2px 8px rgba(0,0,0,0.3), 0 1px 3px rgba(0,0,0,0.2)',
-    lg: '0 4px 16px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.25)',
-    xl: '0 8px 28px rgba(0,0,0,0.4), 0 4px 10px rgba(0,0,0,0.3)',
-    '2xl': '0 16px 48px rgba(0,0,0,0.45), 0 8px 16px rgba(0,0,0,0.35)',
-    card: '0 4px 20px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.3)',
-    cardHover: '0 8px 32px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.35)',
-    button: '0 2px 8px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.25)',
-    buttonHover: '0 4px 12px rgba(0,0,0,0.45), 0 2px 4px rgba(0,0,0,0.3)',
-    modal: '0 24px 64px rgba(0,0,0,0.55), 0 12px 28px rgba(0,0,0,0.4)',
-    drawer: '0 -8px 32px rgba(0,0,0,0.45), 0 -2px 8px rgba(0,0,0,0.35)',
+    sm: '0 1px 2px rgba(0,0,0,0.15)',
+    md: '0 1px 4px rgba(0,0,0,0.2)',
+    lg: '0 2px 8px rgba(0,0,0,0.25)',
+    xl: '0 4px 16px rgba(0,0,0,0.3)',
+    '2xl': '0 8px 32px rgba(0,0,0,0.35)',
+    card: 'none',
+    cardHover: '0 4px 16px rgba(0,0,0,0.25)',
+    button: 'none',
+    buttonHover: '0 2px 8px rgba(0,0,0,0.2)',
+    modal: '0 16px 48px rgba(0,0,0,0.4)',
+    drawer: '0 -4px 16px rgba(0,0,0,0.25)',
   },
 
   // Transitions - smooth, confident
@@ -194,179 +192,172 @@ export const DESIGN_TOKENS = {
     desktopSidebarWidth: '96px',    // lg:pl-24 = 6rem = 96px
   },
 
-  // Blur effects for overlays (JSI brand)
+  // Blur effects for overlays (JSI brand - Style Guide Page 17)
   blur: {
-    light: 'blur(24px)',
-    medium: 'blur(34px)',
-    heavy: 'blur(44px)',
+    light: 'blur(24px)',      // Background Blur 24
+    medium: 'blur(34px)',     // Background Blur 34
+    heavy: 'blur(44px)',      // Background Blur 44
+  },
+
+  // Backdrop filter values (glassmorphism)
+  backdropBlur: {
+    frost24: '24px',
+    frost34: '34px',
+    frost44: '44px',
+  },
+
+  // Glass button presets — spread directly into inline style props.
+  // Three blur tiers: overlay (12px/tight), standard (20px/floating), heavy (24px/prominent).
+  // JSI warm-tinted backgrounds match charcoal (#353535) and warm-beige palette.
+  frost: {
+    // FrostButton: floating footers, sticky bars, fixed CTAs over scrolling content
+    // "dark" variant is the softer translucent-glass look used for primary CTAs.
+    button: {
+      dark: {
+        backdropFilter:       'blur(20px) saturate(1.6)',
+        WebkitBackdropFilter: 'blur(20px) saturate(1.6)',
+        backgroundColor:      'rgba(50, 48, 46, 0.62)',
+        color:                '#FFFFFF',
+        border:               '1px solid rgba(255, 255, 255, 0.18)',
+        boxShadow:            '0 4px 20px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.12)',
+      },
+      light: {
+        backdropFilter:       'blur(20px) saturate(1.6)',
+        WebkitBackdropFilter: 'blur(20px) saturate(1.6)',
+        backgroundColor:      'rgba(255, 252, 248, 0.74)',
+        color:                '#353535',
+        border:               '1px solid rgba(255, 255, 255, 0.90)',
+        boxShadow:            '0 4px 24px rgba(53, 53, 53, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+      },
+      // Lighter blur for buttons floating over dark image overlays (e.g. ProductCard)
+      overlayLearn: {
+        backdropFilter:       'blur(12px) saturate(1.4)',
+        WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+        backgroundColor:      'rgba(255, 252, 248, 0.88)',
+        color:                '#353535',
+        border:               '1px solid rgba(255, 255, 255, 0.70)',
+        boxShadow:            'inset 0 1px 0 rgba(255, 255, 255, 0.95)',
+      },
+      overlayGhost: {
+        backdropFilter:       'blur(12px) saturate(1.4)',
+        WebkitBackdropFilter: 'blur(12px) saturate(1.4)',
+        backgroundColor:      'rgba(255, 255, 255, 0.10)',
+        color:                '#FFFFFF',
+        border:               '1.5px solid rgba(255, 255, 255, 0.50)',
+        boxShadow:            'inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+      },
+    },
   },
 };
 
-// ============================================
-// STATUS STYLES (Updated for JSI palette)
-// ============================================
-export const STATUS_STYLES = {
-  success: {
-    bg: `${JSI_COLORS.success}15`,
-    color: JSI_COLORS.success,
-    darkBg: `${JSI_COLORS.success}25`,
-    darkColor: '#6B9B7A'
-  },
-  warning: {
-    bg: `${JSI_COLORS.warning}15`,
-    color: JSI_COLORS.warning,
-    darkBg: `${JSI_COLORS.warning}25`,
-    darkColor: '#D4A87A'
-  },
-  error: {
-    bg: `${JSI_COLORS.error}15`,
-    color: JSI_COLORS.error,
-    darkBg: `${JSI_COLORS.error}25`,
-    darkColor: '#C87070'
-  },
-  info: {
-    bg: `${JSI_COLORS.info}15`,
-    color: JSI_COLORS.info,
-    darkBg: `${JSI_COLORS.info}25`,
-    darkColor: '#7B9BAC'
-  },
-  pending: {
-    bg: `${JSI_COLORS.charcoal}10`,
-    color: '#666666',
-    darkBg: `${JSI_COLORS.charcoal}20`,
-    darkColor: '#999999'
-  },
-  accent: {
-    bg: `${JSI_COLORS.charcoal}08`,
-    color: JSI_COLORS.charcoal,
-    darkBg: `${JSI_COLORS.charcoal}15`,
-    darkColor: '#555555'
-  },
-  new: {
-    bg: JSI_COLORS.charcoal,
-    color: JSI_COLORS.white,
-    darkBg: JSI_COLORS.white,
-    darkColor: JSI_COLORS.charcoal
-  },
-  quickship: {
-    bg: JSI_COLORS.success,
-    color: JSI_COLORS.white,
-    darkBg: '#6B9B7A',
-    darkColor: JSI_COLORS.white
-  }
-};
-
-// ============================================
 // HELPER FUNCTIONS
-// ============================================
 
-// Get spacing value
-export const spacing = (key) => DESIGN_TOKENS.spacing[key] || DESIGN_TOKENS.spacing.md;
-
-// Get border radius
-export const radius = (key) => DESIGN_TOKENS.borderRadius[key] || DESIGN_TOKENS.borderRadius.md;
-
-// Check if dark theme
 export const isDarkTheme = (theme) => {
   const bg = (theme?.colors?.background || '').toLowerCase();
   return bg.startsWith('#0') || bg.startsWith('#1') || bg.startsWith('#2') ||
     bg.startsWith('rgb(0') || bg.startsWith('rgb(1') || bg.startsWith('rgb(2');
 };
 
-// Get shadow based on theme
-export const shadow = (key, theme) => {
-  const shadows = isDarkTheme(theme) ? DESIGN_TOKENS.shadowsDark : DESIGN_TOKENS.shadows;
-  return shadows[key] || shadows.md;
-};
+// SURFACE HELPERS — eliminate repeated dark/light card + input styling
 
-// Get transition
-export const transition = (key) => DESIGN_TOKENS.transitions[key] || DESIGN_TOKENS.transitions.normal;
+export const SECTION_CARD_RADIUS = '28px';
+export const FIELD_LABEL_CLASSNAME = 'text-[0.6875rem] font-semibold tracking-[0.01em]';
+export const SECTION_TITLE_CLASSNAME = 'text-[0.95rem] sm:text-[1rem] font-semibold tracking-[-0.015em] leading-none';
 
-// Get max-width class
-export const getMaxWidthClass = (size = 'lg') => {
-  const map = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-3xl',
-    xl: 'max-w-4xl',
-    '2xl': 'max-w-5xl',
-    '3xl': 'max-w-6xl',
-    '4xl': 'max-w-7xl',
-    '5xl': 'max-w-[1440px]',
-    '6xl': 'max-w-[1680px]',
-    '7xl': 'max-w-[1920px]',
-    content: 'max-w-[1440px]',
+/**
+ * Standard card/surface background for dark/light mode.
+ * Returns { backgroundColor, border, boxShadow } ready to spread into style.
+ */
+export const cardSurface = (theme) => {
+  const dark = isDarkTheme(theme);
+  return {
+    backgroundColor: dark ? 'rgba(255,255,255,0.065)' : (theme?.colors?.surface || '#FFFFFF'),
+    border: dark ? '1px solid rgba(255,255,255,0.042)' : 'none',
+    boxShadow: dark ? DESIGN_TOKENS.shadowsDark.card : DESIGN_TOKENS.shadows.card,
   };
-  return map[size] || map.lg;
 };
 
-// Get JSI color
-export const getJSIColor = (key) => JSI_COLORS[key] || JSI_COLORS.charcoal;
-
-// Get typography style
-export const getTypography = (variant) => {
-  return DESIGN_TOKENS.typography[variant] || DESIGN_TOKENS.typography.body;
+/**
+ * Subtle tinted background for hover rows, sub-panels, and inline containers.
+ */
+export const subtleBg = (theme, strength = 1) => {
+  const dark = isDarkTheme(theme);
+  return dark
+    ? `rgba(255,255,255,${(0.042 * strength).toFixed(3)})`
+    : `rgba(0,0,0,${(0.025 * strength).toFixed(4)})`;
 };
 
-// ============================================
-// STYLE UTILITIES FOR CONSISTENCY
-// ============================================
-
-// Text color for use on accent backgrounds (buttons, badges)
-// Always use this instead of hardcoding '#fff' or '#FFFFFF'
-export const getAccentTextColor = () => JSI_COLORS.white;
-
-// Primary button styles (filled accent background)
-export const getPrimaryButtonStyles = (theme) => ({
-  backgroundColor: theme?.colors?.accent || JSI_COLORS.charcoal,
-  color: JSI_COLORS.white,
-  border: 'none',
-  boxShadow: DESIGN_TOKENS.shadows.button,
-});
-
-// Secondary button styles (outlined/subtle)
-export const getSecondaryButtonStyles = (theme) => ({
-  backgroundColor: theme?.colors?.surface || JSI_COLORS.white,
-  color: theme?.colors?.textPrimary || JSI_COLORS.charcoal,
-  border: `1.5px solid ${theme?.colors?.border || JSI_COLORS.stone}`,
-  boxShadow: 'none',
-});
-
-// Input field styles
-export const getInputStyles = (theme) => ({
-  backgroundColor: theme?.colors?.surface || JSI_COLORS.white,
-  color: theme?.colors?.textPrimary || JSI_COLORS.charcoal,
-  border: `1px solid ${theme?.colors?.border || JSI_COLORS.stone}`,
-  borderRadius: DESIGN_TOKENS.borderRadius.lg,
-});
-
-// Toggle/pill button styles (for segmented controls)
-export const getToggleButtonStyles = (theme, isActive) => ({
-  backgroundColor: isActive
-    ? (theme?.colors?.accent || JSI_COLORS.charcoal)
-    : (theme?.colors?.surface || JSI_COLORS.white),
-  color: isActive
-    ? JSI_COLORS.white
-    : (theme?.colors?.textSecondary || '#666666'),
-  borderColor: isActive
-    ? (theme?.colors?.accent || JSI_COLORS.charcoal)
-    : (theme?.colors?.border || JSI_COLORS.stone),
-});
-
-// Card shadow utility
-export const getCardShadow = (variant = 'elevated', theme) => {
-  const shadows = isDarkTheme(theme) ? DESIGN_TOKENS.shadowsDark : DESIGN_TOKENS.shadows;
-  switch (variant) {
-    case 'elevated': return shadows.card;
-    case 'hover': return shadows.cardHover;
-    case 'modal': return shadows.modal;
-    case 'minimal': return shadows.md;
-    default: return shadows.none;
-  }
+/**
+ * Standard border color for dark/light mode.
+ */
+export const subtleBorder = (theme) => {
+  const dark = isDarkTheme(theme);
+  return dark ? '1px solid rgba(255,255,255,0.042)' : '1px solid rgba(0,0,0,0.03)';
 };
 
-// Drawer shadow (for bottom sheets / cart drawers)
-export const getDrawerShadow = (isExpanded) => ({
-  expanded: '0 -6px 22px -4px rgba(0,0,0,0.25)',
-  collapsed: '0 -6px 14px -2px rgba(0,0,0,0.18), 0 -1px 0 rgba(0,0,0,0.08)',
-})[isExpanded ? 'expanded' : 'collapsed'];
+/**
+ * Standard rounded section card used across project/detail and form screens.
+ */
+export const sectionCardSurface = (theme) => {
+  const dark = isDarkTheme(theme);
+  return {
+    backgroundColor: dark ? 'rgba(255,255,255,0.035)' : 'rgba(255,255,255,0.90)',
+    border: dark ? subtleBorder(theme) : 'none',
+    boxShadow: dark ? '0 12px 28px rgba(0,0,0,0.16)' : '0 10px 24px rgba(53,53,53,0.05)',
+    borderRadius: SECTION_CARD_RADIUS,
+  };
+};
+
+/**
+ * Standard warm inset tile for grouped controls and lightweight data blocks.
+ */
+export const fieldTileSurface = (theme) => {
+  const dark = isDarkTheme(theme);
+  return {
+    backgroundColor: dark ? 'rgba(255,255,255,0.055)' : 'rgba(240,237,232,0.88)',
+    border: 'none',
+    borderRadius: DESIGN_TOKENS.borderRadius.xl,
+  };
+};
+
+/**
+ * Standard modal / popover card shell.
+ */
+export const modalCardSurface = (theme) => {
+  const dark = isDarkTheme(theme);
+  return {
+    backgroundColor: theme?.colors?.surface || (dark ? '#282828' : '#FFFFFF'),
+    border: dark ? '1px solid rgba(255,255,255,0.042)' : subtleBorder(theme),
+    borderRadius: DESIGN_TOKENS.borderRadius.xl,
+    boxShadow: dark ? DESIGN_TOKENS.shadowsDark.modal : DESIGN_TOKENS.shadows.modal,
+  };
+};
+
+/**
+ * Standard input field surface. Spread into style prop.
+ */
+export const inputSurface = (theme) => {
+  const dark = isDarkTheme(theme);
+  return {
+    backgroundColor: dark ? 'rgba(255,255,255,0.075)' : (theme?.colors?.surface || '#FFFFFF'),
+    border: dark ? '1px solid rgba(255,255,255,0.045)' : '1px solid rgba(0,0,0,0.04)',
+    color: theme?.colors?.textPrimary || JSI_COLORS.charcoal,
+  };
+};
+
+/**
+ * Frosted-glass strip for sticky/fixed bottom bars. Spread into style prop.
+ * Covers both action bars and info bars (e.g. pipeline summary, feedback CTA).
+ */
+export const floatingBarStyle = (theme) => {
+  const dark = isDarkTheme(theme);
+  return {
+    backdropFilter: 'blur(24px) saturate(1.8)',
+    WebkitBackdropFilter: 'blur(24px) saturate(1.8)',
+    backgroundColor: dark ? 'rgba(38, 36, 34, 0.52)' : 'rgba(240, 237, 232, 0.72)',
+    border: dark ? '1px solid rgba(255,255,255,0.05)' : 'none',
+    boxShadow: dark
+      ? '0 -4px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.03)'
+      : '0 -2px 16px rgba(0,0,0,0.04)',
+  };
+};

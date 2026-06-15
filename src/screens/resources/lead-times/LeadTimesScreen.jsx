@@ -1,10 +1,15 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Zap, Timer, Filter, Check, X } from 'lucide-react';
-import { LEAD_TIMES_DATA } from './data.js';
+import { GlassCard } from '../../../components/common/GlassCard.jsx';
+import { Timer, ListOrdered, Zap, X, ExternalLink, Package } from 'lucide-react';
+import { LEAD_TIMES_DATA, QUICKSHIP_SERIES } from './data.js';
+import { isDarkTheme } from '../../../design-system/tokens.js';
 import StandardSearchBar from '../../../components/common/StandardSearchBar.jsx';
-import { ScreenLayout } from '../../../design-system/ScreenLayout.jsx';
+import { getUnifiedBackdropStyle, UNIFIED_MODAL_Z } from '../../../components/common/modalUtils.js';
+import { useCompanyResource } from '../../../hooks/useCompanyResource.js';
+import { getLeadTimeImageSources } from './cloudinaryImages.js';
 
+// Fallback colors if theme tokens missing
 const ensureTheme = (theme) => ({
     colors: {
         background: theme?.colors?.background || '#FFFFFF',
@@ -14,102 +19,174 @@ const ensureTheme = (theme) => ({
         textPrimary: theme?.colors?.textPrimary || '#1F1F1F',
         textSecondary: theme?.colors?.textSecondary || '#555555',
         accent: theme?.colors?.accent || '#8B5E3C',
+        shadow: theme?.colors?.shadow || 'rgba(0,0,0,0.08)'
     }
 });
 
-const QUICKSHIP_THRESHOLD = 4;
-
-const CATEGORY_FILTERS = [
-    { key: 'all', label: 'All Types' },
-    { key: 'wood', label: 'Wood Seating', match: (type) => type === 'Wood Seating' },
-    { key: 'upholstery', label: 'Upholstered', match: (type) => type === 'Upholstery' || type === 'Seating' },
-    { key: 'casegoods', label: 'Casegoods', match: (type) => type === 'Casegoods' || type === 'Laminate' || type === 'Veneer' || type === 'Tables' },
-];
-
-// Compact product card with integrated lead time badge
-const ProductCard = ({ type, weeks, image, isQuickship, theme, onQuickshipClick }) => (
-    <div className="relative flex flex-col items-center">
-        {/* Image container with integrated week badge */}
-        <div className="relative">
-            <div className="w-14 h-14 rounded-lg bg-white flex items-center justify-center overflow-hidden shadow-sm">
-                <img src={image} alt={type} className="w-full h-full object-contain p-0.5" />
-            </div>
-            {/* QuickShip indicator - yellow, discrete */}
-            {isQuickship && (
-                <button
-                    onClick={(e) => { e.stopPropagation(); onQuickshipClick(); }}
-                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center shadow-sm"
-                    style={{ backgroundColor: '#FCD34D' }}
-                >
-                    <Zap className="w-2.5 h-2.5" style={{ color: '#92400E' }} />
-                </button>
-            )}
-            {/* Week badge overlay at bottom */}
+// QuickShip Modal Component
+const QuickShipModal = ({ isOpen, onClose, seriesName, theme }) => {
+    if (!isOpen) return null;
+    
+    const handleLearnMore = () => {
+        window.open('https://www.jsifurniture.com/products/quickship-program/', '_blank');
+    };
+    
+    return createPortal(
+        <div 
+            className="fixed inset-0 flex items-center justify-center p-4"
+            style={{ ...getUnifiedBackdropStyle(true), zIndex: UNIFIED_MODAL_Z }}
+            onClick={onClose}
+        >
             <div 
-                className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-full text-[10px] font-bold shadow-sm"
-                style={{ 
-                    backgroundColor: theme.colors.surface,
-                    color: theme.colors.textPrimary,
-                    border: `1px solid ${theme.colors.border}`
+                className="relative w-full max-w-sm rounded-2xl p-6 shadow-2xl"
+                style={{ backgroundColor: theme.colors.surface }}
+                onClick={e => e.stopPropagation()}
+            >
+                <button 
+                    onClick={onClose}
+                    className="absolute top-4 right-4 p-1.5 rounded-full transition-colors"
+                    style={{ backgroundColor: theme.colors.subtle }}
+                >
+                    <X className="w-5 h-5" style={{ color: theme.colors.textSecondary }} />
+                </button>
+                
+                <div className="flex justify-center mb-4">
+                    <div 
+                        className="w-16 h-16 rounded-full flex items-center justify-center"
+                        style={{ backgroundColor: '#D4AF3720' }}
+                    >
+                        <Zap className="w-8 h-8" style={{ color: '#D4AF37' }} fill="#D4AF37" />
+                    </div>
+                </div>
+                
+                <h2 className="text-xl font-bold text-center mb-2" style={{ color: theme.colors.textPrimary }}>
+                    QuickShip Program
+                </h2>
+                
+                <p className="text-center text-sm font-medium mb-4" style={{ color: theme.colors.accent }}>
+                    {seriesName} Series
+                </p>
+                
+                <p className="text-sm text-center mb-6 leading-relaxed" style={{ color: theme.colors.textSecondary }}>
+                    This series is available through our <strong>12 business day QuickShip program</strong>. 
+                    Select models and finishes ship faster to meet your project deadlines.
+                </p>
+                
+                <button
+                    onClick={handleLearnMore}
+                    className="w-full py-3 px-4 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                    style={{ backgroundColor: theme.colors.quickShip, color: theme.colors.accentText }}
+                >
+                    <span>View QuickShip Details</span>
+                    <ExternalLink className="w-4 h-4" />
+                </button>
+                
+                <p className="text-xs text-center mt-4" style={{ color: theme.colors.textSecondary }}>
+                    Click to see available models, finishes, and program details on jsifurniture.com
+                </p>
+            </div>
+        </div>,
+        document.body
+    );
+};
+
+// QuickShip Badge Component - inline pill style
+const QuickShipBadge = ({ onClick, isDark }) => (
+    <button
+        onClick={(e) => { e.stopPropagation(); onClick(); }}
+        className="inline-flex items-center gap-1 px-2 py-1 rounded-full transition-all hover:opacity-80 active:scale-95"
+        style={{
+            backgroundColor: isDark ? 'rgba(212,175,55,0.12)' : 'rgba(212,175,55,0.08)',
+            border: `1px solid ${isDark ? 'rgba(212,175,55,0.2)' : 'rgba(154,138,120,0.15)'}`,
+        }}
+        title="QuickShip Available"
+    >
+        <Zap className="w-3 h-3" style={{ color: isDark ? '#D4AF37' : '#9A8A78' }} fill={isDark ? '#D4AF37' : '#9A8A78'} />
+        <span className="text-[0.625rem] font-bold tracking-wide" style={{ color: isDark ? '#D4AF37' : '#9A8A78' }}>QuickShip</span>
+    </button>
+);
+
+const LVLabel = ({ label, theme }) => (
+    <span className="text-[0.6875rem] font-bold" style={{ color: theme.colors.textSecondary }}>{label}</span>
+);
+
+const LeadTimeInfo = ({ typeData, series, label, theme, isDark }) => {
+    const imageSources = useMemo(() => getLeadTimeImageSources(typeData, series), [typeData, series]);
+    const sourceKey = imageSources.join('|');
+    const [imageIndex, setImageIndex] = useState(0);
+
+    useEffect(() => {
+        setImageIndex(0);
+    }, [sourceKey]);
+
+    const imageSrc = imageSources[imageIndex];
+    const handleImageError = () => {
+        setImageIndex((index) => index + 1);
+    };
+
+    return (
+        <div className={`relative ${label ? 'text-center' : ''}`}>
+            {label && <LVLabel label={label} theme={theme} />}
+            <div
+                className="w-20 h-20 rounded-xl overflow-hidden flex items-center justify-center"
+                style={isDark ? { backgroundColor: 'rgba(255,255,255,0.08)' } : undefined}
+            >
+                {imageSrc ? (
+                    <img
+                        src={imageSrc}
+                        alt={label || `${series} ${typeData.type || 'lead time'}`}
+                        className="w-full h-full object-contain"
+                        loading="lazy"
+                        onError={handleImageError}
+                        style={isDark ? { filter: 'brightness(0.9) contrast(1.05)' } : undefined}
+                    />
+                ) : (
+                    <Package className="w-7 h-7 opacity-30" style={{ color: theme.colors.textSecondary }} aria-hidden="true" />
+                )}
+            </div>
+            <div
+                className="absolute -bottom-1 -right-1 h-7 w-7 flex items-center justify-center rounded-full"
+                style={{
+                    backgroundColor: isDark ? 'rgba(42,42,42,0.9)' : theme.colors.subtle,
+                    border: isDark ? '2px solid rgba(255,255,255,0.1)' : '2px solid rgba(255,255,255,0.8)',
+                    boxShadow: isDark ? '0 2px 6px rgba(0,0,0,0.4)' : '0 1px 3px rgba(0,0,0,0.1)',
                 }}
             >
-                {weeks}<span className="font-normal opacity-60">wk</span>
+                <span className="text-xs font-bold" style={{ color: isDark ? '#E8DDD0' : theme.colors.textSecondary }}>{typeData.weeks}</span>
             </div>
         </div>
-        {/* Type label */}
-        <span className="mt-2.5 text-[9px] font-medium uppercase tracking-wide" style={{ color: theme.colors.textSecondary }}>
-            {type.replace('Wood Seating', 'Wood').replace('Upholstery', 'Uph').replace('Casegoods', 'Case')}
-        </span>
-    </div>
-);
+    );
+};
 
 export const LeadTimesScreen = ({ theme = {} }) => {
     const safeTheme = ensureTheme(theme);
+    const isDark = isDarkTheme(theme);
+    const { data: leadTimesData } = useCompanyResource('lead-times', LEAD_TIMES_DATA);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [sortFastest, setSortFastest] = useState(false);
-    const [categoryFilter, setCategoryFilter] = useState('all');
-    const [showFilterMenu, setShowFilterMenu] = useState(false);
-    const [showQuickshipHint, setShowQuickshipHint] = useState(false);
-    const filterBtnRef = useRef(null);
-    const [filterPos, setFilterPos] = useState({ top: 0, right: 0 });
+    const [quickShipModal, setQuickShipModal] = useState({ isOpen: false, seriesName: '' });
 
-    useEffect(() => {
-        if (showFilterMenu && filterBtnRef.current) {
-            const rect = filterBtnRef.current.getBoundingClientRect();
-            setFilterPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
-        }
-    }, [showFilterMenu]);
+    const openQuickShipModal = (seriesName) => {
+        setQuickShipModal({ isOpen: true, seriesName });
+    };
 
-    useEffect(() => {
-        if (!showFilterMenu) return;
-        const handleClick = (e) => {
-            if (!filterBtnRef.current?.contains(e.target)) setShowFilterMenu(false);
-        };
-        document.addEventListener('mousedown', handleClick);
-        return () => document.removeEventListener('mousedown', handleClick);
-    }, [showFilterMenu]);
+    const closeQuickShipModal = () => {
+        setQuickShipModal({ isOpen: false, seriesName: '' });
+    };
 
     const rows = useMemo(() => {
         const map = {};
-        LEAD_TIMES_DATA.forEach(({ series, type, weeks, image }) => {
-            if (!map[series]) map[series] = { types: [] };
-            map[series].types.push({ type, weeks, image, isQuickship: weeks <= QUICKSHIP_THRESHOLD });
+        leadTimesData.forEach(({ series, type, weeks, image, cloudinaryPublicId, quickShip }) => {
+            if (!map[series]) map[series] = { types: {}, isQuickShip: QUICKSHIP_SERIES.includes(series) || Boolean(quickShip) };
+            if (quickShip) map[series].isQuickShip = true;
+            map[series].types[type] = { type, weeks, image, cloudinaryPublicId };
         });
-        
-        let list = Object.entries(map).map(([series, data]) => {
-            const sortedTypes = [...data.types].sort((a, b) => a.weeks - b.weeks);
-            return { series, types: sortedTypes, minWeeks: Math.min(...sortedTypes.map(t => t.weeks)) };
-        });
-
-        if (categoryFilter !== 'all') {
-            const filterDef = CATEGORY_FILTERS.find(f => f.key === categoryFilter);
-            if (filterDef?.match) {
-                list = list.map(row => ({
-                    ...row,
-                    types: row.types.filter(t => filterDef.match(t.type))
-                })).filter(row => row.types.length > 0);
-            }
-        }
+        let list = Object.entries(map).map(([series, data]) => ({ 
+            series, 
+            types: data.types,
+            isQuickShip: data.isQuickShip
+        }));
 
         if (searchTerm) {
             const q = searchTerm.toLowerCase();
@@ -117,133 +194,96 @@ export const LeadTimesScreen = ({ theme = {} }) => {
         }
 
         if (sortFastest) {
-            list.sort((a, b) => a.minWeeks - b.minWeeks);
+            // Sort by QuickShip first, then by fastest lead time
+            list.sort((a, b) => {
+                // QuickShip items come first
+                if (a.isQuickShip && !b.isQuickShip) return -1;
+                if (!a.isQuickShip && b.isQuickShip) return 1;
+                // Then sort by fastest lead time
+                const aMin = Math.min(...Object.values(a.types).map(t => t.weeks));
+                const bMin = Math.min(...Object.values(b.types).map(t => t.weeks));
+                return aMin - bMin;
+            });
         } else {
             list.sort((a, b) => a.series.localeCompare(b.series));
         }
         return list;
-    }, [searchTerm, sortFastest, categoryFilter]);
-
-    const activeFilterLabel = CATEGORY_FILTERS.find(f => f.key === categoryFilter)?.label;
-
-    const header = (
-        <div className="py-2 space-y-2">
-            <div className="flex items-center gap-2">
-                <StandardSearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search series..." theme={safeTheme} className="flex-1" />
-                <button ref={filterBtnRef} onClick={() => setShowFilterMenu(!showFilterMenu)} className="flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold transition-all flex-shrink-0" style={{ backgroundColor: categoryFilter !== 'all' ? safeTheme.colors.accent : safeTheme.colors.surface, color: categoryFilter !== 'all' ? '#fff' : safeTheme.colors.textSecondary, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-                    <Filter className="w-4 h-4" />
-                </button>
-                <button onClick={() => setSortFastest(!sortFastest)} className="flex items-center gap-1.5 px-3 py-2.5 rounded-full text-xs font-semibold transition-all flex-shrink-0" style={{ backgroundColor: sortFastest ? safeTheme.colors.accent : safeTheme.colors.surface, color: sortFastest ? '#fff' : safeTheme.colors.textSecondary, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-                    <Timer className="w-4 h-4" />
-                </button>
-            </div>
-            {categoryFilter !== 'all' && (
-                <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium" style={{ backgroundColor: safeTheme.colors.accent + '15', color: safeTheme.colors.accent }}>
-                        {activeFilterLabel}
-                        <button onClick={() => setCategoryFilter('all')} className="hover:opacity-70"><X className="w-3 h-3" /></button>
-                    </span>
-                </div>
-            )}
-        </div>
-    );
+    }, [leadTimesData, searchTerm, sortFastest]);
 
     return (
-        <ScreenLayout theme={safeTheme} header={header} maxWidth="default" padding={true} paddingBottom="7rem">
-            <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: safeTheme.colors.surface }}>
-                {rows.map(({ series, types }, index) => (
-                    <div 
-                        key={series} 
-                        className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-black/[0.02]" 
-                        style={{ borderBottom: index < rows.length - 1 ? `1px solid ${safeTheme.colors.border}20` : 'none' }}
-                    >
-                        {/* Series name */}
-                        <h3 className="font-semibold text-sm flex-shrink-0 w-20" style={{ color: safeTheme.colors.textPrimary }}>
-                            {series}
-                        </h3>
-                        {/* Product cards */}
-                        <div className="flex items-center gap-5">
-                            {types.map((t, i) => (
-                                <ProductCard 
-                                    key={i} 
-                                    {...t} 
-                                    theme={safeTheme} 
-                                    onQuickshipClick={() => setShowQuickshipHint(true)} 
-                                />
-                            ))}
-                        </div>
-                    </div>
-                ))}
-            </div>
-            {rows.length === 0 && (
-                <div className="text-center py-12 rounded-2xl" style={{ backgroundColor: safeTheme.colors.subtle }}>
-                    <p className="text-sm font-medium" style={{ color: safeTheme.colors.textPrimary }}>No series found</p>
-                </div>
-            )}
-            
-            {/* Filter Menu Portal */}
-            {showFilterMenu && createPortal(
-                <div 
-                    className="fixed rounded-2xl shadow-xl overflow-hidden py-2" 
-                    style={{ 
-                        top: filterPos.top, 
-                        right: filterPos.right, 
-                        backgroundColor: safeTheme.colors.surface, 
-                        border: '1px solid ' + safeTheme.colors.border, 
-                        zIndex: 100000, 
-                        minWidth: 180 
+    <div className="flex flex-col h-full app-header-offset" style={{ backgroundColor: safeTheme.colors.background }}>
+        {/* Top banner - Search and sort only */}
+        <div className="px-4 pt-3 pb-2">
+            <div className="flex items-center gap-2">
+                <StandardSearchBar
+                    className="flex-grow"
+                    value={searchTerm}
+                    onChange={setSearchTerm}
+                    placeholder="Search series..."
+                    theme={safeTheme}
+                    aria-label="Search series"
+                />
+                <button
+                    onClick={() => setSortFastest(f => !f)}
+                    className="p-4 rounded-full border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                    aria-label={sortFastest ? 'Sort alphabetically' : 'Sort by fastest lead time'}
+                    title={sortFastest ? 'Alphabetical order' : 'Fastest lead time'}
+                    style={{
+                        backgroundColor: safeTheme.colors.surface || '#ffffff',
+                        color: sortFastest ? safeTheme.colors.accent : safeTheme.colors.textPrimary,
+                        borderColor: isDark
+                            ? (sortFastest ? safeTheme.colors.accent : 'rgba(255,255,255,0.1)')
+                            : (sortFastest ? safeTheme.colors.accent : (safeTheme.colors.border || 'rgba(0,0,0,0.10)'))
                     }}
                 >
-                    {CATEGORY_FILTERS.map(f => {
-                        const isActive = categoryFilter === f.key;
-                        return (
-                            <button 
-                                key={f.key} 
-                                onClick={() => { setCategoryFilter(f.key); setShowFilterMenu(false); }} 
-                                className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium transition-colors hover:bg-black/5" 
-                                style={{ color: isActive ? safeTheme.colors.accent : safeTheme.colors.textPrimary }}
-                            >
-                                {f.label}
-                                {isActive && <Check className="w-4 h-4" />}
-                            </button>
-                        );
-                    })}
-                </div>,
-                document.body
-            )}
-            
-            {/* QuickShip Hint Modal */}
-            {showQuickshipHint && createPortal(
-                <div className="fixed inset-0 flex items-center justify-center z-[100001]" onClick={() => setShowQuickshipHint(false)}>
-                    <div className="absolute inset-0 bg-black/30" />
-                    <div 
-                        className="relative rounded-2xl p-6 mx-4 max-w-sm text-center shadow-2xl" 
-                        style={{ backgroundColor: safeTheme.colors.surface }} 
-                        onClick={e => e.stopPropagation()}
+                    {sortFastest ? <ListOrdered className="w-5 h-5" /> : <Timer className="w-5 h-5" />}
+                </button>
+            </div>
+        </div>
+
+            {/* Vertical list of cards */}
+            <div className="flex-1 overflow-y-auto px-4 pb-4 pt-1 space-y-3 scrollbar-hide">
+                {rows.map(({ series, types, isQuickShip }, idx) => (
+                    <GlassCard 
+                        key={series} 
+                        theme={safeTheme} 
+                        className={`relative px-5 pr-6 py-4 flex items-center justify-between rounded-2xl ${idx === 0 ? 'mt-1' : ''}`}
+                        style={isDark ? { border: '1px solid rgba(255,255,255,0.08)' } : undefined}
                     >
-                        <div 
-                            className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" 
-                            style={{ backgroundColor: '#FEF3C7' }}
-                        >
-                            <Zap className="w-6 h-6" style={{ color: '#D97706' }} />
+                        <div className="flex flex-col gap-1.5 shrink-0">
+                            <h3 className="text-xl font-bold tracking-tight" style={{ color: safeTheme.colors.textPrimary }}>
+                                {series}
+                            </h3>
+                            {isQuickShip && (
+                                <QuickShipBadge onClick={() => openQuickShipModal(series)} isDark={isDark} />
+                            )}
                         </div>
-                        <h3 className="font-bold text-lg mb-2" style={{ color: safeTheme.colors.textPrimary }}>
-                            QuickShip Available
-                        </h3>
-                        <p className="text-sm" style={{ color: safeTheme.colors.textSecondary }}>
-                            This configuration ships in <strong>12 business days</strong> or less when ordered with qualifying options.
-                        </p>
-                        <button 
-                            onClick={() => setShowQuickshipHint(false)} 
-                            className="mt-4 px-6 py-2 rounded-full text-sm font-semibold" 
-                            style={{ backgroundColor: safeTheme.colors.accent, color: '#fff' }}
-                        >
-                            Got it
-                        </button>
-                    </div>
-                </div>,
-                document.body
-            )}
-        </ScreenLayout>
+                        <div className="flex items-center justify-end space-x-3">
+                            {types['Upholstery'] && <LeadTimeInfo typeData={types['Upholstery']} series={series} theme={safeTheme} isDark={isDark} />}
+                            {types['Seating'] && <LeadTimeInfo typeData={types['Seating']} series={series} theme={safeTheme} isDark={isDark} />}
+                            {types['Wood Seating'] && <LeadTimeInfo typeData={types['Wood Seating']} series={series} theme={safeTheme} isDark={isDark} />}
+                            {types['Casegoods'] && <LeadTimeInfo typeData={types['Casegoods']} series={series} theme={safeTheme} isDark={isDark} />}
+                            {types['Tables'] && <LeadTimeInfo typeData={types['Tables']} series={series} theme={safeTheme} isDark={isDark} />}
+                            {types['Laminate'] && <LeadTimeInfo typeData={types['Laminate']} series={series} label="Laminate" theme={safeTheme} isDark={isDark} />}
+                            {types['Veneer'] && <LeadTimeInfo typeData={types['Veneer']} series={series} label="Veneer" theme={safeTheme} isDark={isDark} />}
+                        </div>
+                    </GlassCard>
+                ))}
+                {rows.length === 0 && (
+                    <GlassCard theme={safeTheme} className="p-8 flex flex-col items-center justify-center text-center gap-2 rounded-2xl">
+                        <p className="text-sm font-medium" style={{ color: safeTheme.colors.textPrimary }}>No series match your search.</p>
+                        <p className="text-xs" style={{ color: safeTheme.colors.textSecondary }}>Try adjusting your search term.</p>
+                    </GlassCard>
+                )}
+            </div>
+            
+            {/* QuickShip Modal */}
+            <QuickShipModal 
+                isOpen={quickShipModal.isOpen}
+                onClose={closeQuickShipModal}
+                seriesName={quickShipModal.seriesName}
+                theme={safeTheme}
+            />
+        </div>
     );
 };
